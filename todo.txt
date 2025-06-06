@@ -1,0 +1,20 @@
+-=-= bugs =-=-
+- broken input green feedback 
+
+-=-= small =-=- 
+- add quiz stats
+- add quiz timer
+- settings toggle buttons (1 | 0)
+
+=-=- medium =-=-
+DONE add tabs [docs,app,settings,about] ]
+- sound effects
+- add option for randomizing/not the questions/options
+- add options prompt buttons (difficulty, no. of questions, types of questions,etc.)
+
+-=-= large =-=-
+- replace direct json to more user-friendly ui
+- plugin support
+- add desmos api & embed. for questions with graphing 
+- quiz sharing platform
+- api oauth instead of pasting

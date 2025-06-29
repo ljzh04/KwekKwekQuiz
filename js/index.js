@@ -20,3 +20,9 @@ await Promise.all([
 ]);
 
 console.log("All DOM components initialized/loaded.")
+
+
+requestAnimationFrame(async () => {
+  const { initializeApp } = await import('./main.js');
+  initializeApp();
+});

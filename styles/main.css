@@ -557,12 +557,15 @@ html.dark .sidebar-link .material-symbols-outlined.active-link:hover {
 .sidebar-link.active-link .material-symbols-outlined {
   font-variation-settings: 'FILL' 1; 
 }
+.content-section {
+  justify-self: center;
+}
 .content-section.hidden {
   display: none;
 }
-@media (min-width: 768px) { 
+@media (min-width: 768px) {
   #main-content-wrapper {
-    margin-left: 6rem; 
+    margin-left: 6rem;
   }
   #app-section,
   #docs-section,
@@ -602,7 +605,7 @@ html.dark .prose ul > li::before { /* List bullets */
 
 /* Adjust font size if needed globally for prose, or target specific elements */
 .prose p, .prose li {
-    font: var(--md-sys-typescale-body-large-font) !important; color: var(--md-sys-color-on-surface); 
+    font: var(--md-sys-typescale-body-large-font) !important; color: var(--md-sys-color-on-surface);
 }
 .prose h1, html.dark .prose h1 { font: var(--md-sys-typescale-display-large-font) !important; color: var(--md-sys-color-on-surface); }
 .prose h2, html.dark .prose h2 { font: var(--md-sys-typescale-display-medium-font) !important; color: var(--md-sys-color-on-surface); }
@@ -678,7 +681,7 @@ pre code {
     min-height: 48px;
     padding: 14px 20px;
   }
-  
+
   .md-icon-button {
     width: 48px;
     height: 48px;

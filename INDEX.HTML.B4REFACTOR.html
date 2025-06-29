@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Kwek Kwek Quiz - Fun & Engaging Quizzes</title>
+  <link rel="icon" href="/img/icon.png" type="image/png" />
+
+  <!-- SEO (Keep as is from your provided file) -->
+  <meta name="description" content="Create, share, and take fun quizzes with Kwek Kwek Quiz! Supports custom JSON/YAML, AI generation, and local saving. Perfect for study and entertainment." />
+  <meta name="keywords" content="quiz, kwek kwek, quiz maker, online quiz, study tool, education, entertainment, json quiz, ai quiz generator, gemini api" />
+  <meta name="author" content="ljzh04" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.yourkwekkwakquizdomain.com/" /> 
+  <meta property="og:title" content="Kwek Kwek Quiz - Interactive Quiz Platform" />
+  <meta property="og:description" content="Engage with interactive quizzes or create your own with Kwek Kwek Quiz. Features AI generation, custom JSON support, and more." />
+  <meta property="og:image" content="https://www.yourkwekkwakquizdomain.com/img/kwek-kwek-quiz-og-image.png" />
+  <meta property="og:image:alt" content="Kwek Kwek Quiz Logo and App Screenshot" />
+  <meta property="og:site_name" content="Kwek Kwek Quiz" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://www.yourkwekkwakquizdomain.com/" /> 
+  <meta name="twitter:title" content="Kwek Kwek Quiz - Create & Take Quizzes" />
+  <meta name="twitter:description" content="Discover the Kwek Kwek Quiz platform. Build quizzes from JSON, generate with AI, or try sample quizzes. Fun and educational!" />
+  <meta name="twitter:image" content="https://www.yourkwekkwakquizdomain.com/img/kwek-kwek-quiz-twitter-card.png" /> 
+  <meta name="twitter:image:alt" content="Kwek Kwek Quiz App Interface" />
+  <!-- <meta name="twitter:site" content="@YourTwitterHandle">  -->
+  <!-- <meta name="twitter:creator" content="@YourTwitterHandle"> -->
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.yourkwekkwakquizdomain.com/" />
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6750A4" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#D0BCFF" media="(prefers-color-scheme: dark)" />
+
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'md-primary': '#6750A4',
+            'md-primary-container': '#E8DEF8',
+            'md-secondary': '#625B71',
+            'md-secondary-container': '#E8DEF8', /* Note: Same as primary-container, check if intended */
+            'md-tertiary': '#7D5260',
+            'md-tertiary-container': '#FFD8E4',
+            'md-surface': '#FFFBFE',
+            'md-surface-variant': '#E7E0EC',
+            'md-outline': '#79747E',
+            'md-outline-variant': '#CAC4D0',
+            'md-on-surface': '#1C1B1F',
+            'md-on-surface-variant': '#49454F',
+            'md-error': '#BA1A1A',
+            'md-error-container': '#FFDAD6',
+          },
+          fontFamily: {
+            'roboto': ['Roboto', 'sans-serif'],
+          },
+          borderRadius: {
+            'md-xs': '4px',
+            'md-sm': '8px',
+            'md-md': '12px',
+            'md-lg': '16px',
+            'md-xl': '20px',
+            'md-2xl': '28px',
+          },
+          boxShadow: {
+            'md-1': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
+            'md-2': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
+            'md-3': '0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3)',
+            'md-4': '0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px 0px rgba(0, 0, 0, 0.3)',
+            'md-5': '0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px 0px rgba(0, 0, 0, 0.3)',
+          }
+        },
+      },
+    }
+  </script>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body class="font-roboto">
+
+  <!-- Sidebar (Keep as is) -->
+  <aside id="sidebar" class="w-64 bg-md-surface-container-low dark:bg-gray-800 p-4 space-y-2 shadow-lg fixed top-0 left-0 h-full z-30 transform -translate-x-full md:translate-x-0">
+    <div class="text-xl font-bold text-md-on-surface dark:text-gray-100 mb-6 text-center pt-2">
+        Kwek Kwek Quiz
+    </div>
+    <nav>
+        <a href="#app" data-section="app-section" class="sidebar-link active-link flex items-center py-2.5 px-4 rounded-lg transition duration-200 hover:bg-md-secondary-container dark:hover:bg-gray-700">
+            <span class="material-symbols-outlined mr-3">quiz</span> App
+        </a>
+        <a href="#docs" data-section="docs-section" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg transition duration-200 hover:bg-md-secondary-container dark:hover:bg-gray-700">
+            <span class="material-symbols-outlined mr-3">menu_book</span> Docs
+        </a>
+        <a href="#settings" data-section="settings-section" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg transition duration-200 hover:bg-md-secondary-container dark:hover:bg-gray-700">
+            <span class="material-symbols-outlined mr-3">settings</span> Settings
+        </a>
+        <a href="#about" data-section="about-section" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg transition duration-200 hover:bg-md-secondary-container dark:hover:bg-gray-700">
+            <span class="material-symbols-outlined mr-3">info</span> About
+        </a>
+    </nav>
+  </aside>
+
+  <!-- Overlay for mobile when sidebar is open -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+
+  <!-- Main Content Wrapper (Keep as is) -->
+  <div id="main-content-wrapper" class="flex-1 flex flex-col min-h-screen">
+    
+    <!-- Top Bar (Keep as is) -->
+    <header class="bg-md-surface dark:bg-gray-800 shadow-md p-4 sticky top-0 z-10 flex items-center">
+        <button id="sidebar-toggle" class="md:hidden p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-gray-700 mr-3">
+            <span class="material-symbols-outlined text-md-on-surface dark:text-gray-200">menu</span>
+        </button>
+        <h1 id="main-title" class="text-xl font-medium text-md-on-surface dark:text-gray-100">
+            Kwek Kwek Quiz
+        </h1>
+        <div class="ml-auto flex items-center space-x-1">
+            <button id="animation-toggle-global" aria-label="Toggle Animations" aria-pressed="true" class="md-icon-button p-3 rounded-full hover:bg-md-surface-variant dark:hover:bg-gray-700 transition-all duration-200">
+              <span id="bolt-on-global" class="material-symbols-outlined text-green-600">bolt</span>
+              <span id="bolt-off-global" class="material-symbols-outlined text-md-on-surface dark:text-gray-200 hidden">bolt</span>
+            </button>
+            <button id="dark-mode-toggle-global" aria-label="Toggle Dark Mode" class="md-icon-button p-3 rounded-full hover:bg-md-surface-variant dark:hover:bg-gray-700 transition-all duration-200">
+              <span id="dark-mode-icon-global" class="material-symbols-outlined text-md-on-surface dark:text-gray-200">
+                <span id="moon-icon-global" class="hidden">dark_mode</span>
+                <span id="sun-icon-global">light_mode</span>
+              </span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area that changes (Keep as is) -->
+    <main id="main-content" class="flex-1 p-4 overflow-y-auto bg-md-surface dark:bg-gray-900 flex items-center justify-center"> 
+      
+      <!-- APP SECTION (Keep as is) -->
+      <div id="app-section" class="content-section w-full max-w-2xl">
+        <!-- ... (all your original app section content) ... -->
+         <div class="bg-md-surface dark:bg-gray-800 rounded-md-2xl shadow-md-2 w-full p-6 transition-colors duration-300 border border-md-outline-variant dark:border-gray-600">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b border-md-outline-variant dark:border-gray-600">
+            <h1 class="text-2xl font-medium text-center flex-grow text-md-on-surface dark:text-gray-100">Quiz Interface</h1>
+          </div>
+          <div id="quiz-setup" class="space-y-6">
+            <p class="text-md-on-surface-variant dark:text-gray-300 font-medium">Extensive cramming in the palm of your hands.</p>
+           
+            <div class="md-text-field">
+              <label for="quiz-json-input" class="block mb-2 font-medium text-md-on-surface dark:text-gray-300">Quiz JSON</label>
+              <textarea id="quiz-json-input" rows="8" class="w-full p-4 border-2 border-md-outline rounded-md-sm resize-y dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200" placeholder="Paste JSON here.
+• Use format button to convert yaml to JSON.
+• Use generate button to generate JSON from text"></textarea>
+            </div>
+            <div class="flex gap-3">
+              <button id="format-json-btn" class="md-filled-tonal-button flex-1 flex items-center justify-center gap-2 bg-md-secondary-container hover:bg-opacity-80 text-md-on-secondary-container dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1">
+                <span class="material-symbols-outlined text-lg">format_align_left</span>
+                <span class="hidden sm:inline"> Format JSON </span>
+              </button>
+              <button id="generate-json-btn" class="md-filled-tonal-button flex-1 flex items-center justify-center gap-2 bg-md-secondary-container hover:bg-opacity-80 text-md-on-secondary-container dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1">
+                <span class="material-symbols-outlined text-lg">auto_fix_high</span>
+                <span class="hidden sm:inline"> Generate JSON </span>
+              </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button id="load-quiz-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-2 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">upload</span>
+                <span class="">Load</span>
+              </button>
+              <button id="load-sample-btn" class="md-filled-tonal-button bg-md-tertiary-container hover:bg-opacity-80 text-md-on-tertiary-container dark:bg-purple-900 dark:hover:bg-purple-800 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">assignment</span>
+                <span class="">Sample</span>
+              </button>
+              <button id="save-quiz-btn" class="md-filled-tonal-button bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-900 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2 relative">
+                <span class="material-symbols-outlined text-lg">save</span>
+                <span class="">Save</span>
+              </button>
+              <button id="delete-quiz-btn" class="md-filled-tonal-button bg-md-error-container hover:bg-opacity-80 text-md-error dark:bg-red-900 dark:hover:bg-red-800 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">delete</span>
+                <span class="">Delete</span>
+              </button>
+            </div>
+            <div id="error-message" class="text-md-error font-medium bg-md-error-container p-3 rounded-md-sm hidden" role="alert" aria-live="assertive"></div>
+            <div class="md-text-field">
+              <label for="quiz-name-input" class="block mb-2 font-medium text-md-on-surface dark:text-gray-300">Quiz Name</label>
+              <input type="text" id="quiz-name-input" class="w-full p-4 border-2 border-md-outline rounded-md-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200" placeholder="Enter quiz name" />
+            </div>
+            <div class="md-text-field">
+              <label for="saved-quizzes" class="block mb-2 font-medium text-md-on-surface dark:text-gray-300">Saved Quizzes</label>
+              <select id="saved-quizzes" class="w-full p-4 border-2 border-md-outline rounded-md-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200">
+                <option value="" disabled selected>Select a saved quiz</option>
+              </select>
+            </div>
+          </div>
+          <div id="progress-bar" class="mb-6 hidden">
+             <div class="flex justify-between mb-2 text-sm font-medium text-md-on-surface-variant dark:text-gray-300">
+                <span id="progress-text">1/5</span>
+            </div>
+            <div class="w-full bg-md-surface-variant dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div id="progress-meter" class="bg-md-primary dark:bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div id="quiz-container" class="space-y-6 text-md-on-surface dark:text-gray-100 hidden">
+          </div>
+          <div class="flex justify-between items-center mt-8 space-x-4 hidden" id="navigation-buttons">
+            <button id="prev-btn" class="md-outlined-button border-2 border-md-outline hover:bg-md-surface-variant text-md-on-surface dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 font-medium py-3 px-6 rounded-md-xl inline-flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+                <span>Previous</span>
+            </button>
+            <button id="submit-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-8 rounded-md-xl inline-flex items-center space-x-2 shadow-md-2 transition-all duration-200">
+                <span>Submit</span>
+                <span class="material-symbols-outlined">send</span>
+            </button>
+            <button id="next-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-6 rounded-md-xl inline-flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md-2 transition-all duration-200">
+                <span>Next</span>
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+          <div id="result-container" class="mt-8 hidden text-center text-md-on-surface dark:text-gray-100">
+             <div class="bg-md-primary-container dark:bg-gray-700 rounded-md-2xl p-6 mb-6">
+                <h2 class="text-3xl font-medium mb-4 text-md-on-primary-container dark:text-gray-100">Your Score</h2>
+                <p id="score-text" class="text-xl text-md-on-primary-container dark:text-gray-200"></p>
+            </div>
+            <div id="summary-container" class="text-left max-h-96 overflow-y-auto bg-md-surface-variant dark:bg-gray-800 rounded-md-lg p-4 mb-6"></div>
+            <div id="summary-buttons" class="flex flex-wrap justify-center gap-4">
+                <button id="back-to-setup-btn" class="md-outlined-button border-2 border-md-outline hover:bg-md-surface-variant text-md-on-surface dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 font-medium py-3 px-6 rounded-md-xl inline-flex items-center gap-2 transition-all duration-200">
+                <span class="material-symbols-outlined">home</span>
+                <span>Back to Quiz Setup</span>
+                </button>
+                <button id="restart-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-6 rounded-md-xl inline-flex items-center gap-2 shadow-md-2 transition-all duration-200">
+                <span class="material-symbols-outlined">refresh</span>
+                <span>Restart Quiz</span>
+                </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCS SECTION (Keep as is) -->
+      <div id="docs-section" class="content-section hidden w-full max-w-4xl p-6 bg-md-surface dark:bg-gray-800 rounded-lg shadow-md-1">
+        <!-- ... (docs content) ... -->
+        <div class="prose dark:prose-invert max-w-none"> 
+         <h3 class="text-3xl font-medium text-md-on-surface dark:text-gray-100 mb-6">Documentation</h2>
+            <p>Welcome to the Kwek Kwek Quiz documentation!</p>
+            <h6 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mt-4 mb-2">Getting Started</h3>
+            <p>To use the AI Quiz Generation feature, you'll need a Gemini API Key. You can obtain one from <a href="https://aistudio.google.com/" target="_blank" class="text-md-primary dark:text-purple-400 hover:underline">Google AI Studio</a>. Paste this key into the API Key field in the "App" section or manage it in "Settings".</p>
+            <h6 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mt-4 mb-2">Creating Quizzes</h3>
+            <p>You can create quizzes by:</p>
+            <ul>
+                <li>Pasting valid JSON into the "Quiz JSON" textarea. Use the "Format JSON" button to prettify it or convert YAML to JSON.</li>
+                <li>Pasting text into the "Quiz JSON" textarea and clicking "Generate JSON" to use AI to create a quiz (requires API Key).</li>
+                <li>Loading a sample quiz using the "Sample" button.</li>
+            </ul>
+            <p><strong>JSON Format Example:</strong></p>
+            <pre><code class="language-json">[
+  {
+    "type": "multiple-choice",
+    "question": "What is the capital of France?",
+    "options": ["Berlin", "Madrid", "Paris", "Rome"],
+    "correct": 2 
+  },
+  {
+    "type": "true-false",
+    "question": "The earth is flat.",
+    "correct": false
+  },
+  {
+    "type": "fill-in-the-blank",
+    "question": "The chemical symbol for water is __.",
+    "correct": "H2O"
+  }
+]</code></pre>
+            <p class="mt-2">Ensure your JSON follows the structure of an array of question objects. Each object needs `type`, `question`, and `correct`. Multiple-choice questions also need an `options` array (correct is the 0-based index).</p>
+            <h6 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mt-4 mb-2">Taking Quizzes</h3>
+            <p>Once a quiz is loaded, navigate through questions using "Next" and "Previous". For multiple-choice and true/false, clicking an option submits it. For fill-in-the-blank or identification, type your answer and click "Submit" or press Enter.</p>
+            <h6 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mt-4 mb-2">Managing Quizzes</h3>
+            <p>Enter a "Quiz Name" and click "Save" to store your current quiz in the browser's local storage. Select a saved quiz from the dropdown to load it. Use "Delete" to remove the selected saved quiz.</p>
+        </div>
+      </div>
+
+      <!-- SETTINGS SECTION (Keep as is) -->
+      <div id="settings-section" class="content-section hidden w-full max-w-2xl p-6 bg-md-surface dark:bg-gray-800 rounded-lg shadow-md-1 space-y-6">
+        <!-- ... (settings content) ... -->
+        <h2 class="text-3xl font-medium text-md-on-surface dark:text-gray-100 mb-4">Settings</h2>
+        <div>
+            <h3 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mb-2">Appearance</h3>
+            <div class="flex items-center justify-between p-3 bg-md-surface-variant dark:bg-gray-700 rounded-md">
+                <label for="dark-mode-toggle-setting" class="text-md-on-surface-variant dark:text-gray-300">Dark Mode</label>
+                <button id="dark-mode-toggle-setting" aria-label="Toggle Dark Mode" class="md-icon-button p-2 rounded-full hover:bg-opacity-20 dark:hover:bg-opacity-20">
+                  <span id="dark-mode-icon-setting" class="material-symbols-outlined">
+                    <span id="moon-icon-setting" class="hidden">dark_mode</span>
+                    <span id="sun-icon-setting">light_mode</span>
+                  </span>
+                </button>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-md-surface-variant dark:bg-gray-700 rounded-md mt-2">
+                <label for="animation-toggle-setting" class="text-md-on-surface-variant dark:text-gray-300">Enable Animations</label>
+                 <button id="animation-toggle-setting" aria-label="Toggle Animations" aria-pressed="true" class="md-icon-button p-2 rounded-full hover:bg-opacity-20 dark:hover:bg-opacity-20">
+                  <span id="bolt-on-setting" class="material-symbols-outlined text-green-600">bolt</span>
+                  <span id="bolt-off-setting" class="material-symbols-outlined hidden">bolt</span>
+                </button>
+            </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mb-2">API Key</h3>
+          <div class="md-text-field">
+            <label for="api-key-setting-input" class="block mb-1 font-medium text-sm text-md-on-surface-variant dark:text-gray-400">Gemini API Key</label>
+            <div class="relative flex items-center"> 
+              <input type="password" id="api-key-setting-input" class="w-full p-3 border-2 border-md-outline rounded-l-md-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200 pr-10" placeholder="Paste your Gemini API key here" />
+              <button id="toggle-api-key-visibility" class="absolute right-0 h-full px-3 text-md-on-surface-variant dark:text-gray-400 hover:text-md-primary dark:hover:text-purple-400 focus:outline-none" aria-label="Toggle API Key visibility">
+                  <span class="material-symbols-outlined" id="api-key-visibility-icon">visibility_off</span>
+              </button>
+            </div>
+            <button id="save-api-key-btn" class="mt-2 md-filled-tonal-button py-2 px-4 text-sm">Save API Key</button>
+            <button id="clear-api-key-btn" class="mt-2 md-outlined-button py-2 px-4 text-sm ml-2">Clear Saved Key</button>
+          </div>
+           <p class="text-xs text-md-on-surface-variant dark:text-gray-400 mt-1">API Key is stored in your browser's local storage.</p>
+      </div>
+        <div>
+            <h3 class="text-xl font-medium text-md-on-surface dark:text-gray-100 mb-2">Data Management</h3>
+            <button id="export-quizzes-btn" class="md-filled-tonal-button py-2 px-4 text-sm w-full mb-2">Export All Saved Quizzes</button>
+            <label for="import-quizzes-input" class="md-filled-tonal-button py-2 px-4 text-sm w-full cursor-pointer text-center block mb-2">
+                Import Quizzes from JSON
+            </label>
+            <input type="file" id="import-quizzes-input" class="hidden" accept=".json">
+            <button id="clear-all-quizzes-btn" class="md-filled-tonal-button bg-md-error-container text-md-error hover:bg-opacity-80 dark:bg-red-900 dark:text-red-300 py-2 px-4 text-sm w-full">Clear All Saved Quizzes</button>
+        </div>
+      </div>
+
+      <!-- ABOUT SECTION (Keep as is) -->
+      <div id="about-section" class="content-section hidden w-full max-w-2xl p-6 bg-md-surface dark:bg-gray-800 rounded-lg shadow-md-1">
+        <!-- ... (about content) ... -->
+        <h2 class="text-3xl font-medium text-md-on-surface dark:text-gray-100 mb-6">About Kwek Kwek Quiz</h2>
+        <div class="prose dark:prose-invert max-w-none">
+            <p>Kwek Kwek Quiz is a versatile quiz application designed for learning and fun. Create your own quizzes using JSON, generate them with AI, or load pre-made examples.</p>
+            <p><strong>Version:</strong> 1.0.0 (Legacy Design)</p>
+            <p><strong>Author:</strong> ljzh04</p>
+            <p>This application utilizes several open-source technologies, including:</p>
+            <ul>
+                <li>Tailwind CSS</li>
+                <li>Google Gemini API</li>
+                <li>Marked (for Markdown)</li>
+                <li>Highlight.js (for code syntax highlighting)</li>
+                <li>Katex (for LaTeX rendering)</li>
+                <li>js-yaml (for YAML to JSON)</li>
+            </ul>
+            <p>For feedback or issues, please visit <a href="https://github.com/ljzh04/kwek-kwek-quiz" target="_blank" class="text-md-primary dark:text-purple-400 hover:underline">GitHub Repository</a>.</p>
+            <p>© 2024 ljzh04. All rights reserved (MIT License).</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+  
+  <script type="module" src="js/main.js"></script>
+  <!-- REMOVED INLINE SCRIPT BLOCK - Logic moved to JS modules -->
+</body>
+</html>

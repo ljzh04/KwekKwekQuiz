@@ -1,0 +1,97 @@
+<div id="app-section" class="content-section w-full max-w-4xl hidden">
+  <div class="bg-md-surface dark:bg-gray-800 rounded-md-2xl shadow-md-2 w-full p-6 transition-colors duration-300 border border-md-outline-variant dark:border-gray-600">
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-md-outline-variant dark:border-gray-600">
+      <h1 class="text-2xl font-medium text-center flex-grow text-md-on-surface dark:text-gray-100">Quiz Interface</h1>
+    </div>
+    <div id="quiz-setup" class="space-y-6">
+      <p class="text-md-on-surface-variant dark:text-gray-300 font-medium">Extensive cramming in the palm of your hands.</p>
+     
+      <div class="md-text-field">
+        <label for="quiz-json-input" class="block mb-2 font-medium text-md-on-surface dark:text-gray-300">Quiz JSON</label>
+        <textarea id="quiz-json-input" rows="8" class="w-full p-4 border-2 border-md-outline rounded-md-sm resize-y dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200" placeholder="Paste JSON here.
+• Use format button to convert yaml to JSON.
+• Use generate button to generate JSON from text"></textarea>
+      </div>
+      <div class="flex gap-3">
+        <button id="format-json-btn" class="md-filled-tonal-button flex-1 flex items-center justify-center gap-2 bg-md-secondary-container hover:bg-opacity-80 text-md-on-secondary-container dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1">
+          <span class="material-symbols-outlined text-lg">format_align_left</span>
+          <span class="hidden sm:inline"> Format JSON </span>
+        </button>
+        <button id="generate-json-btn" class="md-filled-tonal-button flex-1 flex items-center justify-center gap-2 bg-md-secondary-container hover:bg-opacity-80 text-md-on-secondary-container dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1">
+          <span class="material-symbols-outlined text-lg">auto_fix_high</span>
+          <span class="hidden sm:inline"> Generate JSON </span>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button id="load-quiz-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-2 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">upload</span>
+          <span class="">Load</span>
+        </button>
+        <button id="load-sample-btn" class="md-filled-tonal-button bg-md-tertiary-container hover:bg-opacity-80 text-md-on-tertiary-container dark:bg-purple-900 dark:hover:bg-purple-800 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">assignment</span>
+          <span class="">Sample</span>
+        </button>
+        <button id="save-quiz-btn" class="md-filled-tonal-button bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-900 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2 relative">
+          <span class="material-symbols-outlined text-lg">save</span>
+          <span class="">Save</span>
+        </button>
+        <button id="delete-quiz-btn" class="md-filled-tonal-button bg-md-error-container hover:bg-opacity-80 text-md-error dark:bg-red-900 dark:hover:bg-red-800 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">delete</span>
+          <span class="">Delete</span>
+        </button>
+      </div>
+      <div id="error-message" class="text-md-error font-medium bg-md-error-container p-3 rounded-md-sm hidden" role="alert" aria-live="assertive"></div>
+      <div class="md-text-field">
+        <label for="quiz-name-input" class="block mb-2 font-medium text-md-on-surface dark:text-gray-300">Quiz Name</label>
+        <input type="text" id="quiz-name-input" class="w-full p-4 border-2 border-md-outline rounded-md-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200" placeholder="Enter quiz name" />
+      </div>
+      <div class="md-text-field">
+        <label for="saved-quizzes" class="block mb-2 font-medium text-md-on-surface dark:text-gray-300">Saved Quizzes</label>
+        <select id="saved-quizzes" class="w-full p-4 border-2 border-md-outline rounded-md-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none transition-colors duration-200">
+          <option value="" disabled selected>Select a saved quiz</option>
+        </select>
+      </div>
+    </div>
+    <div id="progress-bar" class="mb-6 hidden">
+       <div class="flex justify-between mb-2 text-sm font-medium text-md-on-surface-variant dark:text-gray-300">
+          <span id="progress-text">1/5</span>
+      </div>
+      <div class="w-full bg-md-surface-variant dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+          <div id="progress-meter" class="bg-md-primary dark:bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
+      </div>
+    </div>
+    <div id="quiz-container" class="space-y-6 text-md-on-surface dark:text-gray-100 hidden">
+    </div>
+    <div class="flex justify-between items-center mt-8 space-x-4 hidden" id="navigation-buttons">
+      <button id="prev-btn" class="md-outlined-button border-2 border-md-outline hover:bg-md-surface-variant text-md-on-surface dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 font-medium py-3 px-6 rounded-md-xl inline-flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" disabled>
+          <span class="material-symbols-outlined">chevron_left</span>
+          <span>Previous</span>
+      </button>
+      <button id="submit-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-8 rounded-md-xl inline-flex items-center space-x-2 shadow-md-2 transition-all duration-200">
+          <span>Submit</span>
+          <span class="material-symbols-outlined">send</span>
+      </button>
+      <button id="next-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-6 rounded-md-xl inline-flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md-2 transition-all duration-200">
+          <span>Next</span>
+          <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+    <div id="result-container" class="mt-8 hidden text-center text-md-on-surface dark:text-gray-100">
+       <div class="bg-md-primary-container dark:bg-gray-700 rounded-md-2xl p-6 mb-6">
+          <h2 class="text-3xl font-medium mb-4 text-md-on-primary-container dark:text-gray-100">Your Score</h2>
+          <p id="score-text" class="text-xl text-md-on-primary-container dark:text-gray-200"></p>
+      </div>
+      <div id="summary-container" class="text-left max-h-96 overflow-y-auto bg-md-surface-variant dark:bg-gray-800 rounded-md-lg p-4 mb-6"></div>
+      <div id="summary-buttons" class="flex flex-wrap justify-center gap-4">
+          <button id="back-to-setup-btn" class="md-outlined-button border-2 border-md-outline hover:bg-md-surface-variant text-md-on-surface dark:border-gray-600 dark:hover:bg-gray-700 dark:text-gray-200 font-medium py-3 px-6 rounded-md-xl inline-flex items-center gap-2 transition-all duration-200">
+          <span class="material-symbols-outlined">home</span>
+          <span>Back to Quiz Setup</span>
+          </button>
+          <button id="restart-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-3 px-6 rounded-md-xl inline-flex items-center gap-2 shadow-md-2 transition-all duration-200">
+          <span class="material-symbols-outlined">refresh</span>
+          <span>Restart Quiz</span>
+          </button>
+      </div>
+    </div>
+  </div>
+</div>

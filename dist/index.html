@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Kwek Kwek Quiz - Fun & Engaging Quizzes</title>
+  <link rel="icon" href="/assets/icon-CzKywAsH.png" type="image/png" />
+
+  <!-- SEO -->
+  <meta name="description" content="Create, share, and take fun quizzes with Kwek Kwek Quiz! Supports custom JSON/YAML, AI generation, and local saving. Perfect for study and entertainment." />
+  <meta name="keywords" content="quiz, kwek kwek, quiz maker, online quiz, study tool, education, entertainment, json quiz, ai quiz generator, gemini api" />
+  <meta name="author" content="ljzh04" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.yourkwekkwakquizdomain.com/" /> 
+  <meta property="og:title" content="Kwek Kwek Quiz - Interactive Quiz Platform" />
+  <meta property="og:description" content="Engage with interactive quizzes or create your own with Kwek Kwek Quiz. Features AI generation, custom JSON support, and more." />
+  <meta property="og:image" content="https://www.yourkwekkwakquizdomain.com/img/kwek-kwek-quiz-og-image.png" />
+  <meta property="og:image:alt" content="Kwek Kwek Quiz Logo and App Screenshot" />
+  <meta property="og:site_name" content="Kwek Kwek Quiz" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://www.yourkwekkwakquizdomain.com/" /> 
+  <meta name="twitter:title" content="Kwek Kwek Quiz - Create & Take Quizzes" />
+  <meta name="twitter:description" content="Discover the Kwek Kwek Quiz platform. Build quizzes from JSON, generate with AI, or try sample quizzes. Fun and educational!" />
+  <meta name="twitter:image" content="https://www.yourkwekkwakquizdomain.com/img/kwek-kwek-quiz-twitter-card.png" /> 
+  <meta name="twitter:image:alt" content="Kwek Kwek Quiz App Interface" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.yourkwekkwakquizdomain.com/" />
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6750A4" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#D0BCFF" media="(prefers-color-scheme: dark)" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'md-primary': '#6750A4',
+            'md-primary-container': '#E8DEF8',
+            'md-secondary': '#625B71',
+            'md-secondary-container': '#E8DEF8',
+            'md-tertiary': '#7D5260',
+            'md-tertiary-container': '#FFD8E4',
+            'md-surface': '#FFFBFE',
+            'md-surface-variant': '#E7E0EC',
+            'md-outline': '#79747E',
+            'md-outline-variant': '#CAC4D0',
+            'md-on-surface': '#1C1B1F',
+            'md-on-surface-variant': '#49454F',
+            'md-error': '#BA1A1A',
+            'md-error-container': '#FFDAD6',
+          },
+          fontFamily: {
+            'roboto': ['Roboto', 'sans-serif'],
+          },
+          borderRadius: {
+            'md-xs': '4px',
+            'md-sm': '8px',
+            'md-md': '12px',
+            'md-lg': '16px',
+            'md-xl': '20px',
+            'md-2xl': '28px',
+          },
+          boxShadow: {
+            'md-1': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
+            'md-2': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
+            'md-3': '0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3)',
+            'md-4': '0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px 0px rgba(0, 0, 0, 0.3)',
+            'md-5': '0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px 0px rgba(0, 0, 0, 0.3)',
+          }
+        },
+      },
+    }
+  </script>
+  <script type="module" crossorigin src="/assets/index-Dqx1LOfy.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CouE9TSd.css">
+</head>
+<body class="font-roboto">
+  <div id="sidebar-container"></div>
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+  
+  <div id="main-content-wrapper" class="flex-1 flex flex-col min-h-screen">
+    <div id="header-container" class="sticky top-0 z-10"></div>
+    <main id="main-content" class="flex-1 p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 flex flex-col">
+      <div id="app-section-container" class="w-full"></div>
+      <div id="docs-section-container" class="w-full"></div>
+      <div id="settings-section-container" class="w-full"></div>
+      <div id="about-section-container" class="w-full"></div>
+    </main>
+  </div>
+</body>
+</html>

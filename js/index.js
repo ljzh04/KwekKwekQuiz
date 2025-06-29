@@ -10,14 +10,16 @@ async function loadComponent(containerSelector, componentPath) {
 }
 
 // Load all components
-await Promise.all([
-  loadComponent('#sidebar-container', 'components/sidebar.html'),
-  loadComponent('#header-container', 'components/header.html'),
-  loadComponent('#app-section-container', 'components/app-section.html'),
-  loadComponent('#docs-section-container', 'components/docs-section.html'),
-  loadComponent('#settings-section-container', 'components/settings-section.html'),
-  loadComponent('#about-section-container', 'components/about-section.html')
-]);
+(async () => {
+  await Promise.all([
+    loadComponent('#sidebar-container', 'components/sidebar.html'),
+    loadComponent('#header-container', 'components/header.html'),
+    loadComponent('#app-section-container', 'components/app-section.html'),
+    loadComponent('#docs-section-container', 'components/docs-section.html'),
+    loadComponent('#settings-section-container', 'components/settings-section.html'),
+    loadComponent('#about-section-container', 'components/about-section.html')
+  ]);
+})();
 
 console.log("All DOM components initialized/loaded.")
 

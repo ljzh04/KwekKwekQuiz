@@ -11,7 +11,7 @@ let promptEngineeringText = '';
 async function loadPromptEngineeringText() {
     if (promptEngineeringText) return promptEngineeringText;
     try {
-        const response = await fetch('/data/promptEngineeringText.txt'); // Adjusted path
+        const response = await fetch(`${import.meta.env.BASE_URL}data/promptEngineeringText.txt`);
         if (!response.ok) throw new Error(`File not found or network error: ${response.statusText}`);
         promptEngineeringText = await response.text();
         return promptEngineeringText;

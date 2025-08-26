@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
@@ -600,7 +604,7 @@ html.dark .prose pre code { /* For code blocks, already handled by your existing
     color: inherit; /* Will inherit from pre */
 }
 html.dark .prose ul > li::before { /* List bullets */
-     background-color: var(--md-sys-color-on-surface-variant);
+    background-color: var(--md-sys-color-on-surface-variant);
 }
 
 /* Adjust font size if needed globally for prose, or target specific elements */

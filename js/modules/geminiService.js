@@ -5,7 +5,7 @@ import { showError, clearError } from './utils.js'; // Assuming showError update
 
 let genAIInstance = null;
 let currentApiKeyForInstance = null;
-const MODEL_NAME = "gemini-1.5-flash-latest";
+const MODEL_NAME = "gemini-2.0-flash-latest";
 let promptEngineeringText = '';
 
 async function loadPromptEngineeringText() {

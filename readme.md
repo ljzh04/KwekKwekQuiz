@@ -23,7 +23,7 @@ Quick and simple quiz maker app.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/KwekKwekQuiz.git
+   git clone https://github.com/ljzh04/KwekKwekQuiz.git
    ```
 
 2. Navigate into the project directory:

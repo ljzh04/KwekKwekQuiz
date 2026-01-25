@@ -81,6 +81,27 @@ function handleApiKeyVisibility() {
     }
 }
 
+function handleQuizImageChange(event){
+    const file = event.target.files?.[0];
+    const previewImg = document.getElementById("preview");
+    if (!file || !previewImg) {
+        if (previewImg) previewImg.style.display = "none";
+        return;
+    }
+    if (!file.type.startsWith("image/")) {
+        previewImg.style.display = "none";
+        showError("Please select a valid image file.");
+        return;
+    }
+    clearError();
+    const reader = new FileReader();
+    reader.onload = () => {
+        previewImg.src = reader.result;
+        previewImg.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+}
+
 function globalKeydownHandler(event) {
     const activeElement = document.activeElement;
     if (!activeElement) return;
@@ -149,6 +170,7 @@ export function attachAllEventHandlers() {
     // if (DOM.homeBtn) DOM.homeBtn.addEventListener("click", showQuizSetupScreen); 
 
     // App Section Event Handlers
+    if (DOM.quizImageInput) DOM.quizImageInput.addEventListener("change", handleQuizImageChange);
     if (DOM.loadQuizBtn) DOM.loadQuizBtn.addEventListener("click", handleLoadQuizBtn);
     if (DOM.formatBtn) DOM.formatBtn.addEventListener("click", handleFormatJsonBtn);
     if (DOM.sampleBtn) DOM.sampleBtn.addEventListener("click", handleLoadSampleBtn);

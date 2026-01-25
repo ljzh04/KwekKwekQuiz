@@ -22,6 +22,18 @@ async function loadPromptEngineeringText() {
     }
 }
 
+function readImageAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Remove "data:image/png;base64," prefix
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
 function getGenAIClient() {
     // Read from the settings page input directly
@@ -60,14 +72,15 @@ export async function handleGenerateQuizRequest() {
     if (!DOM.apiKeySettingInput || !DOM.quizJsonInput || !DOM.errorDiv || !DOM.generateBtn) return; // CHANGED
 
     const userPrompt = DOM.quizJsonInput.value.trim();
+    const imageFile = DOM.quizImageInput?.files?.[0] || null;
     const apiKey = DOM.apiKeySettingInput.value.trim(); // CHANGED
 
     if (!apiKey) {
         showError("A Gemini API Key is required. Please set it in the Settings page. Get one from https://aistudio.google.com/"); // MODIFIED message
         return;
     }
-    if (!userPrompt) {
-        showError("Please enter a topic or prompt in the textarea to generate a quiz.");
+    if (!userPrompt && !imageFile) {
+        showError("Please enter a prompt or upload an image to generate a quiz.");
         return;
     }
 
@@ -88,8 +101,27 @@ export async function handleGenerateQuizRequest() {
 
     try {
         const model = client.getGenerativeModel({ model: MODEL_NAME });
-        const fullPrompt = basePrompt + userPrompt;
-        const result = await model.generateContent(fullPrompt);
+        let result;
+        if (imageFile) { // image +/ text mode
+            const imageBase64 = await readImageAsBase64(imageFile);
+            const promptParts = [
+                {
+                    text: basePrompt + (userPrompt || "Generate a quiz based on this image.")
+                },
+                {
+                    inlineData: {
+                    mimeType: imageFile.type,
+                    data: imageBase64
+                    }
+                }
+            ];
+            result = await model.generateContent({
+            contents: [{ role: "user", parts: promptParts }]
+            });
+        } else { // text-mode
+            const fullPrompt = basePrompt + userPrompt;
+            result = await model.generateContent(fullPrompt);
+        }
         const response = await result.response;
         const rawText = response.text();
 

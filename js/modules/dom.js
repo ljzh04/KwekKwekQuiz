@@ -12,6 +12,7 @@ export const mainTitle = document.getElementById('main-title');
 export const appSection = document.getElementById('app-section'); // Main container for app
 export const quizSetup = document.getElementById("quiz-setup");
 export const quizJsonInput = document.getElementById("quiz-json-input");
+export const quizImageInput = document.getElementById("quiz-image-input")
 export const formatBtn = document.getElementById("format-json-btn");
 // export const apiKeyInput = document.getElementById('api-key-input'); // In App section
 export const generateBtn = document.getElementById("generate-json-btn");
@@ -70,7 +71,7 @@ export const apiKeyVisibilityIcon = document.getElementById('api-key-visibility-
 // Check for critical missing elements (update this list as needed)
 const criticalElements = {
     sidebar, sidebarToggle, sidebarLinks, contentSections, mainTitle,
-    quizJsonInput, formatBtn, generateBtn, errorDiv, loadQuizBtn,
+    quizJsonInput, quizImageInput, formatBtn, generateBtn, errorDiv, loadQuizBtn,
     quizContainer, prevBtn, nextBtn, submitBtn, resultContainer,
     darkModeToggle, animationToggle, // Global toggles
     // apiKeyInput,

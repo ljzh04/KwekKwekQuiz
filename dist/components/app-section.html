@@ -44,6 +44,14 @@
           <span class="material-symbols-outlined text-lg">delete</span>
           <span class="">Delete</span>
         </button>
+        <button id="share-quiz-btn" class="md-filled-tonal-button bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-900 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">share</span>
+          <span class="">Share</span>
+        </button>
+        <button id="download-quiz-btn" class="md-filled-tonal-button bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 text-purple-900 dark:text-gray-200 font-medium py-3 px-4 rounded-md-xl transition-all duration-200 shadow-md-1 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-lg">download</span>
+          <span class="">Download</span>
+        </button>
       </div>
       <div id="error-message" class="text-md-error font-medium bg-md-error-container p-3 rounded-md-sm hidden" role="alert" aria-live="assertive"></div>
       <div class="md-text-field">
@@ -96,6 +104,69 @@
           <span class="material-symbols-outlined">refresh</span>
           <span>Restart Quiz</span>
           </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="p2p-share-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100">Share Quiz via P2P</h3>
+        <button id="close-share-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Receiver Code:</label>
+          <div id="my-peer-id" class="bg-gray-100 dark:bg-gray-700 p-3 rounded-md text-center font-mono text-lg font-bold text-blue-600 dark:text-blue-400">Generating...</div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Share this code with the person who will receive the quiz.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Connection Status:</label>
+          <div id="share-status" class="text-sm text-gray-600 dark:text-gray-400">Waiting for receiver...</div>
+        </div>
+        <div id="share-actions" class="flex gap-2">
+          <button id="start-receiving-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-md-xl flex-1">
+            <span class="material-symbols-outlined text-lg">play_circle</span>
+            Start Listening
+          </button>
+          <button id="stop-receiving-btn" class="md-filled-tonal-button bg-md-error-container hover:bg-opacity-80 text-md-error font-medium py-2 px-4 rounded-md-xl flex-1 hidden">
+            <span class="material-symbols-outlined text-lg">stop_circle</span>
+            Stop Listening
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="p2p-download-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-medium text-gray-900 dark:text-gray-100">Receive Quiz via P2P</h3>
+        <button id="close-download-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter Sender's Code:</label>
+          <input type="text" id="target-peer-id" placeholder="e.g., A3F7" class="w-full p-3 border-2 border-md-outline rounded-md-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:border-md-primary dark:focus:border-blue-400 focus:outline-none uppercase" maxlength="6">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status:</label>
+          <div id="download-status" class="text-sm text-gray-600 dark:text-gray-400">Ready to connect</div>
+        </div>
+        <div id="download-actions" class="flex gap-2">
+          <button id="connect-to-peer-btn" class="md-filled-button bg-md-primary hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-md-xl flex-1">
+            <span class="material-symbols-outlined text-lg">download</span>
+            Connect & Receive
+          </button>
+        </div>
+        <div id="received-json-container" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Received Quiz JSON:</label>
+          <pre id="received-json-preview" class="bg-gray-100 dark:bg-gray-700 p-3 rounded-md text-xs overflow-x-auto max-h-48"></pre>
+        </div>
       </div>
     </div>
   </div>

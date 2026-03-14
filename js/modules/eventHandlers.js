@@ -12,6 +12,14 @@ import {
     handleImportQuizzes,      // NEW
     handleClearAllQuizzes     // NEW
 } from './storageManager.js';
+import {
+    initializePeer,
+    startListening,
+    stopListening,
+    connectToPeer,
+    getReceivedData,
+    clearReceivedData
+} from './p2pShare.js';
 // import { showQuizSetupScreen } from './uiController.js'; // showQuizSetupScreen is for app internal, not global home
 import { handleGenerateQuizRequest } from './geminiService.js';
 import { startQuiz, handleSubmitAnswer, goToPrevQuestion, goToNextQuestion, restartCurrentQuiz } from './quizEngine.js';
@@ -106,7 +114,7 @@ function globalKeydownHandler(event) {
     const activeElement = document.activeElement;
     if (!activeElement) return;
     const activeTag = activeElement.tagName;
-    
+
     // Don't interfere if user is typing in any input/textarea globally
     if (activeTag === "INPUT" || activeTag === "TEXTAREA") {
         // Allow Enter for submit button in quiz player text input
@@ -165,9 +173,9 @@ export function attachAllEventHandlers() {
     // Global Header Toggles (Listeners attached in settingsController.initSettings)
     // if (DOM.darkModeToggle) DOM.darkModeToggle.addEventListener("click", toggleDarkMode);
     // if (DOM.animationToggle) DOM.animationToggle.addEventListener("click", toggleAnimations);
-    
+
     // Home button (now a sidebar link, handled by navigationController)
-    // if (DOM.homeBtn) DOM.homeBtn.addEventListener("click", showQuizSetupScreen); 
+    // if (DOM.homeBtn) DOM.homeBtn.addEventListener("click", showQuizSetupScreen);
 
     // App Section Event Handlers
     if (DOM.quizImageInput) DOM.quizImageInput.addEventListener("change", handleQuizImageChange);
@@ -178,6 +186,25 @@ export function attachAllEventHandlers() {
     if (DOM.deleteQuizBtn) DOM.deleteQuizBtn.addEventListener("click", handleDeleteQuiz);
     if (DOM.savedQuizzesSelect) DOM.savedQuizzesSelect.addEventListener("change", handleSavedQuizSelectChange);
     if (DOM.generateBtn) DOM.generateBtn.addEventListener("click", handleGenerateQuizRequest);
+
+    // P2P Share Modal Event Handlers
+    if (DOM.shareQuizBtn) DOM.shareQuizBtn.addEventListener("click", handleOpenShareModal);
+    if (DOM.downloadQuizBtn) DOM.downloadQuizBtn.addEventListener("click", handleOpenDownloadModal);
+    if (DOM.closeShareModalBtn) DOM.closeShareModalBtn.addEventListener("click", handleCloseShareModal);
+    if (DOM.startReceivingBtn) DOM.startReceivingBtn.addEventListener("click", handleStartReceiving);
+    if (DOM.stopReceivingBtn) DOM.stopReceivingBtn.addEventListener("click", handleStopReceiving);
+    if (DOM.closeDownloadModalBtn) DOM.closeDownloadModalBtn.addEventListener("click", handleCloseDownloadModal);
+    if (DOM.connectToPeerBtn) DOM.connectToPeerBtn.addEventListener("click", handleConnectToPeer);
+
+    // Add "Use Quiz" button dynamically after receiving
+    if (DOM.receivedJsonContainer) {
+        const useBtn = document.createElement('button');
+        useBtn.id = 'use-received-quiz-btn';
+        useBtn.className = 'md-filled-button bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md-xl w-full mt-3 flex items-center justify-center gap-2';
+        useBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span><span>Use This Quiz</span>';
+        useBtn.addEventListener("click", handleUseReceivedQuiz);
+        DOM.receivedJsonContainer.appendChild(useBtn);
+    }
 
     // Quiz Player Handlers
     if (DOM.prevBtn) DOM.prevBtn.addEventListener("click", goToPrevQuestion);
@@ -196,5 +223,65 @@ export function attachAllEventHandlers() {
 
     document.addEventListener("keydown", globalKeydownHandler);
 
+    // Initialize P2P system
+    initializePeer();
+
     console.log("All event listeners dynamically attached/verified.");
+}
+
+// P2P Share Modal Handlers
+export function handleOpenShareModal() {
+    if (!DOM.p2pShareModal) return;
+    clearReceivedData();
+    stopListening();
+    DOM.p2pShareModal.classList.remove('hidden');
+}
+
+export function handleCloseShareModal() {
+    if (DOM.p2pShareModal) {
+        DOM.p2pShareModal.classList.add('hidden');
+        stopListening();
+    }
+}
+
+export function handleStartReceiving() {
+    startListening();
+}
+
+export function handleStopReceiving() {
+    stopListening();
+}
+
+export function handleOpenDownloadModal() {
+    if (!DOM.p2pDownloadModal) return;
+    clearReceivedData();
+    DOM.p2pDownloadModal.classList.remove('hidden');
+}
+
+export function handleCloseDownloadModal() {
+    if (DOM.p2pDownloadModal) {
+        DOM.p2pDownloadModal.classList.add('hidden');
+        clearReceivedData();
+    }
+}
+
+export function handleConnectToPeer() {
+    if (!DOM.targetPeerId) return;
+    const targetId = DOM.targetPeerId.value.trim().toUpperCase();
+    connectToPeer(targetId);
+}
+
+export function handleUseReceivedQuiz() {
+    const data = getReceivedData();
+    if (data && DOM.quizJsonInput) {
+        DOM.quizJsonInput.value = JSON.stringify(data, null, 2);
+        if (DOM.quizNameInput) {
+            DOM.quizNameInput.value = "";
+            delete DOM.quizNameInput.dataset.editingExisting;
+        }
+        showSuccess('Quiz loaded into editor!');
+        handleCloseDownloadModal();
+    } else {
+        showError('No quiz data received yet.');
+    }
 }

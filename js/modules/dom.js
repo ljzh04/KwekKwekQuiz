@@ -21,6 +21,8 @@ export const loadQuizBtn = document.getElementById("load-quiz-btn");
 export const sampleBtn = document.getElementById("load-sample-btn");
 export const saveQuizBtn = document.getElementById("save-quiz-btn");
 export const deleteQuizBtn = document.getElementById("delete-quiz-btn");
+export const shareQuizBtn = document.getElementById("share-quiz-btn");
+export const downloadQuizBtn = document.getElementById("download-quiz-btn");
 export const savedQuizzesSelect = document.getElementById("saved-quizzes");
 export const quizNameInput = document.getElementById('quiz-name-input');
 // export const homeBtn = document.getElementById("home-btn"); // Removed as sidebar 'App' link replaces it
@@ -41,6 +43,21 @@ export const resultContainer = document.getElementById("result-container");
 export const summaryContainer = document.getElementById("summary-container");
 export const restartBtn = document.getElementById("restart-btn");
 export const backToSetupBtn = document.getElementById("back-to-setup-btn");
+
+// --- P2P  Modals ---
+export const p2pShareModal = document.getElementById("p2p-share-modal");
+export const p2pDownloadModal = document.getElementById("p2p-download-modal");
+export const myPeerId = document.getElementById("my-peer-id");
+export const shareStatus = document.getElementById("share-status");
+export const startReceivingBtn = document.getElementById("start-receiving-btn");
+export const stopReceivingBtn = document.getElementById("stop-receiving-btn");
+export const closeShareModalBtn = document.getElementById("close-share-modal");
+export const targetPeerId = document.getElementById("target-peer-id");
+export const downloadStatus = document.getElementById("download-status");
+export const connectToPeerBtn = document.getElementById("connect-to-peer-btn");
+export const closeDownloadModalBtn = document.getElementById("close-download-modal");
+export const receivedJsonContainer = document.getElementById("received-json-container");
+export const receivedJsonPreview = document.getElementById("received-json-preview");
 
 // --- Settings Section ---
 export const settingsSection = document.getElementById('settings-section');

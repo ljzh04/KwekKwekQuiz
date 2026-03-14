@@ -1,0 +1,174 @@
+/* Material Design Progress Indicator Components */
+
+/* Linear Progress Bar */
+.md-linear-progress {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background-color: var(--md-sys-color-surface-variant);
+}
+
+.md-linear-progress-bar {
+  height: 100%;
+  border-radius: 2px;
+  background-color: var(--md-sys-color-primary);
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.md-linear-progress-bar.indeterminate {
+  width: 30%;
+  animation: md-linear-progress-indeterminate 2s infinite linear;
+}
+
+@keyframes md-linear-progress-indeterminate {
+  0% {
+    left: -30%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.md-linear-progress-bar.indeterminate {
+  position: absolute;
+  animation: md-linear-progress-indeterminate 2s infinite linear;
+}
+
+/* Circular Progress */
+.md-circular-progress {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.md-circular-progress__svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.md-circular-progress__track {
+  fill: none;
+  stroke: var(--md-sys-color-surface-variant);
+  stroke-width: 4;
+}
+
+.md-circular-progress__bar {
+  fill: none;
+  stroke: var(--md-sys-color-primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.md-circular-progress__label {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Progress Variants */
+.md-linear-progress--secondary .md-linear-progress-bar {
+  background-color: var(--md-sys-color-secondary);
+}
+
+.md-linear-progress--tertiary .md-linear-progress-bar {
+  background-color: var(--md-sys-color-tertiary);
+}
+
+.md-linear-progress--error .md-linear-progress-bar {
+  background-color: var(--md-sys-color-error);
+}
+
+/* Progress Sizes */
+.md-linear-progress--small {
+  height: 2px;
+}
+
+.md-linear-progress--large {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.md-linear-progress--large .md-linear-progress-bar {
+  border-radius: 4px;
+}
+
+/* Circular Progress Sizes */
+.md-circular-progress--small {
+  width: 24px;
+  height: 24px;
+}
+
+.md-circular-progress--large {
+  width: 56px;
+  height: 56px;
+}
+
+.md-circular-progress--large .md-circular-progress__bar {
+  stroke-width: 6;
+}
+
+/* Buffer Progress (shows both primary and buffer) */
+.md-linear-progress--buffer {
+  position: relative;
+}
+
+.md-linear-progress--buffer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--buffer-width, 0%);
+  background-color: var(--md-sys-color-surface-variant);
+  border-radius: inherit;
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.md-linear-progress--buffer .md-linear-progress-bar {
+  position: relative;
+  z-index: 1;
+}
+
+/* Query Progress (for quiz) */
+.md-query-progress {
+  margin-bottom: 1.5rem;
+}
+
+.md-query-progress__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.md-query-progress__label {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-query-progress__value {
+  font: var(--md-sys-typescale-label-large-font);
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+}
+
+.md-query-progress__track {
+  height: 8px;
+  background-color: var(--md-sys-color-surface-variant);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.md-query-progress__bar {
+  height: 100%;
+  background-color: var(--md-sys-color-primary);
+  border-radius: 4px;
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}

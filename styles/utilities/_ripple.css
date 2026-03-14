@@ -1,0 +1,53 @@
+/* Ripple Effect Utilities */
+
+/* Ripple Container */
+.md-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-ripple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized),
+              height var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
+}
+
+.md-ripple:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Ripple Color Variants */
+.md-ripple--primary::before {
+  background: rgba(103, 80, 164, 0.2);
+}
+
+.md-ripple--secondary::before {
+  background: rgba(98, 91, 113, 0.2);
+}
+
+.md-ripple--error::before {
+  background: rgba(186, 26, 26, 0.2);
+}
+
+.md-ripple--success::before {
+  background: rgba(30, 150, 60, 0.2);
+}
+
+/* Disable ripple when animations are disabled */
+.animations-disabled .md-ripple::before {
+  transition: none !important;
+}
+
+.animations-disabled .md-ripple:active::before {
+  width: 0;
+  height: 0;
+}

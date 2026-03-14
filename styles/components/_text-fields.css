@@ -1,0 +1,186 @@
+/* Material Design Text Field Components */
+
+/* Text Field Container */
+.md-text-field {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+/* Text Field Input, Textarea, Select */
+.md-text-field input,
+.md-text-field textarea,
+.md-text-field select {
+  font: var(--md-sys-typescale-body-large-font);
+  transition: border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  border: 1px solid var(--md-sys-color-outline);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  padding: 12px 16px;
+  border-radius: 4px;
+  width: 100%;
+  min-height: 40px;
+}
+
+.md-text-field input:hover,
+.md-text-field textarea:hover,
+.md-text-field select:hover {
+  border-color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-text-field input:focus,
+.md-text-field textarea:focus,
+.md-text-field select:focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+  outline: none;
+}
+
+.md-text-field input:disabled,
+.md-text-field textarea:disabled,
+.md-text-field select:disabled {
+  background-color: var(--md-sys-color-surface-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.md-text-field input::placeholder,
+.md-text-field textarea::placeholder,
+.md-text-field select::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.6;
+}
+
+/* Text Field Label */
+.md-text-field label {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Text Field Helper Text */
+.md-text-field-helper {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Text Field with Icon */
+.md-text-field--with-icon {
+  position: relative;
+}
+
+.md-text-field--with-icon .md-text-field__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--md-sys-color-on-surface-variant);
+  pointer-events: none;
+}
+
+.md-text-field--with-icon input,
+.md-text-field--with-icon textarea,
+.md-text-field--with-icon select {
+  padding-left: 40px;
+}
+
+/* Text Field with Trailing Icon */
+.md-text-field--with-trailing-icon {
+  position: relative;
+}
+
+.md-text-field--with-trailing-icon .md-text-field__trailing-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  transition: color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-text-field--with-trailing-icon .md-text-field__trailing-icon:hover {
+  color: var(--md-sys-color-primary);
+}
+
+.md-text-field--with-trailing-icon input,
+.md-text-field--with-trailing-icon textarea,
+.md-text-field--with-trailing-icon select {
+  padding-right: 40px;
+}
+
+/* Textarea Specific */
+.md-text-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Select Specific */
+.md-text-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2349454F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* Text Field Error State */
+.md-text-field--error input,
+.md-text-field--error textarea,
+.md-text-field--error select {
+  border-color: var(--md-sys-color-error);
+}
+
+.md-text-field--error input:focus,
+.md-text-field--error textarea:focus,
+.md-text-field--error select:focus {
+  box-shadow: 0 0 0 1px var(--md-sys-color-error);
+}
+
+.md-text-field__error-text {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-error);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Text Field Success State */
+.md-text-field--success input,
+.md-text-field--success textarea,
+.md-text-field--success select {
+  border-color: var(--md-sys-color-primary);
+}
+
+/* Text Field Sizes */
+.md-text-field--small input,
+.md-text-field--small textarea,
+.md-text-field--small select {
+  min-height: 32px;
+  padding: 8px 12px;
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.md-text-field--large input,
+.md-text-field--large textarea,
+.md-text-field--large select {
+  min-height: 48px;
+  padding: 14px 20px;
+  font: var(--md-sys-typescale-body-large-font);
+}
+
+/* Text Field Full Width */
+.md-text-field--full input,
+.md-text-field--full textarea,
+.md-text-field--full select {
+  width: 100%;
+}

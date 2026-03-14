@@ -9,7 +9,9 @@ export function initNavigation() {
     }
 
     // --- Sidebar Toggle ---
-    DOM.sidebarToggle.addEventListener('click', () => {
+    DOM.sidebarToggle.addEventListener('click', (e) => {
+        console.log("Sidebar toggle clicked");
+        e.stopPropagation();
         DOM.sidebar.classList.toggle('-translate-x-full');
         DOM.sidebar.classList.toggle('open');
         DOM.sidebarOverlay.classList.toggle('hidden');

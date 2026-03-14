@@ -1,0 +1,245 @@
+/* Material Design Button Components */
+
+/* Base Button Shared Styles */
+.md-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 20px;
+  font: var(--md-sys-typescale-label-large-font);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  will-change: background-color, box-shadow, transform;
+  overflow: hidden;
+}
+
+.md-button:disabled {
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Filled Button */
+.md-filled-button {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.md-filled-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+}
+
+.md-filled-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.md-filled-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.3);
+}
+
+.md-filled-button:disabled {
+  background-color: rgba(28, 27, 31, 0.12) !important;
+  color: rgba(28, 27, 31, 0.38) !important;
+}
+
+html.dark .md-filled-button:disabled {
+  background-color: rgba(230, 225, 229, 0.12) !important;
+  color: rgba(230, 225, 229, 0.38) !important;
+}
+
+/* Filled Tonal Button */
+.md-filled-tonal-button {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-filled-tonal-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+}
+
+.md-filled-tonal-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.md-filled-tonal-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(98, 91, 113, 0.3);
+}
+
+.md-filled-tonal-button:disabled {
+  background-color: rgba(28, 27, 31, 0.12) !important;
+  color: rgba(28, 27, 31, 0.38) !important;
+}
+
+html.dark .md-filled-tonal-button:disabled {
+  background-color: rgba(230, 225, 229, 0.12) !important;
+  color: rgba(230, 225, 229, 0.38) !important;
+}
+
+/* Outlined Button */
+.md-outlined-button {
+  background-color: transparent;
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-primary);
+}
+
+.md-outlined-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  background-color: rgba(103, 80, 164, 0.08);
+}
+
+.md-outlined-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.md-outlined-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(121, 116, 126, 0.3);
+}
+
+.md-outlined-button:disabled {
+  border-color: rgba(28, 27, 31, 0.12) !important;
+  color: rgba(28, 27, 31, 0.38) !important;
+}
+
+html.dark .md-outlined-button:disabled {
+  border-color: rgba(230, 225, 229, 0.12) !important;
+  color: rgba(230, 225, 229, 0.38) !important;
+}
+
+/* Icon Button */
+.md-icon-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background-color: transparent;
+  border-radius: 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  will-change: background-color, transform;
+  overflow: hidden;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-icon-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  background-color: rgba(121, 116, 126, 0.08);
+}
+
+.md-icon-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.md-icon-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(121, 116, 126, 0.3);
+}
+
+.md-icon-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Button Sizes */
+.md-button--small {
+  min-height: 32px;
+  padding: 8px 16px;
+  font: var(--md-sys-typescale-label-medium-font);
+}
+
+.md-button--large {
+  min-height: 48px;
+  padding: 12px 28px;
+  font: var(--md-sys-typescale-label-large-font);
+}
+
+/* Button with Icon Only */
+.md-button--icon-only {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+}
+
+.md-button--icon-only.md-button--large {
+  width: 48px;
+  min-height: 48px;
+}
+
+/* Ripple Effect Container */
+.md-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-ripple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized),
+              height var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
+}
+
+.md-ripple:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Full Width Button */
+.md-button--full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Button Group */
+.md-button-group {
+  display: inline-flex;
+  gap: 0;
+}
+
+.md-button-group .md-button {
+  border-radius: 0;
+}
+
+.md-button-group .md-button:first-child {
+  border-radius: 20px 0 0 20px;
+}
+
+.md-button-group .md-button:last-child {
+  border-radius: 0 20px 20px 0;
+}
+
+.md-button-group .md-button:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.md-button-group .md-button:not(:last-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html.dark .md-button-group .md-button:not(:last-child) {
+  border-right-color: rgba(255, 255, 255, 0.1);
+}

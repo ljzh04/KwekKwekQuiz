@@ -1,0 +1,114 @@
+/* State Layer Utilities (hover, focus, active) */
+
+/* State Layer Base */
+.md-state-layer {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-state-layer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+}
+
+.md-state-layer:hover::before {
+  opacity: 0.08;
+}
+
+.md-state-layer:focus-visible::before {
+  opacity: 0.12;
+}
+
+.md-state-layer:active::before {
+  opacity: 0.16;
+}
+
+/* State Layer Color Variants */
+.md-state-layer--primary {
+  color: var(--md-sys-color-primary);
+}
+
+.md-state-layer--secondary {
+  color: var(--md-sys-color-secondary);
+}
+
+.md-state-layer--tertiary {
+  color: var(--md-sys-color-tertiary);
+}
+
+.md-state-layer--surface {
+  color: var(--md-sys-color-surface);
+}
+
+.md-state-layer--error {
+  color: var(--md-sys-color-error);
+}
+
+/* Hover State Utility */
+.md-hover {
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-hover:hover {
+  background-color: rgba(103, 80, 164, 0.08);
+}
+
+html.dark .md-hover:hover {
+  background-color: rgba(208, 188, 255, 0.08);
+}
+
+/* Focus State Utility */
+.md-focus-visible:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* Active State Utility */
+.md-active:active {
+  transform: scale(0.98);
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Disabled State Utility */
+.md-disabled {
+  opacity: 0.38;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+/* Interactive States Combined */
+.md-interactive {
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-interactive:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.md-interactive:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Reduced motion adjustments */
+@media (prefers-reduced-motion: reduce) {
+  .md-state-layer::before,
+  .md-hover,
+  .md-active,
+  .md-interactive {
+    transition: none;
+  }
+
+  .md-interactive:hover:not(:disabled) {
+    transform: none;
+  }
+}

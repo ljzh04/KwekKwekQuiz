@@ -1,0 +1,183 @@
+/* Typography Styles */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Mono&display=swap');
+
+/* Prose styles for documentation and content */
+.prose {
+  font: var(--md-sys-typescale-body-large-font);
+  color: var(--md-sys-color-on-surface);
+  line-height: 1.6;
+}
+
+.prose p,
+.prose li {
+  margin-bottom: 1rem;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.prose strong {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.prose h1 {
+  font: var(--md-sys-typescale-display-large-font);
+}
+
+.prose h2 {
+  font: var(--md-sys-typescale-display-medium-font);
+}
+
+.prose h3 {
+  font: var(--md-sys-typescale-display-small-font);
+}
+
+.prose h4 {
+  font: var(--md-sys-typescale-headline-large-font);
+}
+
+.prose h5 {
+  font: var(--md-sys-typescale-headline-medium-font);
+}
+
+.prose h6 {
+  font: var(--md-sys-typescale-headline-small-font);
+}
+
+.prose a {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  transition: color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose code {
+  color: var(--md-sys-color-on-surface-variant);
+  background-color: var(--md-sys-color-surface-container-high);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.prose pre {
+  margin: 1rem 0;
+}
+
+.prose pre code {
+  color: inherit;
+  background: none;
+  padding: 0;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose li::marker {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--md-sys-color-primary);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-style: italic;
+}
+
+.prose img {
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  margin: 2rem 0;
+}
+
+/* Material Design Typography Utilities */
+.text-display-large {
+  font: var(--md-sys-typescale-display-large-font);
+}
+
+.text-display-medium {
+  font: var(--md-sys-typescale-display-medium-font);
+}
+
+.text-display-small {
+  font: var(--md-sys-typescale-display-small-font);
+}
+
+.text-headline-large {
+  font: var(--md-sys-typescale-headline-large-font);
+}
+
+.text-headline-medium {
+  font: var(--md-sys-typescale-headline-medium-font);
+}
+
+.text-headline-small {
+  font: var(--md-sys-typescale-headline-small-font);
+}
+
+.text-title-large {
+  font: var(--md-sys-typescale-title-large-font);
+}
+
+.text-title-medium {
+  font: var(--md-sys-typescale-title-medium-font);
+}
+
+.text-title-small {
+  font: var(--md-sys-typescale-title-small-font);
+}
+
+.text-body-large {
+  font: var(--md-sys-typescale-body-large-font);
+}
+
+.text-body-medium {
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.text-body-small {
+  font: var(--md-sys-typescale-body-small-font);
+}
+
+.text-label-large {
+  font: var(--md-sys-typescale-label-large-font);
+}
+
+.text-label-medium {
+  font: var(--md-sys-typescale-label-medium-font);
+}
+
+.text-label-small {
+  font: var(--md-sys-typescale-label-small-font);
+}

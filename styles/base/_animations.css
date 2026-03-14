@@ -1,0 +1,127 @@
+/* Animation Keyframes & Motion Utilities */
+
+/* Pulse Animations */
+@keyframes md-pulse-primary {
+  0% {
+    box-shadow: 0 0 0 0 rgba(103, 80, 164, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(103, 80, 164, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(103, 80, 164, 0);
+  }
+}
+
+@keyframes md-pulse-error {
+  0% {
+    box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(186, 26, 26, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(186, 26, 26, 0);
+  }
+}
+
+/* Pulse Utility Classes */
+.pulse-primary,
+.md-pulse-primary {
+  animation: md-pulse-primary var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-standard) forwards;
+}
+
+.pulse-error,
+.md-pulse-error {
+  animation: md-pulse-error var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-standard) forwards;
+}
+
+/* Fade In Animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fade-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+/* Slide Up Animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slide-up var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+/* Scale In Animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scale-in var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized);
+}
+
+/* Spin Animation (for loading indicators) */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Animation Control Classes */
+.animations-disabled * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+.animations-disabled button:hover {
+  transform: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+}
+
+.animations-disabled button:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.animations-disabled .pulse-primary,
+.animations-disabled .pulse-error,
+.animations-disabled .md-pulse-primary,
+.animations-disabled .md-pulse-error {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+.animations-disabled .md-ripple::before {
+  transition: none !important;
+}

@@ -31,6 +31,7 @@ function handleLoadQuizBtn() {
     let data;
     try {
         data = JSON.parse(DOM.quizJsonInput.value);
+        updateModeIndicator();
     } catch (e) {
         showError("Invalid JSON format. Please correct and try again.");
         return;
@@ -53,11 +54,13 @@ function handleFormatJsonBtn() {
     try {
         const parsedJson = JSON.parse(input);
         DOM.quizJsonInput.value = JSON.stringify(parsedJson, null, 2);
+        updateModeIndicator();
         showSuccess("JSON formatted successfully!");
     } catch (jsonError) {
         try {
             const parsedYaml = jsyaml.load(input);
             DOM.quizJsonInput.value = JSON.stringify(parsedYaml, null, 2);
+            updateModeIndicator();
             showSuccess("YAML converted to JSON successfully!");
         } catch (yamlError) {
             showError(`Invalid JSON or YAML.\nJSON Error: ${jsonError.message}\nYAML Error: ${yamlError.message}`);
@@ -69,6 +72,7 @@ function handleLoadSampleBtn() {
     clearError();
     if (DOM.quizJsonInput) {
         DOM.quizJsonInput.value = State.sampleQuizJson;
+        updateModeIndicator();
     }
     if (DOM.quizNameInput) {
         DOM.quizNameInput.value = "Sample Quiz";
@@ -91,23 +95,295 @@ function handleApiKeyVisibility() {
 
 function handleQuizImageChange(event){
     const file = event.target.files?.[0];
-    const previewImg = document.getElementById("preview");
-    if (!file || !previewImg) {
-        if (previewImg) previewImg.style.display = "none";
+    if (!file || !DOM.previewImg) {
+        if (DOM.previewContainer) DOM.previewContainer.classList.add('hidden');
         return;
     }
     if (!file.type.startsWith("image/")) {
-        previewImg.style.display = "none";
+        if (DOM.previewContainer) DOM.previewContainer.classList.add('hidden');
         showError("Please select a valid image file.");
         return;
     }
     clearError();
     const reader = new FileReader();
-    reader.onload = () => {
-        previewImg.src = reader.result;
-        previewImg.style.display = "block";
+    reader.onload = function(e){
+        DOM.previewImg.src = e.target.result;
+        DOM.previewContainer.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
+}
+function handleQuizImageRemove(event){
+    if (DOM.quizImageInput) DOM.quizImageInput.value = '';
+    if (DOM.previewContainer) DOM.previewContainer.classList.add('hidden');
+}
+
+function updateModeIndicator() {
+    if (!DOM.modeIndicator || !DOM.quizJsonInput) return;
+    
+    const input = DOM.quizJsonInput.value.trim();
+    if (input === "") {
+        DOM.modeIndicator.textContent = "Mode: Prompt";
+        return;
+    }
+    
+    try {
+        JSON.parse(input);
+        DOM.modeIndicator.textContent = "Mode: Editor";
+    } catch (e) {
+        DOM.modeIndicator.textContent = "Mode: Prompt";
+    }
+}
+
+export function initAutocomplete() {
+    if (!DOM.quizJsonInput || !DOM.autocompleteDropdown) return;
+
+    const systemKeys = ["type", "question", "options", "correct"];
+    const typeValues = ["true-false", "multiple-choice", "fill-in-the-blank", "short-answer"];
+    const bracketPairs = { '{': '}', '[': ']', '(': ')', '"': '"', "'": "'" };
+
+    let currentSuggestions = [];
+    let selectedIndex = 0;
+
+    function showSuggestions(suggestions) {
+        if (suggestions.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        currentSuggestions = suggestions;
+        // Keep index 0 highlighted unless we are already navigating
+        if (selectedIndex < 0 || selectedIndex >= suggestions.length) {
+            selectedIndex = 0;
+        }
+
+        DOM.autocompleteDropdown.innerHTML = suggestions
+            .map((s, index) => `
+                <div class="autocomplete-item px-3 py-2 cursor-pointer text-sm font-mono dark:text-gray-200
+                    ${index === selectedIndex ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}">
+                    ${s}
+                </div>
+            `)
+            .join('');
+        
+        DOM.autocompleteDropdown.classList.remove('hidden');
+        positionDropdown();
+    }
+
+    function hideSuggestions() {
+        DOM.autocompleteDropdown.classList.add('hidden');
+        currentSuggestions = [];
+        selectedIndex = 0; 
+    }
+
+    function getSuggestions(query) {
+        const text = DOM.quizJsonInput.value;
+        const pos = DOM.quizJsonInput.selectionStart;
+        const textBefore = text.substring(0, pos).trim();
+        
+        const cleanQuery = query.replace(/['"]/g, '').toLowerCase();
+
+        const structuralContext = textBefore.substring(0, textBefore.length - query.length).trim();
+        const lastChar = structuralContext.slice(-1);
+
+        if (lastChar === ':') {
+            const matchKey = structuralContext.match(/"(\w+)"\s*:\s*$/);
+            const currentKey = matchKey ? matchKey[1] : null;
+
+            if (currentKey === 'type') {
+                return typeValues.filter(v => v.includes(cleanQuery));
+            }
+            if (currentKey === 'correct') {
+                return ["true", "false"].filter(v => v.includes(cleanQuery));
+            }
+            return []; 
+        }
+
+        if (lastChar === '{' || lastChar === ',') {
+            return systemKeys.filter(key => key.toLowerCase().includes(cleanQuery));
+        }
+
+        return systemKeys.filter(key => key.toLowerCase().includes(cleanQuery));
+    }
+
+    function getCursorPos() {
+        return DOM.quizJsonInput.selectionStart || 0;
+    }
+
+    function getContext() {
+        const text = DOM.quizJsonInput.value;
+        const pos = getCursorPos();
+        const beforeCursor = text.substring(0, pos);
+        const afterCursor = text.substring(pos);
+
+        return { beforeCursor, afterCursor, position: pos };
+    }
+
+    function positionDropdown() {
+        const coords = getCaretCoordinates();
+        
+        DOM.autocompleteDropdown.style.top = `${coords.top + 20}px`;
+        DOM.autocompleteDropdown.style.left = `${coords.left}px`;
+    }
+
+    function getCaretCoordinates() {
+        const textarea = DOM.quizJsonInput;
+        const pos = textarea.selectionStart;
+
+        const mirror = document.createElement('div');
+        const style = window.getComputedStyle(textarea);
+        
+        const properties = [
+            'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing',
+            'lineHeight', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+            'borderWidth', 'boxSizing', 'width', 'whiteSpace', 'wordWrap'
+        ];
+        
+        properties.forEach(prop => mirror.style[prop] = style[prop]);
+        
+        mirror.style.position = 'absolute';
+        mirror.style.visibility = 'hidden';
+        mirror.style.top = '0';
+        mirror.style.left = '0';
+        mirror.style.height = 'auto';
+
+        const content = textarea.value.substring(0, pos);
+        mirror.textContent = content;
+
+        const marker = document.createElement('span');
+        marker.textContent = textarea.value.substring(pos) || '.';
+        mirror.appendChild(marker);
+
+        document.body.appendChild(mirror);
+        
+        const rect = marker.getBoundingClientRect();
+        const textareaRect = textarea.getBoundingClientRect();
+
+        const top = marker.offsetTop - textarea.scrollTop;
+        const left = marker.offsetLeft - textarea.scrollLeft;
+
+        document.body.removeChild(mirror);
+
+        return { top, left };
+    }
+
+    function insertSelection(selected) {
+        const text = DOM.quizJsonInput.value;
+        const pos = DOM.quizJsonInput.selectionStart;
+        
+        const textBefore = text.substring(0, pos);
+        const startOfWord = textBefore.search(/["'\w-]+$/);
+        const textAfter = text.substring(pos);
+        const endOfWord = textAfter.search(/[^"'\w-]/);
+        const actualEnd = endOfWord === -1 ? text.length : pos + endOfWord;
+
+        const replacement = `"${selected}"`;
+        
+        const newText = text.substring(0, startOfWord) + replacement + text.substring(actualEnd);
+        DOM.quizJsonInput.value = newText;
+        
+        const newPos = startOfWord + replacement.length;
+        DOM.quizJsonInput.setSelectionRange(newPos, newPos);
+        hideSuggestions();
+    }
+
+    function handleInput(e) {
+        const text = DOM.quizJsonInput.value;
+        const pos = DOM.quizJsonInput.selectionStart;
+        const lastChar = text[pos - 1];
+
+        if (bracketPairs[lastChar] && e.inputType !== 'deleteContentBackward') {
+            const nextChar = text[pos];
+            if (nextChar !== bracketPairs[lastChar]) {
+                DOM.quizJsonInput.value = text.substring(0, pos) + bracketPairs[lastChar] + text.substring(pos);
+                DOM.quizJsonInput.setSelectionRange(pos, pos);
+            }
+        }
+
+        const beforeCursor = text.substring(0, pos);
+        const query = beforeCursor.split(/[\s{}[\],:]+/).pop();
+        
+        if (query.length > 0) {
+            selectedIndex = 0; 
+            showSuggestions(getSuggestions(query));
+        } else {
+            hideSuggestions();
+        }
+    }
+
+    function handleKeyDown(e) {
+        const isDropdownOpen = !DOM.autocompleteDropdown.classList.contains('hidden');
+        const textarea = DOM.quizJsonInput;
+        const pos = textarea.selectionStart;
+        const text = textarea.value;
+
+        if (e.key === 'Backspace') {
+            const charBefore = text[pos - 1];
+            const charAfter = text[pos];
+
+            if (bracketPairs[charBefore] === charAfter) {
+                e.preventDefault();
+        
+                const newText = text.substring(0, pos - 1) + text.substring(pos + 1);
+                textarea.value = newText;
+                
+                const newPos = pos - 1;
+                textarea.setSelectionRange(newPos, newPos);
+                return;
+            }
+        }  
+        if (isDropdownOpen) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex + 1) % currentSuggestions.length;
+                showSuggestions(currentSuggestions);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+                showSuggestions(currentSuggestions);
+            } else if (e.key === 'Tab' || e.key === 'Enter') {
+                e.preventDefault();
+                insertSelection(currentSuggestions[selectedIndex]);
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
+            }
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = DOM.quizJsonInput.selectionStart;
+            const end = DOM.quizJsonInput.selectionEnd;
+            DOM.quizJsonInput.setRangeText("    ", start, end, 'end');
+        }
+    }
+
+    function handleClickOutside(e) {
+        if (!DOM.autocompleteDropdown.contains(e.target) && !DOM.quizJsonInput.contains(e.target)) {
+            hideSuggestions();
+        }
+    }
+
+    function handleClickOnSuggestion(e) {
+        if (e.target.classList.contains('autocomplete-item')) {
+            const selected = e.target.textContent;
+            const context = getContext();
+            const query = context.beforeCursor.split(/[\s{}[\],:]+/).pop();
+            const newText = context.beforeCursor.slice(0, -query.length) + selected + context.afterCursor;
+            DOM.quizJsonInput.value = newText;
+            DOM.quizJsonInput.setSelectionRange(context.position - query.length + selected.length, context.position - query.length + selected.length);
+            hideSuggestions();
+        }
+    }
+
+    DOM.quizJsonInput.addEventListener('input', handleInput);
+    DOM.quizJsonInput.addEventListener('keydown', handleKeyDown);
+    DOM.autocompleteDropdown.addEventListener('click', (e) => {
+        const item = e.target.closest('.autocomplete-item');
+        if (item) {
+            const index = Array.from(DOM.autocompleteDropdown.children).indexOf(item);
+            insertSelection(currentSuggestions[index]);
+        }
+    });
+    document.addEventListener('click', handleClickOutside);
+
+    console.log("Autocomplete initialized");
 }
 
 function globalKeydownHandler(event) {
@@ -179,7 +455,12 @@ export function attachAllEventHandlers() {
 
     // App Section Event Handlers
     if (DOM.quizImageInput) DOM.quizImageInput.addEventListener("change", handleQuizImageChange);
+    if (DOM.removeImgBtn) DOM.removeImgBtn.addEventListener("click", handleQuizImageRemove);
     if (DOM.loadQuizBtn) DOM.loadQuizBtn.addEventListener("click", handleLoadQuizBtn);
+    if (DOM.quizJsonInput) {
+        DOM.quizJsonInput.addEventListener("input", updateModeIndicator);
+        DOM.quizJsonInput.addEventListener("change", updateModeIndicator);
+    }
     if (DOM.formatBtn) DOM.formatBtn.addEventListener("click", handleFormatJsonBtn);
     if (DOM.sampleBtn) DOM.sampleBtn.addEventListener("click", handleLoadSampleBtn);
     if (DOM.saveQuizBtn) DOM.saveQuizBtn.addEventListener("click", handleSaveQuiz);
@@ -225,6 +506,9 @@ export function attachAllEventHandlers() {
 
     // Initialize P2P system
     initializePeer();
+
+    // Initialize autocomplete
+    initAutocomplete();
 
     console.log("All event listeners dynamically attached/verified.");
 }
@@ -275,6 +559,7 @@ export function handleUseReceivedQuiz() {
     const data = getReceivedData();
     if (data && DOM.quizJsonInput) {
         DOM.quizJsonInput.value = JSON.stringify(data, null, 2);
+        updateModeIndicator();
         if (DOM.quizNameInput) {
             DOM.quizNameInput.value = "";
             delete DOM.quizNameInput.dataset.editingExisting;

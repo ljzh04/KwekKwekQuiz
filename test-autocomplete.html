@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocomplete Test - Fixed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .autocomplete-dropdown {
+            position: absolute;
+            z-index: 50;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: 200px;
+            overflow-y: auto;
+            min-width: 150px;
+        }
+        .autocomplete-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .autocomplete-item:hover, .autocomplete-item.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+        /* Hidden mirror used for caret coordinates */
+        #container-mirror {
+            visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="p-8 bg-gray-50">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">JSON Autocomplete</h1>
+        <div class="relative">
+            <textarea id="test-input" rows="12" 
+                class="w-full p-4 border rounded font-mono text-sm shadow-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                placeholder='Try typing "ty...'></textarea>
+            <div id="autocomplete-dropdown" class="autocomplete-dropdown hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('test-input');
+        const dropdown = document.getElementById('autocomplete-dropdown');
+
+        const systemKeys = ["type", "question", "options", "correct", "description", "title", "difficulty", "category", "explanation", "timeLimit", "points"];
+        const typeValues = ["true-false", "multiple-choice", "fill-in-the-blank", "short-answer", "essay", "matching", "ordering", "image"];
+        const bracketPairs = { '{': '}', '[': ']', '"': '"', "'": "'" };
+
+        let currentSuggestions = [];
+        let selectedIndex = -1;
+
+        // --- Core Logic ---
+
+        function getSuggestions(query) {
+            if (!query) return [];
+            const cleanQuery = query.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            if (!cleanQuery) return [];
+
+            // If the user is typing inside a "type" value context
+            const fullText = textarea.value.substring(0, textarea.selectionStart);
+            if (fullText.includes('"type"')) {
+                const filtered = typeValues.filter(v => v.includes(cleanQuery));
+                if (filtered.length > 0) return filtered;
+            }
+
+            return systemKeys.filter(key => key.toLowerCase().includes(cleanQuery));
+        }
+
+        function renderDropdown(suggestions) {
+            if (suggestions.length === 0) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+            currentSuggestions = suggestions;
+            if (selectedIndex === -1) {
+                selectedIndex = 0; 
+            }
+            dropdown.innerHTML = suggestions.map((s, i) => `
+                <div class="autocomplete-item ${i === selectedIndex ? 'selected' : ''}" data-index="${i}">
+                    ${s}
+                </div>
+            `).join('');
+            dropdown.classList.remove('hidden');
+            positionDropdown();
+        }
+
+        function positionDropdown() {
+            const { offsetLeft, offsetTop } = getCaretCoordinates();
+            dropdown.style.top = `${offsetTop + 24}px`; // Offset below text
+            dropdown.style.left = `${offsetLeft}px`;
+        }
+
+        // Helper to find exactly where the cursor is visually
+        function getCaretCoordinates() {
+            const div = document.createElement('div');
+            const style = window.getComputedStyle(textarea);
+            for (let prop of style) div.style[prop] = style[prop];
+            
+            div.style.position = 'absolute';
+            div.style.visibility = 'hidden';
+            div.style.height = 'auto';
+            div.style.width = textarea.clientWidth + 'px';
+            
+            const textContent = textarea.value.substring(0, textarea.selectionStart);
+            div.textContent = textContent;
+            
+            const span = document.createElement('span');
+            span.textContent = textarea.value.substring(textarea.selectionStart) || '.';
+            div.appendChild(span);
+            
+            document.body.appendChild(div);
+            const { offsetLeft, offsetTop } = span;
+            document.body.removeChild(div);
+            
+            return { offsetLeft: offsetLeft + textarea.offsetLeft, offsetTop: offsetTop + textarea.offsetTop };
+        }
+
+        function insertSelection(selected) {
+            const pos = textarea.selectionStart;
+            const text = textarea.value;
+            const before = text.substring(0, pos);
+            const after = text.substring(pos);
+            
+            // Find the start of the current word to replace it
+            const wordMatch = before.match(/[\w"']+$/);
+            const start = wordMatch ? pos - wordMatch[0].length : pos;
+            
+            const newText = text.substring(0, start) + `"${selected}"` + after;
+            textarea.value = newText;
+            textarea.setSelectionRange(start + selected.length + 2, start + selected.length + 2);
+            dropdown.classList.add('hidden');
+            textarea.focus();
+        }
+
+        // --- Event Listeners ---
+
+        textarea.addEventListener('input', (e) => {
+            const pos = textarea.selectionStart;
+            const val = textarea.value;
+            const lastChar = val[pos - 1];
+
+            // Auto-close brackets/quotes
+            if (bracketPairs[lastChar] && e.inputType !== 'deleteContentBackward') {
+                const nextChar = val[pos];
+                if (nextChar !== bracketPairs[lastChar]) {
+                    textarea.value = val.substring(0, pos) + bracketPairs[lastChar] + val.substring(pos);
+                    textarea.setSelectionRange(pos, pos);
+                }
+            }
+
+            const beforeCursor = val.substring(0, pos);
+            const query = beforeCursor.split(/[\s{}[\],:]+/).pop();
+            renderDropdown(getSuggestions(query));
+        });
+
+    textarea.addEventListener('keydown', (e) => {
+        // 1. If the dropdown is OPEN
+        if (!dropdown.classList.contains('hidden')) {
+            if (e.key === 'Tab' || e.key === 'Enter') {
+                // If something is highlighted, select it
+                if (selectedIndex > -1) {
+                    e.preventDefault(); 
+                    insertSelection(currentSuggestions[selectedIndex]);
+                    return; // Stop here
+                } 
+                // If nothing is highlighted, just close the menu and let Tab behave normally
+                else {
+                    dropdown.classList.add('hidden');
+                }
+            }
+            
+            // Navigation keys
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex + 1) % currentSuggestions.length;
+                renderDropdown(currentSuggestions);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = (selectedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+                renderDropdown(currentSuggestions);
+            }
+        } 
+        
+        // 2. If the dropdown is CLOSED (Standard Tab Indentation)
+        else if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+
+            // Set textarea value to: text before caret + tab + text after caret
+            textarea.value = textarea.value.substring(0, start) + 
+                            "    " + // 4 spaces for JSON standard
+                            textarea.value.substring(end);
+
+            // Put caret in the right place (after the 4 spaces)
+            textarea.selectionStart = textarea.selectionEnd = start + 4;
+        }
+    });
+
+        dropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.autocomplete-item');
+            if (item) {
+                insertSelection(currentSuggestions[item.dataset.index]);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== textarea) dropdown.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

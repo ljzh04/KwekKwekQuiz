@@ -1,0 +1,209 @@
+/* --- 1. Global & Typography --- */
+.quiz-input-section h2 {
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-on-surface);
+  margin: 0 0 16px 0;
+}
+
+#quiz-name-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 8px 0;
+  font-weight: 600;
+  transition: border-color 0.3s ease;
+}
+
+#quiz-name-input:focus {
+  border-bottom-color: var(--md-sys-color-primary);
+  outline: none;
+}
+
+/* --- 2. Editor Unit --- */
+.editor-unit {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--md-sys-color-surface);
+  box-shadow: var(--md-sys-elevation-1);
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.editor-unit:focus-within {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-2), 0 0 0 4px rgba(103, 80, 164, 0.1);
+}
+
+.editor-unit.drag-active {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary-container);
+}
+
+/* Toolbar & Canvas */
+.editor-toolbar {
+  background-color: var(--md-sys-color-surface-container-high);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  backdrop-filter: blur(8px);
+  min-height: 56px;
+}
+
+#quiz-json-input {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.6;
+  border: none;
+  resize: vertical;
+  min-height: 300px;
+  padding: 16px;
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface);
+}
+
+#quiz-json-input::placeholder {
+  color: var(--md-sys-color-on-surface-variant);
+  font-style: italic;
+  opacity: 0.5;
+}
+
+/* Custom Scrollbar */
+#quiz-json-input::-webkit-scrollbar { width: 8px; }
+#quiz-json-input::-webkit-scrollbar-track { background: transparent; }
+#quiz-json-input::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+}
+
+/* Status Bar */
+.status-bar {
+  background-color: var(--md-sys-color-surface-variant);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  font-size: 12px;
+  min-height: 40px;
+  padding: 0 16px;
+}
+
+/* --- 3. Buttons & Interactions --- */
+.md-filled-button, .md-filled-tonal-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.md-filled-button:hover:not(:disabled),
+.md-filled-tonal-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--md-sys-elevation-2);
+}
+
+.md-filled-button:active:not(:disabled) { transform: scale(0.98); }
+
+#save-quiz-btn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+/* Quiz Feedback Animations */
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+
+/* Error Glow + Subtle Shake */
+.input-feedback-success {
+    border-color: #22c55e !important;
+    background-color: rgba(34, 197, 94, 0.05) !important;
+    padding-right: 3rem !important;
+}
+
+.input-feedback-error {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.05) !important;
+    padding-right: 3rem !important;
+    /* Optional: include the micro-shake animation here */
+}
+
+/* Ensure icons are always centered regardless of their 18x28 bounding box */
+.feedback-icon {
+    line-height: 1 !important;
+    height: 36px; /* Force the icon container to be a standard size */
+    width: 24px;
+    display: blflexock !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ensure the input wrapper doesn't have weird padding that displaces the absolute icon */
+#input-wrapper {
+    position: relative;
+    display: block; /* or flex */
+    width: 100%;
+}
+
+@keyframes micro-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-3px); }
+  40%, 60% { transform: translateX(3px); }
+}
+
+.pulse-green { animation: pulse-green 2s ease-out; }
+.pulse-red { animation: pulse-red 2s ease-out; }
+
+/* Disabled States */
+.md-filled-button:disabled, .md-filled-tonal-button:disabled {
+  background-color: rgba(28, 27, 31, 0.12) !important;
+  color: rgba(28, 27, 31, 0.38) !important;
+  transform: none;
+}
+
+/* --- 4. Sections & Layout --- */
+.identity-section {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 24px;
+}
+
+.library-section {
+  margin-top: 32px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px dashed var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container-low);
+}
+
+.library-section h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-bottom: 12px;
+}
+
+/* Status Indicators */
+#validation-status.valid { color: var(--md-sys-color-primary); }
+#validation-status.invalid { color: var(--md-sys-color-error); }
+
+#mode-indicator.json-mode { background: var(--md-sys-color-primary-container); }
+#mode-indicator.prompt-mode { background: var(--md-sys-color-secondary-container); }
+
+/* --- 5. Responsive & Dark Mode --- */
+@media (max-width: 768px) {
+  .editor-toolbar, .identity-section, .library-section .flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .identity-section button, .library-section button { width: 100%; }
+}
+
+html.dark .editor-unit { border-color: var(--md-sys-color-outline-variant); }
+html.dark .editor-toolbar { background-color: var(--md-sys-color-surface-variant); }
+html.dark .library-section { background-color: rgba(255, 255, 255, 0.05); }

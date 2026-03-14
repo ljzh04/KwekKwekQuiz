@@ -64,9 +64,28 @@ export function createQuizPlayerElements() {
     });
 }
 
+function injectStandardIcon(parent, status) {
+    const oldIcon = parent.querySelector(".feedback-icon");
+    if (oldIcon) oldIcon.remove();
+
+    // Ensure the parent is the reference point
+    parent.classList.add('relative');
+    
+    const icon = document.createElement("span");
+    const isCorrect = status === 'success';
+    
+    icon.className = `material-symbols-outlined feedback-icon absolute right-3 
+        inset-y-0 flex items-center justify-center pointer-events-none text-2xl
+        ${isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`;
+    
+    icon.textContent = isCorrect ? 'check_circle' : 'error';
+    parent.appendChild(icon);
+}
 
 export function renderCurrentQuestion() {
     if (!DOM.quizContainer || !questionEl) return;
+    DOM.quizContainer.className = "max-w-2xl mx-auto py-8 px-4 sm:px-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl transition-all duration-300";
+    questionEl.className = "text-2xl font-bold leading-tight text-gray-800 dark:text-gray-100 mb-8";
     const currentQuestion = State.getCurrentQuestion();
     if (!currentQuestion) {
         console.error("No current question to render");
@@ -75,6 +94,18 @@ export function renderCurrentQuestion() {
     }
 
     DOM.quizContainer.innerHTML = ""; // Clear previous question
+    [inputWrapper, ...DOM.quizContainer.querySelectorAll('li')].forEach(el => {
+        if (!el) return;
+        const icon = el.querySelector(".feedback-icon");
+        if (icon) icon.remove();
+        const correction = el.querySelector(".correction-label");
+        if (correction) correction.remove();
+    });
+    inputField.classList.remove(
+        "input-feedback-success", "input-feedback-error",
+        "text-green-700", "dark:text-green-300",
+        "text-red-700", "dark:text-red-300"
+    );
 
     updateProgressBar();
 
@@ -137,17 +168,25 @@ export function renderCurrentQuestion() {
         }
     } else if (currentQuestion.type === "fill-in-the-blank" || currentQuestion.type === "identification") {
         inputField.classList.remove(
-            "border-green-600", "border-red-600", "dark:border-green-500", "dark:border-red-500",
-            "text-green-800", "text-red-800", "dark:text-green-200", "dark:text-red-200"
+            "input-feedback-success", "input-feedback-error",
+            "text-green-700", "dark:text-green-300",
+            "text-red-700", "dark:text-red-300",
+            "text-gray-900", "dark:text-gray-100"
         );
-        inputField.classList.add("text-gray-900", "dark:text-gray-100");
+        const oldIcon = inputWrapper.querySelector(".feedback-icon");
+        if (oldIcon) oldIcon.remove();
+        inputWrapper.className = "relative w-full"; 
+    
+    // 2. Add 'pr-10' to the inputField so the text doesn't go under the icon
+        inputField.className = "w-full pr-10 border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-transparent text-gray-900 dark:text-gray-100";
         inputField.disabled = State.isSubmittedAtIndex(State.getCurrentQuestionIndex());
-        inputField.value = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) !== undefined ? State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) : "";
+        inputField.value = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || "";
         DOM.quizContainer.appendChild(inputWrapper);
 
         if (State.isSubmittedAtIndex(State.getCurrentQuestionIndex())) {
             renderFeedbackForQuestion(State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()));
         }
+        
         if (!inputField.disabled) {
             inputField.focus();
         }
@@ -160,134 +199,79 @@ export function renderCurrentQuestion() {
 
 export function renderFeedbackForQuestion(userAnswer) {
     const currentQuestion = State.getCurrentQuestion();
-    // const currentIndex = State.getCurrentQuestionIndex(); // Not directly used in this snippet, but good to have if needed
     if (!currentQuestion || !DOM.quizContainer) return;
 
-    if (currentQuestion.type === "multiple-choice") { // Keep Multiple Choice logic separate for clarity
+    // Standard Logic for Button-based questions (MCQ / TF)
+    if (currentQuestion.type === "multiple-choice" || currentQuestion.type === "true-false") {
         const optionButtons = DOM.quizContainer.querySelectorAll("ul li button");
+        
         optionButtons.forEach((button, idx) => {
-            button.classList.remove(
-                ...getFeedbackClasses(true), ...getFeedbackClasses(false),
-                "pulse-green", "pulse-red", "bg-blue-200", "border-blue-600"
-            );
-            button.disabled = true; // Disable all options after submission
-            const existingIcon = button.querySelector(".feedback-icon");
-            if (existingIcon) existingIcon.remove();
-
-            const optionValue = idx; // For MC, optionValue is its index
-            
-            const isCorrectAnswerForThisButton = (optionValue === currentQuestion.correct);
-            const isThisButtonSelectedByUser = (optionValue === userAnswer);
-
-            let iconHTML = '';
-            let iconColorClasses = [];
-            let pulseClass = '';
-
-            if (isCorrectAnswerForThisButton) {
-                button.classList.add(...getFeedbackClasses(true));
-                iconHTML = "✔"; // Checkmark
-                iconColorClasses = ["text-green-600", "dark:text-green-300"];
-                if (isThisButtonSelectedByUser) { // User selected the correct option
-                    pulseClass = "pulse-green";
-                }
-            } else if (isThisButtonSelectedByUser) { // This button is not the correct one, but user selected it (i.e. wrong choice)
-                button.classList.add(...getFeedbackClasses(false));
-                iconHTML = "✖"; // Cross
-                iconColorClasses = ["text-red-600", "dark:text-red-300"];
-                pulseClass = "pulse-red";
-            }
-            // If this button is not the correct option AND was not selected by user, it gets no special styling beyond cleanup.
-
-            if (pulseClass) {
-                button.classList.add(pulseClass);
-            }
-
-            if (iconHTML) {
-                const icon = document.createElement("span");
-                icon.className = "feedback-icon ml-auto";
-                icon.classList.add(...iconColorClasses);
-                icon.innerHTML = iconHTML;
-                button.appendChild(icon);
-            }
-        });
-    } else if (currentQuestion.type === "true-false") {
-        const optionButtons = DOM.quizContainer.querySelectorAll("ul li button");
-        optionButtons.forEach((button) => {
-            // 1. Determine what boolean this specific button represents ("True" or "False")
-            const buttonTextSpan = button.querySelector("span:not(.font-semibold)");
-            if (!buttonTextSpan) {
-                console.error("Feedback logic (TF): Could not find text span in button", button);
-                return; // Skip this button if malformed
-            }
-            // .trim() is important here to avoid issues with leading/trailing whitespace
-            const thisButtonRepresentsBooleanValue = (buttonTextSpan.textContent.trim() === "True");
-
-            // 2. Get current question's correct answer (boolean) and user's answer (boolean)
-            const correctAnswerBoolean = currentQuestion.correct; // This is already a boolean
-            const userAnswerBoolean = userAnswer; // This is the boolean answer from the user
-
-            // 3. Clear previous states and disable
+            // 1. Cleanup
             button.disabled = true;
             button.classList.remove(
                 ...getFeedbackClasses(true), ...getFeedbackClasses(false),
-                "pulse-green", "pulse-red", "bg-blue-200", "border-blue-600"
+                "pulse-green", "pulse-red", "bg-blue-200", "border-blue-600",
+                "input-feedback-success", "input-feedback-error"
             );
-            const existingIcon = button.querySelector(".feedback-icon");
-            if (existingIcon) existingIcon.remove();
+            const oldIcon = button.querySelector(".feedback-icon");
+            if (oldIcon) oldIcon.remove();
 
-            // 4. Apply new state based on comparisons
-            const isThisButtonTheCorrectOption = (thisButtonRepresentsBooleanValue === correctAnswerBoolean);
-            const didUserSelectThisButton = (thisButtonRepresentsBooleanValue === userAnswerBoolean);
+            // 2. Determine Boolean/Index values
+            let isThisCorrectChoice = false;
+            let isThisUserChoice = false;
 
-            let iconHTML = '';
-            let iconColorClasses = [];
-            let pulseClass = '';
-
-            if (isThisButtonTheCorrectOption) {
-                button.classList.add(...getFeedbackClasses(true));
-                iconHTML = "✔"; // Checkmark
-                iconColorClasses = ["text-green-600", "dark:text-green-300"];
-                if (didUserSelectThisButton) { // User selected the correct option
-                    pulseClass = "pulse-green";
-                }
-            } else if (didUserSelectThisButton) { // This button is not the correct one, but user selected it (i.e. wrong choice)
-                button.classList.add(...getFeedbackClasses(false));
-                iconHTML = "✖"; // Cross
-                iconColorClasses = ["text-red-600", "dark:text-red-300"];
-                pulseClass = "pulse-red";
-            }
-            // If this button is not the correct option AND was not selected by user, it remains neutral.
-
-            if (pulseClass) {
-                button.classList.add(pulseClass);
+            if (currentQuestion.type === "multiple-choice") {
+                isThisCorrectChoice = (idx === currentQuestion.correct);
+                isThisUserChoice = (idx === userAnswer);
+            } else {
+                const buttonText = button.querySelector("span:not(.font-semibold)")?.textContent.trim();
+                const representsTrue = buttonText === "True";
+                isThisCorrectChoice = (representsTrue === currentQuestion.correct);
+                isThisUserChoice = (representsTrue === userAnswer);
             }
 
-            if (iconHTML) {
-                const icon = document.createElement("span");
-                icon.className = "feedback-icon ml-auto";
-                icon.classList.add(...iconColorClasses);
-                icon.innerHTML = iconHTML;
-                button.appendChild(icon);
+            // 3. Apply Standardized Styles
+            if (isThisCorrectChoice) {
+                button.classList.add("input-feedback-success");
+                injectStandardIcon(button, 'success');
+            } else if (isThisUserChoice) {
+                button.classList.add("input-feedback-error");
+                injectStandardIcon(button, 'error');
             }
         });
-    } else if (currentQuestion.type === "fill-in-the-blank" || currentQuestion.type === "identification") {
-        // ... (existing fill-in-the-blank logic remains the same)
-        if (!inputField) return;
-        const normalizedUserAnswer = userAnswer ? String(userAnswer).trim().toLowerCase() : "";
-        const normalizedCorrectAnswer = String(currentQuestion.correct).trim().toLowerCase();
+    } 
+    
+    // Standard Logic for Input-based questions (FITB / Identification)
+    else if (currentQuestion.type === "fill-in-the-blank" || currentQuestion.type === "identification") {
+        if (!inputField || !inputWrapper) return;
+        
+        const normalizedUser = userAnswer ? String(userAnswer).trim().toLowerCase() : "";
+        const normalizedCorrect = String(currentQuestion.correct).trim().toLowerCase();
+        const isCorrect = normalizedUser === normalizedCorrect;
 
-        inputField.classList.remove(
-            "border-green-600", "border-red-600", "dark:border-green-500", "dark:border-red-500",
-            "text-green-800", "text-red-800", "dark:text-green-200", "dark:text-red-200"
-        );
+        // 1. Cleanup (Essential to prevent carry-over)
+        inputField.classList.remove("input-feedback-success", "input-feedback-error");
+        const oldIcon = inputWrapper.querySelector(".feedback-icon");
+        if (oldIcon) oldIcon.remove();
 
-        if (normalizedUserAnswer === "") { 
-            inputField.classList.add("text-gray-900", "dark:text-gray-100"); 
-        } else if (normalizedUserAnswer === normalizedCorrectAnswer) {
-            inputField.classList.add(...getFeedbackClasses(true).filter(c => c.startsWith('border-') || c.startsWith('text-') || c.startsWith('dark:border-') || c.startsWith('dark:text-')));
-        } else {
-            inputField.classList.add(...getFeedbackClasses(false).filter(c => c.startsWith('border-') || c.startsWith('text-') || c.startsWith('dark:border-') || c.startsWith('dark:text-')));
+        // 2. Apply Feedback only if user provided an answer
+        if (normalizedUser !== "") {
+            const status = isCorrect ? 'success' : 'error';
+            inputField.classList.add(`input-feedback-${status}`);
+            injectStandardIcon(inputWrapper, status);
+            
+            // Add correction label if wrong
+            if (!isCorrect) {
+                let correction = inputWrapper.querySelector(".correction-label");
+                if (!correction) {
+                    correction = document.createElement("div");
+                    correction.className = "correction-label mt-2 text-xs font-bold text-md-primary dark:text-blue-400";
+                    inputWrapper.appendChild(correction);
+                }
+                correction.innerHTML = `Expected: ${currentQuestion.correct}`;
+            }
         }
+        
         inputField.disabled = true;
     }
 }
@@ -311,83 +295,104 @@ export function addKeyboardNavigationToOptions() {
 
 export function renderQuizResults() {
     if (!DOM.summaryContainer) return;
-    DOM.summaryContainer.innerHTML = ""; // Clear previous summary
+    DOM.summaryContainer.innerHTML = "";
     const quizData = State.getQuizData();
     const userAnswers = State.getUserAnswers();
 
     quizData.forEach((question, index) => {
         const userAnswer = userAnswers[index];
-        let isCorrect = false;
-        if (question.type === "multiple-choice" || question.type === "true-false") {
-            isCorrect = userAnswer === question.correct;
-        } else if (question.type === "fill-in-the-blank" || question.type === "identification") {
-            isCorrect = typeof userAnswer === "string" && userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
-        }
+        const isCorrect = checkIsCorrect(question, userAnswer);
 
-        const questionDiv = document.createElement("details");
-        questionDiv.className = "mb-4 p-3 rounded border";
-        questionDiv.classList.add(
-            ...(isCorrect 
-                ? ["bg-green-100", "dark:bg-gray-800", "border-green-400", "dark:border-green-600"] 
-                : ["bg-red-100", "dark:bg-red-900", "border-red-400", "dark:border-red-600"])
+        const questionCard = document.createElement("details");
+        questionCard.className = `group mb-4 overflow-hidden rounded-2xl border transition-all duration-300 shadow-sm
+            ${isCorrect 
+                ? "bg-white dark:bg-gray-800 border-green-200 dark:border-green-900/30" 
+                : "bg-white dark:bg-gray-800 border-red-200 dark:border-red-900/30"}`;
+
+        // --- SUMMARY HEADER ---
+        const summary = document.createElement("summary");
+        summary.className = "flex items-center justify-between p-5 cursor-pointer list-none focus:outline-none";
+        
+        const statusColor = isCorrect ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+        const statusBg = isCorrect ? "bg-green-100 dark:bg-green-900/30" : "bg-red-100 dark:bg-red-900/30";
+
+        summary.innerHTML = `
+            <div class="flex items-start gap-4 flex-grow">
+                <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-sm font-bold text-gray-500">
+                    ${index + 1}
+                </span>
+                <div class="flex-1 text-sm font-medium text-gray-800 dark:text-gray-200 pr-4 mt-1">
+                    ${renderMarkdownWithLaTeX(question.question)}
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="hidden sm:flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBg} ${statusColor}">
+                    ${isCorrect ? 'Correct' : 'Incorrect'}
+                </span>
+                <span class="material-symbols-outlined ${statusColor}">
+                    ${isCorrect ? 'check_circle' : 'cancel'}
+                </span>
+                <span class="material-symbols-outlined text-gray-400 transition-transform group-open:rotate-180">expand_more</span>
+            </div>
+        `;
+
+        // --- DETAILS CONTENT ---
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "px-5 pb-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn";
+
+        const userAnswerBox = createAnswerBox(
+            "Your Answer", 
+            formatAnswerDisplay(question, userAnswer), 
+            isCorrect ? "success" : "error"
+        );
+        
+        const correctAnswerBox = createAnswerBox(
+            "Correct Answer", 
+            formatAnswerDisplay(question, question.correct), 
+            "info"
         );
 
-        const summary = document.createElement("summary");
-        summary.className = "font-semibold cursor-pointer select-none flex items-center justify-between";
+        contentDiv.appendChild(userAnswerBox);
+        contentDiv.appendChild(correctAnswerBox);
         
-        // Create a container for the question text and number to ensure proper alignment with the icon
-        const summaryTextContainer = document.createElement("div");
-        summaryTextContainer.className = "flex-grow"; // Allow it to take available space
-        summaryTextContainer.innerHTML = `
-            <div class="flex items-start gap-2">
-                <span class="font-semibold pt-1">${index + 1}.</span>
-                <div class="flex-1 min-w-0">${renderMarkdownWithLaTeX(question.question)}</div>
-            </div>`;
-        
-        const iconSpan = document.createElement("span");
-        iconSpan.setAttribute("aria-label", isCorrect ? 'Correct' : 'Incorrect');
-        iconSpan.className = "text-lg ml-2 flex-shrink-0"; // Added ml-2 for spacing
-        iconSpan.innerHTML = isCorrect ? '✔' : '✖';
-
-        summary.appendChild(summaryTextContainer);
-        summary.appendChild(iconSpan);
-        questionDiv.appendChild(summary);
-        
-        // Horizontal rule after summary, before details content
-        const hr = document.createElement("hr");
-        hr.className = "my-3 border-t border-gray-300 dark:border-gray-700";
-        questionDiv.appendChild(hr);
-
-
-        const userAnswerP = document.createElement("p");
-        userAnswerP.className = "mb-1";
-        let userAnswerDisplay = "No answer";
-        if (userAnswer !== undefined) {
-            if (question.type === "multiple-choice" && question.options && question.options[userAnswer] !== undefined) {
-                userAnswerDisplay = question.options[userAnswer];
-            } else if (question.type === "true-false") {
-                userAnswerDisplay = userAnswer ? "True" : "False";
-            }
-             else {
-                userAnswerDisplay = userAnswer;
-            }
-        }
-        userAnswerP.innerHTML = `Your answer: ${renderMarkdownWithLaTeX(String(userAnswerDisplay))}`;
-        questionDiv.appendChild(userAnswerP);
-
-        const correctAnswerP = document.createElement("p");
-        let correctAnswerContent = `Correct answer: `;
-        if (question.type === "multiple-choice" && question.options && question.options[question.correct] !== undefined) {
-            correctAnswerContent += `<strong>${renderMarkdownWithLaTeX(String(question.options[question.correct]))}</strong>`;
-        } else if (question.type === "true-false") {
-            correctAnswerContent += `<em>${question.correct ? "True" : "False"}</em>`;
-        } else {
-            correctAnswerContent += `<em>${renderMarkdownWithLaTeX(String(question.correct))}</em>`;
-        }
-        correctAnswerP.innerHTML = correctAnswerContent;
-        questionDiv.appendChild(correctAnswerP);
-
-        DOM.summaryContainer.appendChild(questionDiv);
+        questionCard.appendChild(summary);
+        questionCard.appendChild(contentDiv);
+        DOM.summaryContainer.appendChild(questionCard);
     });
-    attachCopyHandlers(); // For any code blocks in questions/answers
+    
+    attachCopyHandlers();
+}
+
+/** Helper to format the answer strings for display **/
+function formatAnswerDisplay(question, val) {
+    if (val === undefined || val === "") return "<em>No answer provided</em>";
+    if (question.type === "multiple-choice") return question.options[val] || val;
+    if (question.type === "true-false") return val ? "True" : "False";
+    return val;
+}
+
+/** Helper to create a styled answer comparison box **/
+function createAnswerBox(label, value, type) {
+    const box = document.createElement("div");
+    const colors = {
+        success: "bg-green-50/50 dark:bg-green-900/10 border-green-100 dark:border-green-800/20 text-green-800 dark:text-green-200",
+        error: "bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-800/20 text-red-800 dark:text-red-200",
+        info: "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800/20 text-blue-800 dark:text-blue-200"
+    };
+
+    box.className = `p-3 rounded-xl border ${colors[type]}`;
+    box.innerHTML = `
+        <span class="block text-[10px] uppercase tracking-widest font-bold opacity-60 mb-1">${label}</span>
+        <div class="text-sm font-semibold">${renderMarkdownWithLaTeX(String(value))}</div>
+    `;
+    return box;
+}
+
+/** Helper for correctness logic **/
+function checkIsCorrect(question, userAnswer) {
+    if (question.type === "multiple-choice" || question.type === "true-false") {
+        return userAnswer === question.correct;
+    }
+    return typeof userAnswer === "string" && 
+           userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
 }

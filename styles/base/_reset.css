@@ -1,0 +1,132 @@
+/* CSS Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100vh;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Disable blinking caret globally except in input and textarea */
+*:not(input):not(textarea) {
+  caret-color: transparent !important;
+}
+
+textarea,
+input {
+  caret-color: var(--md-sys-color-primary);
+}
+
+/* Remove default list styles */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Remove anchor default styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Make images responsive */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inherit fonts for form controls */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Remove button default styles */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Table improvements */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Remove fieldset styles */
+fieldset {
+  border: 0;
+}
+
+/* Make textarea resizable only vertically */
+textarea {
+  resize: vertical;
+}
+
+/* Focus visible outline */
+:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  padding: 8px;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

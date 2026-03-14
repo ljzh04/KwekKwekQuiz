@@ -13,10 +13,14 @@ export const appSection = document.getElementById('app-section'); // Main contai
 export const quizSetup = document.getElementById("quiz-setup");
 export const quizJsonInput = document.getElementById("quiz-json-input");
 export const quizImageInput = document.getElementById("quiz-image-input")
+export const previewContainer = document.getElementById('image-preview-container');
+export const previewImg = document.getElementById('image-preview');
+export const removeImgBtn = document.getElementById('remove-image-btn');
 export const formatBtn = document.getElementById("format-json-btn");
+export const modeIndicator = document.getElementById('mode-indicator');
+export const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
 // export const apiKeyInput = document.getElementById('api-key-input'); // In App section
 export const generateBtn = document.getElementById("generate-json-btn");
-export const errorDiv = document.getElementById("error-message");
 export const loadQuizBtn = document.getElementById("load-quiz-btn");
 export const sampleBtn = document.getElementById("load-sample-btn");
 export const saveQuizBtn = document.getElementById("save-quiz-btn");
@@ -88,7 +92,7 @@ export const apiKeyVisibilityIcon = document.getElementById('api-key-visibility-
 // Check for critical missing elements (update this list as needed)
 const criticalElements = {
     sidebar, sidebarToggle, sidebarLinks, contentSections, mainTitle,
-    quizJsonInput, quizImageInput, formatBtn, generateBtn, errorDiv, loadQuizBtn,
+    quizJsonInput, quizImageInput, formatBtn, generateBtn, loadQuizBtn,
     quizContainer, prevBtn, nextBtn, submitBtn, resultContainer,
     darkModeToggle, animationToggle, // Global toggles
     // apiKeyInput,
@@ -104,11 +108,5 @@ const missingCriticalElements = Object.entries(criticalElements)
 if (missingCriticalElements.length > 0) {
     const message = `Critical error: Page element(s) missing: ${missingCriticalElements.join(', ')}. App cannot function fully.`;
     console.error(message);
-    if (errorDiv && errorDiv.classList.contains('hidden')) { // Show error if it exists
-        errorDiv.textContent = message;
-        errorDiv.classList.remove('hidden');
-    } else if (!errorDiv) {
-        alert(message);
-    }
 }
 

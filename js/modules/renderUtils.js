@@ -9,40 +9,32 @@ import DOMPurify from "dompurify";
 export function renderMarkdownWithLaTeX(markdownText) {
     let html = marked.parse(markdownText);
 
-    // Fix code block rendering - extract just the language name
     html = html.replace(
         /<pre><code class="(.*?)">([\s\S]*?)<\/code><\/pre>/g,
         (match, lang, code) => {
-            // Extract the base language name (remove 'language-' prefix and any extra classes)
             const baseLang = lang.replace(/^language-/, '').split(' ')[0] || 'plaintext';
+            const displayLang = baseLang.toUpperCase();
             
             let highlightedCode;
             try {
-                highlightedCode = hljs.highlight(code, { 
-                    language: baseLang, 
-                    ignoreIllegals: true 
-                }).value;
+                highlightedCode = hljs.highlight(code, { language: baseLang }).value;
             } catch (e) {
-                // Fallback to auto-detection if specific language fails
-                try {
-                    highlightedCode = hljs.highlightAuto(code).value;
-                } catch (e2) {
-                    // Final fallback to plain text
-                    highlightedCode = code;
-                }
+                highlightedCode = hljs.highlightAuto(code).value;
             }
             
             return `
-            <div class="code-container">
-                <button class="copy-btn" title="Copy code">
-                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
-                    <path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/>
-                </svg>
-                <span class="copy-label">Copy</span>
-                </button>
-                <pre><code class="${lang}">${highlightedCode}</code></pre>
-            </div>
-            `;
+<div class="code-block bg-gray-900 rounded-lg overflow-hidden my-4" itemprop="code">
+    <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
+        <span class="text-sm text-gray-400 font-mono">${displayLang}</span>
+        <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                aria-label="Copy code to clipboard" 
+                onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
+            <span class="material-symbols-outlined text-sm">content_copy</span>
+            Copy
+        </button>
+    </div>
+    <pre class="p-4 overflow-x-auto m-0"><code class="${lang} text-gray-100 text-sm">${highlightedCode}</code></pre>
+</div>`;
         }
     );
 

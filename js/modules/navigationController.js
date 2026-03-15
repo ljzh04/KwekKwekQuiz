@@ -103,20 +103,36 @@ export function initNavigation() {
     // --- Handle Initial Page Load and Hash Changes ---
     function loadContentFromHash() {
         const hash = window.location.hash.substring(1);
-        let targetSectionId = 'app-section'; 
-        let forceAppResetOnLoad = hash === 'app' || !hash; // Reset app if hash is #app or empty
+        if (!hash) {
+            switchContent('app-section', true);
+            return;
+        }
 
-        if (hash) {
-            const activeLink = document.querySelector(`.sidebar-link[href="#${hash}"]`);
-            if (activeLink && activeLink.dataset.section) {
-                targetSectionId = activeLink.dataset.section;
+        // 1. Check if it's a primary navigation link
+        const activeLink = document.querySelector(`.sidebar-link[href="#${hash}"]`);
+        
+        if (activeLink && activeLink.dataset.section) {
+            switchContent(activeLink.dataset.section, hash === 'app');
+        } else {
+            // 2. It's an internal anchor (e.g., #json-format)
+            const targetElement = document.getElementById(hash);
+            
+            if (targetElement) {
+                // Find which main content section this element lives inside
+                const parentSection = targetElement.closest('.content-section');
+                
+                if (parentSection) {
+                    // Show the parent container so the element is visible
+                    switchContent(parentSection.id, false);
+                    
+                    targetElement.scrollIntoView();
+                }
             } else {
-                window.location.hash = 'app'; // Default to app if hash is invalid
-                targetSectionId = 'app-section';
-                forceAppResetOnLoad = true;
+                // 3. Fallback for broken hashes
+                window.location.hash = 'app';
+                switchContent('app-section', true);
             }
         }
-        switchContent(targetSectionId, forceAppResetOnLoad);
     }
 
     window.addEventListener('hashchange', loadContentFromHash);

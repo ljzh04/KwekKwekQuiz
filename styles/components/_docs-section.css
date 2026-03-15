@@ -70,32 +70,6 @@ html.dark #docs-section {
   line-height: 1.6;
 }
 
-.docs-content code {
-  font-family: 'Roboto Mono', 'Courier New', monospace;
-  font-size: 0.9em;
-  background-color: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface-variant);
-  padding: 0.1em 0.3em;
-  border-radius: 4px;
-}
-
-.docs-content pre {
-  margin: 16px 0;
-  position: relative;
-}
-
-.docs-content pre code {
-  display: block;
-  background-color: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface);
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-left: 4px solid var(--md-sys-color-primary);
-  overflow-x: auto;
-  font-size: 14px;
-  line-height: 1.5;
-}
 
 .docs-content a {
   color: var(--md-sys-color-primary);
@@ -107,46 +81,17 @@ html.dark #docs-section {
   text-decoration: underline;
 }
 
-/* Code Block Copy Button */
-.code-block {
-  position: relative;
-}
-
-.code-block__copy-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 6px 12px;
-  background-color: var(--md-sys-color-surface-container);
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: 8px;
-  color: var(--md-sys-color-on-surface);
-  font: var(--md-sys-typescale-label-small-font);
-  cursor: pointer;
-  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  z-index: 1;
-}
-
-.code-block__copy-btn:hover {
-  background-color: var(--md-sys-color-surface-container-high);
-}
-
-/* Responsive adjustments */
 @media (max-width: 640px) {
   #docs-section {
-    padding: 16px;
+    padding: 1rem;
   }
+  
+  #docs-section {
+    flex-direction: column;
+  }
+}
 
-  .docs-content pre code {
-    padding: 12px;
-    font-size: 12px;
-  }
-
-  .code-block__copy-btn {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
+/* Fix for hidden class */
+.hidden {
+  display: none;
 }

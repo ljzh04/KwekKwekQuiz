@@ -1,1 +1,50 @@
-/node_modules
+# Dependencies
+/node_modules/
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+/bun.lock
+
+# Build outputs
+/dist/
+/build/
+/.vite/
+/.cache/
+/.coverage/
+/.temp/
+/tmp/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.lognpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_StoreThumbs.db
+
+# Testing
+/coverage/
+/.lerna/
+/.jest/
+/.test-results/
+
+# Miscellaneous
+/.npm/.eslintcache
+/.stylelintcache
+/.parcel-cache
+/.vuepress/dist
+/.nuxt/dist
+/.svelte-kit
+/.output
+/project/

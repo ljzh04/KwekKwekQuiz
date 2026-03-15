@@ -21,8 +21,7 @@ async function loadComponent(containerSelector, componentPath) {
   ]);
 })();
 
-console.log("All DOM components initialized/loaded.")
-
+console.log("All DOM components initialized/loaded.");
 
 requestAnimationFrame(async () => {
   const { initializeApp } = await import('./main.js');

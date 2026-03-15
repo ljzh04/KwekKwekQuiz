@@ -20,6 +20,64 @@
   outline: none;
 }
 
+#generate-json-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate; /* Ensures pseudo-elements stay behind the text */
+}
+
+/* Animated Gradient Background */
+#generate-json-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg, 
+    #ff6b6b, 
+    #4ecdc4, 
+    #ff6b6b
+  );
+  background-size: 200% 100%;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s ease;
+}
+
+#generate-json-btn:hover::before {
+  opacity: 1;
+  animation: moveGradient 2s linear infinite;
+}
+
+#generate-json-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+#generate-json-btn:hover::after {
+  opacity: 1;
+}
+
+#generate-json-btn:active {
+  transform: scale(0.96);
+}
+
+@keyframes moveGradient {
+  from { background-position: 0% 0%; }
+  to { background-position: 200% 0%; }
+}
+#generate-json-btn:hover .material-symbols-outlined {
+  animation: sparkle 1.5s ease infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2) rotate(10deg); }
+}
 /* --- 2. Editor Unit --- */
 .editor-unit {
   border: 1px solid var(--md-sys-color-outline-variant);

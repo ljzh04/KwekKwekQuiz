@@ -86,26 +86,23 @@ html.dark .prose ul > li::marker {
 /* Marked + Highlight.js Code Blocks */
 pre {
   background-color: var(--md-sys-color-surface-container-high) !important;
-  color: var(--md-sys-color-on-surface) !important;
+  color: white !important;
   padding: 16px !important;
   border-radius: 12px !important;
   overflow-x: auto !important;
-  margin: 16px 0 !important;
+  margin: 0 0 !important;
   font-size: 14px !important;
   position: relative !important;
-  border: 1px solid var(--md-sys-color-outline-variant) !important;
 }
 
 pre code {
-  display: block !important;
-  border-left: 4px solid var(--md-sys-color-primary) !important;
-  padding-left: 16px !important;
-  font-family: 'Roboto Mono', 'Courier New', monospace !important;
+  display: block;
+  font-family: 'Roboto Mono', monospace; 
 }
 
-.code-container {
-  position: relative !important;
-  margin-bottom: 16px !important;
+.code-block pre {
+  margin: 0 !important;
+  background: transparent !important;
 }
 
 .copy-btn {
@@ -179,3 +176,4 @@ html.dark .sidebar-link .material-symbols-outlined:hover {
 .label {
   font: var(--md-sys-typescale-label-medium-font);
 }
+

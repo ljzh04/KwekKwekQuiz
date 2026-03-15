@@ -11,4 +11,15 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer],
     },
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**/*.spec.js'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['js/modules/**/*.js'],
+      exclude: ['js/modules/**/*.test.js', 'tests/**/*.spec.js'],
+    },
+  },
 });

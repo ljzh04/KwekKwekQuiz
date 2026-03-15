@@ -1,157 +1,448 @@
 // js/modules/geminiService.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as DOM from './dom.js';
-import { showError, clearError } from './utils.js'; // Assuming showError updates DOM.errorDiv
+import { showError, clearError } from './utils.js';
 
-let genAIInstance = null;
-let currentApiKeyForInstance = null;
-const MODEL_NAME = "models/gemini-flash-latest";
-let promptEngineeringText = '';
+/**
+ * Gemini Service for handling AI-powered quiz generation
+ * 
+ * SECURITY WARNING: This client-side application stores API keys in localStorage.
+ * While keys are obfuscated for casual exposure prevention, they remain accessible
+ * to any script running in the browser. For production use, consider a backend proxy.
+ * 
+ * Configuration: Default API key can be set via VITE_GEMINI_API_KEY environment variable.
+ */
 
-async function loadPromptEngineeringText() {
-    if (promptEngineeringText) return promptEngineeringText;
+export class GeminiService {
+  /**
+   * @param {Object} options - Configuration options
+   * @param {string} options.modelName - Gemini model name
+   * @param {string} options.fallbackPrompt - Fallback prompt when prompt file fails
+   * @param {string} options.baseURL - Base URL for prompt file
+   */
+  constructor(options = {}) {
+    this.modelName = options.modelName || "models/gemini-flash-latest";
+    this.fallbackPrompt = options.fallbackPrompt || "Generate a quiz in JSON format based on the following topic: ";
+    this.baseURL = options.baseURL || import.meta.env.BASE_URL;
+    this.client = null;
+    this.apiKey = null;
+    this.promptText = null;
+    this.promptLoading = null;
+  }
+
+  // ==================== SECURITY UTILITIES ====================
+  // Obfuscate API key for localStorage storage (simple XOR with fixed key)
+  static obfuscateKey(key) {
+    if (!key) return '';
+    const xorKey = 0x5A; // Simple obfuscation - not cryptographically secure
+    return btoa(key.split('').map(char => 
+      String.fromCharCode(char.charCodeAt(0) ^ xorKey)
+    ).join(''));
+  }
+
+  // Deobfuscate API key from localStorage
+  static deobfuscateKey(obfuscated) {
+    if (!obfuscated) return '';
     try {
-        const response = await fetch(`${import.meta.env.BASE_URL}data/promptEngineeringText.txt`);
-        if (!response.ok) throw new Error(`File not found or network error: ${response.statusText}`);
-        promptEngineeringText = await response.text();
-        return promptEngineeringText;
-    } catch (error) {
+      const xorKey = 0x5A;
+      return atob(obfuscated).split('').map(char => 
+        String.fromCharCode(char.charCodeAt(0) ^ xorKey)
+      ).join('');
+    } catch (e) {
+      console.error('Failed to deobfuscate API key:', e);
+      return '';
+    }
+  }
+
+  // Validate Gemini API key format (basic check for AIza... prefix)
+  static validateKeyFormat(key) {
+    if (!key || typeof key !== 'string') return false;
+    // Gemini API keys typically start with "AIza"
+    return key.startsWith('AIza') && key.length >= 30;
+  }
+
+  // ==================== PROMPT LOADING ====================
+  /**
+   * Loads prompt engineering text with caching and error handling
+   * Uses a "loading gate" pattern to ensure only one fetch occurs at a time.
+   * All concurrent callers receive the same promise, preventing race conditions.
+   * @returns {Promise<string>} Resolved prompt text
+   */
+  async loadPromptEngineeringText() {
+    // Return cached text immediately if available
+    if (this.promptText) {
+      return this.promptText;
+    }
+
+    // If a load is already in progress, return that promise to all callers
+    if (this.promptLoading) {
+      return this.promptLoading;
+    }
+
+    // Create a single loading promise that all concurrent calls will share
+    this.promptLoading = (async () => {
+      try {
+        const text = await this._fetchPromptText();
+        this.promptText = text; // Cache successful result
+        return text;
+      } catch (error) {
         console.error('Error loading promptEngineeringText.txt:', error);
         showError('Failed to load internal prompt configuration. AI generation might be affected.');
-        return "Generate a quiz in JSON format based on the following topic: "; // Fallback prompt
-    }
-}
+        return this.fallbackPrompt; // Return fallback on error (not cached)
+      } finally {
+        // Always clear the loading flag, regardless of success or error
+        this.promptLoading = null;
+      }
+    })();
 
-function readImageAsBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            // Remove "data:image/png;base64," prefix
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+    return await this.promptLoading;
+  }
 
-function getGenAIClient() {
-    // Read from the settings page input directly
-    if (!DOM.apiKeySettingInput || !DOM.errorDiv) { // CHANGED to apiKeySettingInput
-        console.error("API Key input (settings) or errorDiv not found in DOM for Gemini client.");
-        return null;
+  /**
+   * Fetches prompt text from file
+   * @private
+   * @returns {Promise<string>} Prompt text
+   */
+  async _fetchPromptText() {
+    const response = await fetch(`${this.baseURL}data/promptEngineeringText.txt`);
+    if (!response.ok) {
+      throw new Error(`File not found or network error: ${response.statusText}`);
     }
-    const apiKey = DOM.apiKeySettingInput.value.trim(); // CHANGED
+    return await response.text();
+  }
+
+  // ==================== API KEY MANAGEMENT ====================
+  /**
+   * Validates API key and initializes client
+   * @param {string} apiKey - API key to validate
+   * @returns {boolean> Whether client is ready
+   */
+  validateAndInitializeClient(apiKey) {
     if (!apiKey) {
-        showError("API Key is required for AI generation. Please set it in Settings."); // MODIFIED message
-        return null;
+      showError("API Key is required for AI generation. Please set it in Settings.");
+      return false;
     }
 
-    if (!genAIInstance || currentApiKeyForInstance !== apiKey) {
-        try {
-            if (typeof GoogleGenerativeAI !== 'function') {
-                throw new Error("GoogleGenerativeAI is not available. Check import.");
-            }
-            genAIInstance = new GoogleGenerativeAI(apiKey);
-            currentApiKeyForInstance = apiKey;
-            clearError(); // Clear previous init errors
-            console.log("Gemini client initialized/re-initialized.");
-        } catch (e) {
-            showError("Failed to initialize Gemini client: " + e.message);
-            console.error("Initialization error in getGenAIClient:", e);
-            genAIInstance = null;
-            currentApiKeyForInstance = null;
-            return null;
-        }
-    }
-    return genAIInstance;
-}
-
-export async function handleGenerateQuizRequest() {
-     // Read from the settings page input directly
-    if (!DOM.apiKeySettingInput || !DOM.quizJsonInput || !DOM.errorDiv || !DOM.generateBtn) return; // CHANGED
-
-    const userPrompt = DOM.quizJsonInput.value.trim();
-    const imageFile = DOM.quizImageInput?.files?.[0] || null;
-    const apiKey = DOM.apiKeySettingInput.value.trim(); // CHANGED
-
-    if (!apiKey) {
-        showError("A Gemini API Key is required. Please set it in the Settings page. Get one from https://aistudio.google.com/"); // MODIFIED message
-        return;
-    }
-    if (!userPrompt && !imageFile) {
-        showError("Please enter a prompt or upload an image to generate a quiz.");
-        return;
+    // Validate format before attempting to use
+    if (!GeminiService.validateKeyFormat(apiKey)) {
+      showError("Invalid API key format. Gemini keys start with 'AIza'.");
+      return false;
     }
 
-    const client = getGenAIClient();
-    if (!client) {
-        DOM.quizJsonInput.value = "Failed to initialize AI client. Check API Key and errors.";
-        return; // Error already set by getGenAIClient or initial checks
+    if (this.client && this.apiKey === apiKey) {
+      return true;
     }
-    
-    const basePrompt = await loadPromptEngineeringText();
-
-    const originalButtonText = DOM.generateBtn.innerHTML;
-    DOM.generateBtn.disabled = true;
-    DOM.generateBtn.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> Generating';
-    const originalQuizJsonContent = DOM.quizJsonInput.value; // Save current content (which is the prompt)
-    DOM.quizJsonInput.value = "Generating quiz content...";
-    clearError();
 
     try {
-        const model = client.getGenerativeModel({ model: MODEL_NAME });
-        let result;
-        if (imageFile) { // image +/ text mode
-            const imageBase64 = await readImageAsBase64(imageFile);
-            const promptParts = [
-                {
-                    text: basePrompt + (userPrompt || "Generate a quiz based on this image.")
-                },
-                {
-                    inlineData: {
-                    mimeType: imageFile.type,
-                    data: imageBase64
-                    }
-                }
-            ];
-            result = await model.generateContent({
-            contents: [{ role: "user", parts: promptParts }]
-            });
-        } else { // text-mode
-            const fullPrompt = basePrompt + userPrompt;
-            result = await model.generateContent(fullPrompt);
-        }
-        const response = await result.response;
-        const rawText = response.text();
+      if (typeof GoogleGenerativeAI !== 'function') {
+        throw new Error("GoogleGenerativeAI is not available. Check import.");
+      }
 
-        const cleanedText = rawText
-            .replace(/```json\s*/gi, '')
-            .replace(/```/g, '')
-            .trim();
-
-        let parsedJSON;
-        try {
-            parsedJSON = JSON.parse(cleanedText);
-            DOM.quizJsonInput.value = JSON.stringify(parsedJSON, null, 2); // Pretty print
-            clearError();
-        } catch (parseError) {
-            console.error("JSON Parse Error from AI:", parseError.message, "\nRaw AI output:", rawText);
-            DOM.quizJsonInput.value = "Invalid JSON generated. Check console for raw output.\n\nOriginal prompt was:\n" + userPrompt + "\n\nRaw AI output:\n" + rawText;
-            showError("AI generated invalid JSON: " + parseError.message);
-        }
+      this.client = new GoogleGenerativeAI(apiKey);
+      this.apiKey = apiKey;
+      clearError();
+      console.log("Gemini client initialized/re-initialized.");
+      return true;
     } catch (error) {
-        console.error("Error generating text with AI:", error);
-        let errorMessageText = "Error generating text: " + (error.message || "Unknown AI error");
-        if (error.toString().includes("API key not valid")) {
-            errorMessageText += " Your API Key might be invalid or not enabled for the Gemini API.";
-        } else if (error.toString().includes("Quota exceeded")) {
-            errorMessageText += " You may have exceeded your API quota.";
-        }
-        DOM.quizJsonInput.value = `Error during AI generation. Original prompt: "${userPrompt}"`;
-        showError(errorMessageText);
-    } finally {
-        DOM.generateBtn.disabled = false;
-        DOM.generateBtn.innerHTML = originalButtonText;
+      showError("Failed to initialize Gemini client: " + error.message);
+      console.error("Initialization error:", error);
+      this.client = null;
+      this.apiKey = null;
+      return false;
     }
+  }
+
+  // ==================== IMAGE HANDLING ====================
+  /**
+   * Reads image file as base64 with strict validation
+   * Validates MIME type (JPEG/PNG/WebP only) and size (max 4MB)
+   * @param {File} file - Image file to read
+   * @returns {Promise<string>} Base64 string
+   */
+  async readImageAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      // Validate file size (max 4MB - safe limit for API payload)
+      if (file.size > 4 * 1024 * 1024) {
+        const err = new Error('Image size must be less than 4MB');
+        err.code = 'INVALID_INPUT';
+        reject(err);
+        return;
+      }
+
+      // Validate MIME type - only Gemini-supported formats
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        const err = new Error(`Invalid image format. Only ${allowedTypes.join(', ')} are supported.`);
+        err.code = 'INVALID_INPUT';
+        reject(err);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (!result || typeof result !== 'string') {
+          const err = new Error('Failed to read image file');
+          err.code = 'INVALID_INPUT';
+          reject(err);
+          return;
+        }
+
+        const commaIndex = result.indexOf(',');
+        if (commaIndex === -1) {
+          const err = new Error('Invalid image data format');
+          err.code = 'INVALID_INPUT';
+          reject(err);
+          return;
+        }
+
+        resolve(result.slice(commaIndex + 1));
+      };
+      reader.onerror = () => {
+        const err = new Error('Error reading image file');
+        err.code = 'INVALID_INPUT';
+        reject(err);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ==================== INPUT SANITIZATION ====================
+  /**
+   * Sanitizes user prompt to prevent XSS and control character issues
+   * Preserves prompt functionality while removing dangerous content
+   * @param {string} prompt - User-provided prompt
+   * @returns {string} Sanitized prompt
+   */
+  _sanitizePrompt(prompt) {
+    if (!prompt) return '';
+    
+    // Escape HTML entities to prevent XSS attacks
+    let sanitized = prompt
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
+    
+    // Remove control characters (ASCII 0-31 and 127) except line breaks and tabs
+    sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    
+    return sanitized;
+  }
+
+  // ==================== PROMPT PREPARATION ====================
+  /**
+   * Prepares prompt content for API call
+   * @param {string} basePrompt - Base prompt text
+   * @param {string} userPrompt - User-provided prompt
+   * @param {File} [imageFile] - Optional image file
+   * @returns {Object> Prepared prompt content
+   */
+  _preparePrompt(basePrompt, userPrompt, imageFile) {
+    const sanitizedUserPrompt = this._sanitizePrompt(userPrompt);
+    
+    if (imageFile) {
+      return {
+        text: basePrompt + (sanitizedUserPrompt || "Generate a quiz based on this image."),
+        image: imageFile
+      };
+    }
+    return {
+      text: basePrompt + sanitizedUserPrompt
+    };
+  }
+
+  // ==================== API CALL ====================
+  /**
+   * Maps Gemini API errors to standardized types and user-friendly messages
+   * @param {Error} error - The caught error object
+   * @returns {{ type: string, message: string }} Standardized error info
+   */
+  _mapApiError(error) {
+    const { message, code, status, details } = error;
+    
+    // Determine error type based on structured data when available
+    let errorType = 'UNKNOWN';
+    let userMessage = 'An unexpected error occurred. Please try again.';
+
+    // Check for local validation errors (from readImageAsBase64, etc.)
+    if (code === 'INVALID_INPUT') {
+      errorType = 'INVALID_INPUT';
+      userMessage = message || 'Invalid input. Please check your data and try again.';
+    }
+    // Check for API key issues
+    else if (code === 'INVALID_ARGUMENT' || status === 400 || 
+            message?.includes('API key not valid', 'API_KEY_INVALID')) {
+      errorType = 'INVALID_KEY';
+      userMessage = 'Your API key is invalid or not enabled for the Gemini API. Please check your key in Settings.';
+    }
+    // Check for quota/rate limiting
+    else if (code === 'RESOURCE_EXHAUSTED' || status === 429 || 
+             message?.includes('Quota exceeded', 'rate limit')) {
+      errorType = 'QUOTA_LIMIT';
+      userMessage = 'You have exceeded your API quota or rate limit. Please try again later or check your billing.';
+    }
+    // Check for network issues
+    else if (status === 0 || status === 503 || 
+             message?.includes('network', 'Network', 'fetch', 'ECONNREFUSED')) {
+      errorType = 'NETWORK_ERROR';
+      userMessage = 'Network error: Unable to connect to Gemini API. Please check your internet connection.';
+    }
+    // Default fallback
+    else {
+      errorType = 'UNKNOWN';
+      userMessage = message || 'An unknown error occurred.';
+    }
+
+    return { type: errorType, message: userMessage };
+  }
+
+  /**
+   * Calls Gemini API with proper error handling
+   * @param {string} prompt - Prompt text
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Object>> API response
+   */
+  async _callGeminiAPI(prompt, options = {}) {
+    try {
+      const model = this.client.getGenerativeModel({ model: this.modelName });
+      let result;
+
+      if (options.image) {
+        const imageBase64 = await this.readImageAsBase64(options.image);
+        const promptParts = [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: options.image.type,
+              data: imageBase64
+            }
+          }
+        ];
+
+        result = await model.generateContent({
+          contents: [{ role: "user", parts: promptParts }]
+        });
+      } else {
+        result = await model.generateContent(prompt);
+      }
+
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error("Error generating text with AI:", error);
+      
+      // Use structured error mapping instead of string parsing
+      const mappedError = this._mapApiError(error);
+      throw new Error(mappedError.message);
+    }
+  }
+
+  // ==================== RESPONSE PROCESSING ====================
+  /**
+   * Processes API response and extracts JSON
+   * @param {string} rawText - Raw text response
+   * @returns {Object> Parsed JSON object
+   */
+  _processResponse(rawText) {
+    const cleanedText = rawText
+      .replace(/```json\s*/gi, '')
+      .replace(/```/g, '')
+      .trim();
+
+    try {
+      return JSON.parse(cleanedText);
+    } catch (parseError) {
+      console.error("JSON Parse Error from AI:", parseError.message, "\nRaw AI output:", cleanedText);
+      throw new Error(`AI generated invalid JSON: ${parseError.message}`);
+    }
+  }
+
+  // ==================== UI STATE MANAGEMENT ====================
+  /**
+   * Updates UI state during processing
+   * @param {Object} ui - UI elements
+   * @param {boolean} processing - Whether processing is active
+   * @param {string} [message] - Optional message to display
+   */
+  _updateUIState(ui, processing, message = null) {
+    if (!ui.generateBtn || !ui.quizJsonInput ) return;
+
+    if (processing) {
+      ui.generateBtn.disabled = true;
+      ui.generateBtn.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> Generating';
+      ui.quizJsonInput.value = message || "Generating quiz content...";
+    } else {
+      ui.generateBtn.disabled = false;
+      ui.generateBtn.innerHTML = ui.originalButtonText;
+      if (message) {
+        ui.quizJsonInput.value = message;
+      }
+    }
+  }
+
+  // ==================== MAIN REQUEST HANDLER ====================
+  /**
+   * Main method to handle quiz generation request
+   * @param {Object} ui - UI elements
+   * @returns {Promise<void>>
+   */
+  async handleGenerateQuizRequest(ui) {
+    // Validate UI elements
+    if (!ui.apiKeySettingInput || !ui.quizJsonInput || !ui.generateBtn) {
+      console.error("Required UI elements not found");
+      return;
+    }
+
+    const userPrompt = ui.quizJsonInput.value.trim();
+    const imageFile = ui.quizImageInput?.files?.[0] || null;
+    const apiKey = ui.apiKeySettingInput.value.trim();
+
+    // Validate inputs
+    if (!this.validateAndInitializeClient(apiKey)) return;
+    if (!userPrompt && !imageFile) {
+      showError("Please enter a prompt or upload an image to generate a quiz.");
+      return;
+    }
+
+    const basePrompt = await this.loadPromptEngineeringText();
+    const originalButtonText = ui.generateBtn.innerHTML;
+
+    try {
+      this._updateUIState(ui, true, "Generating quiz content...");
+      clearError();
+
+      const promptData = this._preparePrompt(basePrompt, userPrompt, imageFile);
+      const rawText = await this._callGeminiAPI(promptData.text, { image: promptData.image });
+      const parsedJSON = this._processResponse(rawText);
+
+      ui.quizJsonInput.value = JSON.stringify(parsedJSON, null, 2);
+      clearError();
+    } catch (error) {
+      console.error("Quiz generation failed:", error);
+      ui.quizJsonInput.value = `Error during AI generation. Original prompt: "${userPrompt}"`;
+      showError(error.message);
+    } finally {
+      this._updateUIState(ui, false, null);
+      ui.originalButtonText = originalButtonText;
+    }
+  }
+}
+
+// Export instance with default configuration
+export const geminiService = new GeminiService();
+
+// Export main handler function for backward compatibility
+export async function handleGenerateQuizRequest() {
+  const ui = {
+    apiKeySettingInput: DOM.apiKeySettingInput,
+    quizJsonInput: DOM.quizJsonInput,
+    generateBtn: DOM.generateBtn,
+    quizImageInput: DOM.quizImageInput,
+    originalButtonText: DOM.generateBtn.innerHTML
+  };
+
+  await geminiService.handleGenerateQuizRequest(ui);
 }

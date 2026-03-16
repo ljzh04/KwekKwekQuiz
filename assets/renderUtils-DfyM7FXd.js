@@ -327,12 +327,14 @@ l0,-`+(t+144)+`c-2,-159.3,-10,-310.7,-24,-454c-53.3,-528,-210,-949.7,
 <div class="code-block bg-gray-900 rounded-lg overflow-hidden my-4" itemprop="code">
     <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
         <span class="text-sm text-gray-400 font-mono">${s}</span>
-        <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
-                aria-label="Copy code to clipboard" 
-                onclick="navigator.clipboard.writeText(\`${a.replace(/`/g,"\\`").replace(/\$/g,"\\$")}\`)">
-            <span class="material-symbols-outlined text-sm">content_copy</span>
-            Copy
+        <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                aria-label="Copy code to clipboard"
+                data-lang="${i}">
+            <span class="copy-label">Copy</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>
         </button>
     </div>
     <pre class="p-4 overflow-x-auto m-0"><code class="${n} text-gray-100 text-sm">${o}</code></pre>
-</div>`}),e=e.replace(/\$\$\s*([\s\S]+?)\s*\$\$/g,(t,n)=>Cm.renderToString(n,{displayMode:!0,throwOnError:!1})),e=e.replace(/\$(.+?)\$/g,(t,n)=>Cm.renderToString(n,{displayMode:!1,throwOnError:!1})),xT.sanitize(e)}function LT(){document.querySelectorAll(".copy-btn").forEach(r=>{if(r.dataset.copyHandlerAttached)return;r.dataset.copyHandlerAttached="true";const e=r.querySelector(".copy-label"),t=r.querySelector("svg"),n=e.textContent,a=t.outerHTML;r.addEventListener("click",()=>{var o;const i=(o=r.nextElementSibling)==null?void 0:o.querySelector("code");if(!i){console.warn("Copy button clicked, but no code element found nearby.");return}const s=i.textContent||"";navigator.clipboard.writeText(s).then(()=>{e.textContent="Copied";const l=document.createElementNS("http://www.w3.org/2000/svg","svg");l.setAttribute("height","20"),l.setAttribute("viewBox","0 -960 960 960"),l.setAttribute("width","20"),l.setAttribute("fill","currentColor"),l.innerHTML='<path d="M400-304 240-464l56-56 104 104 264-264 56 56-320 320Z"/>',t.replaceWith(l),setTimeout(()=>{const _=document.createElement("div");_.innerHTML=a;const u=_.firstChild;l.parentNode&&l.replaceWith(u),e.textContent=n},3e3)}).catch(l=>{console.error("Failed to copy text: ",l),e.textContent="Error",setTimeout(()=>{e.textContent=n},3e3)})})})}export{LT as a,wT as r};
+</div>`}),e=e.replace(/\$\$\s*([\s\S]+?)\s*\$\$/g,(t,n)=>Cm.renderToString(n,{displayMode:!0,throwOnError:!1})),e=e.replace(/\$(.+?)\$/g,(t,n)=>Cm.renderToString(n,{displayMode:!1,throwOnError:!1})),xT.sanitize(e)}function LT(){document.querySelectorAll(".copy-btn").forEach(r=>{r.dataset.copyHandlerAttached||(r.dataset.copyHandlerAttached="true",r.addEventListener("click",()=>{const e=r.querySelector(".copy-label"),t=r.querySelector("svg"),n=e.textContent,a=t.outerHTML,i=r.closest(".code-block"),s=i==null?void 0:i.querySelector("pre code");if(!s){console.warn("Copy button clicked, but no code element found nearby.");return}const o=s.textContent||"";navigator.clipboard.writeText(o).then(()=>{e.textContent="Copied";const l=document.createElementNS("http://www.w3.org/2000/svg","svg");l.setAttribute("height","20"),l.setAttribute("viewBox","0 -960 960 960"),l.setAttribute("width","20"),l.setAttribute("fill","currentColor"),l.innerHTML='<path d="M400-304 240-464l56-56 104 104 264-264 56 56-320 320Z"/>',t.replaceWith(l),setTimeout(()=>{const _=document.createElement("div");_.innerHTML=a;const u=_.firstChild;l.parentNode&&l.replaceWith(u),e.textContent=n},3e3)}).catch(l=>{console.error("Failed to copy text: ",l),e.textContent="Error",setTimeout(()=>{e.textContent=n},3e3)})}))})}export{LT as a,wT as r};

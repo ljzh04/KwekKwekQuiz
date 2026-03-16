@@ -243,16 +243,13 @@
 <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
     <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
       <span class="text-sm text-gray-400 font-mono">JSON</span>
-      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
-              aria-label="Copy code to clipboard" 
-              onclick='navigator.clipboard.writeText(`{
-  "type": "multiple-choice",
-  "question": "What is the capital of France?",
-  "options": ["Berlin", "Madrid", "Paris", "Rome"],
-  "correct": 2
-}`)'>
-        <span class="material-symbols-outlined text-sm">content_copy</span>
-        Copy
+      <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+        aria-label="Copy code to clipboard"
+        data-lang="json">
+        <span class="copy-label">Copy</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
       </button>
     </div>
     <pre class="p-4 overflow-x-auto m-0"><code class="language-json text-gray-100 text-sm">{
@@ -269,10 +266,14 @@
                   <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
                     <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
                       <span class="text-sm text-gray-400">JSON</span>
-                      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
-                        <span class="material-symbols-outlined text-sm">content_copy</span>
-                        Copy
-                      </button>
+                      <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                            aria-label="Copy code to clipboard"
+                            data-lang="json">
+                      <span class="copy-label">Copy</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                      </svg>
+                    </button>
                     </div>
                     <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">{
   "type": "true-false",
@@ -287,10 +288,14 @@
                   <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
                     <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
                       <span class="text-sm text-gray-400">JSON</span>
-                      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
-                        <span class="material-symbols-outlined text-sm">content_copy</span>
-                        Copy
-                      </button>
+                      <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                            aria-label="Copy code to clipboard"
+                            data-lang="json">
+                      <span class="copy-label">Copy</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                      </svg>
+                    </button>
                     </div>
                     <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">{
   "type": "fill-in-the-blank",
@@ -305,10 +310,14 @@
                   <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
                     <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
                       <span class="text-sm text-gray-400">JSON</span>
-                      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
-                        <span class="material-symbols-outlined text-sm">content_copy</span>
-                        Copy
-                      </button>
+                      <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                            aria-label="Copy code to clipboard"
+                            data-lang="json">
+                      <span class="copy-label">Copy</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                      </svg>
+                    </button>
                     </div>
                     <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">{
   "type": "identification",
@@ -331,9 +340,13 @@
               <div class="code-block mb-6 bg-gray-900 rounded-lg overflow-hidden" itemscope itemtype="https://schema.org/Code">
                 <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
                   <span class="text-sm text-gray-400">quiz.json</span>
-                  <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
-                    <span class="material-symbols-outlined text-sm">content_copy</span>
-                    Copy
+                  <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                          aria-label="Copy code to clipboard"
+                          data-lang="json">
+                    <span class="copy-label">Copy</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
                   </button>
                 </div>
                 <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">[

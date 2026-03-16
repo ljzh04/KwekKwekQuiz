@@ -8,6 +8,7 @@ let currentQuestionIndex = 0;
 let score = 0;
 let userAnswers = [];
 let submittedAnswers = []; // Tracks if a question's answer has been submitted
+let sparkleBurstShown = []; // Tracks whether success sparkle burst has already run per question
 
 // Getters
 export const getQuizData = () => quizData;
@@ -18,6 +19,8 @@ export const getUserAnswerAtIndex = (index) => userAnswers[index];
 export const getUserAnswers = () => userAnswers;
 export const isSubmittedAtIndex = (index) => submittedAnswers[index];
 export const getSubmittedAnswers = () => submittedAnswers; // Get the whole array
+export const wasSparkleBurstShownAtIndex = (index) => sparkleBurstShown[index];
+export const getSparkleBurstShown = () => sparkleBurstShown; // Get the whole array
 
 // Setters & Modifiers
 export function setQuizData(newQuizData) {
@@ -43,10 +46,15 @@ export function setSubmittedAtIndex(index, value) {
     submittedAnswers[index] = value;
 }
 
+export function setSparkleBurstShownAtIndex(index, value) {
+    sparkleBurstShown[index] = value;
+}
+
 export function resetQuizState(dataLength = 0) {
     // quizData is typically set by loadQuiz or startQuiz, so not reset here unless explicitly needed
     currentQuestionIndex = 0;
     score = 0;
     userAnswers = new Array(dataLength || quizData.length);
     submittedAnswers = new Array(dataLength || quizData.length).fill(false);
+    sparkleBurstShown = new Array(dataLength || quizData.length).fill(false);
 }

@@ -3,7 +3,7 @@ import * as DOM from './dom.js';
 import * as State from './state.js';
 import { shuffleArray, validateQuizData, showError, clearError } from './utils.js';
 import { showQuizPlayerScreen, showResultsScreen, updateNavigationButtonsState, resetSummaryContainer } from './uiController.js';
-import { renderCurrentQuestion, renderFeedbackForQuestion, renderQuizResults } from './quizPlayer.js';
+import { renderCurrentQuestion, renderFeedbackForQuestion, renderQuizResults, shakeElementOnce, sparkleBurstOnce } from './quizPlayer.js';
 
 export function startQuiz(quizContent) {
     if (!validateQuizData(quizContent)) {
@@ -63,6 +63,22 @@ export function handleSubmitAnswer() {
 
     State.setSubmittedAtIndex(currentIndex, true);
     renderFeedbackForQuestion(userAnswer);
+
+    // For text-input questions, provide subtle animation feedback for both correct and incorrect results.
+    if ((currentQuestion.type === "fill-in-the-blank" || currentQuestion.type === "identification") && userAnswer) {
+        const normalizedUser = String(userAnswer).trim().toLowerCase();
+        const normalizedCorrect = String(currentQuestion.correct).trim().toLowerCase();
+        const inputField = DOM.quizContainer?.querySelector("input[type='text']");
+        if (inputField) {
+            if (normalizedUser !== normalizedCorrect) {
+                shakeElementOnce(inputField);
+            } else if (!State.wasSparkleBurstShownAtIndex(currentIndex)) {
+                sparkleBurstOnce(inputField);
+                State.setSparkleBurstShownAtIndex(currentIndex, true);
+            }
+        }
+    }
+
     calculateScore(); // Recalculate score
     updateNavigationButtonsState();
 }

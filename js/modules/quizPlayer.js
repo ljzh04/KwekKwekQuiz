@@ -9,6 +9,118 @@ import { calculateScore, goToNextQuestion } from './quizEngine.js'; // For auto-
 
 let questionEl, optionsList, inputWrapper, inputField; // Module-level elements for reuse
 
+/**
+ * Apply a single-run shake animation to an element (e.g., when user selects an incorrect answer).
+ * This utility ensures the animation can be retriggered by reapplying the class.
+ */
+export function animateElementOnce(element, animationClass) {
+    if (!element) return;
+    element.classList.remove(animationClass);
+    // Force reflow so the animation can replay when the class is re-added
+    void element.offsetWidth;
+    element.classList.add(animationClass);
+    const cleanup = () => {
+        element.classList.remove(animationClass);
+        element.removeEventListener('animationend', cleanup);
+    };
+    element.addEventListener('animationend', cleanup, { once: true });
+}
+
+export function shakeElementOnce(element) {
+    animateElementOnce(element, 'shake-anim');
+}
+
+export function popElementOnce(element) {
+    animateElementOnce(element, 'pop-anim');
+}
+
+/**
+ * Emit a three-particle sparkle burst from the center of an element.
+ * Runs once per invocation and cleans up after the animation completes.
+ */
+export function sparkleBurstOnce(element) {
+    if (!element) return;
+
+    // Do not run when animations are globally disabled (e.g., accessibility mode).
+    if (element.closest('.animations-disabled') || document.documentElement.classList.contains('animations-disabled')) {
+        return;
+    }
+
+    // Some elements (like <input>) cannot contain child nodes, so use their parent container instead.
+    const host = (element instanceof HTMLElement && (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA'))
+        ? (element.parentElement || element)
+        : element;
+
+    if (host.__sparkleBurstRunning) return;
+    host.__sparkleBurstRunning = true;
+
+    const particleAngles = [45, 90, 135];
+    const delays = [0, 50, 100];
+    const particles = [];
+
+    // Ensure the parent is positioned so absolute children are anchored to its center
+    const prevPosition = host.style.position;
+    const shouldRestorePosition = getComputedStyle(host).position === 'static';
+    if (shouldRestorePosition) {
+        host.style.position = 'relative';
+    }
+
+    const sparklesContainer = document.createElement('span');
+    sparklesContainer.className = 'sparkle-burst';
+    sparklesContainer.setAttribute('aria-hidden', 'true');
+    host.appendChild(sparklesContainer);
+
+    const createSparkle = (angle, delay) => {
+        const sparkle = document.createElement('span');
+        sparkle.className = 'sparkle-particle';
+        sparkle.style.animationDelay = `${delay}ms`;
+
+        // Calculate the final translation based on angle and distance.
+        const distance = 24; // pixels
+        const radians = (angle * Math.PI) / 180;
+        const dx = Math.round(Math.cos(radians) * distance);
+        const dy = Math.round(-Math.sin(radians) * distance); // negative to go "up" for positive angles
+        sparkle.style.setProperty('--dx', `${dx}px`);
+        sparkle.style.setProperty('--dy', `${dy}px`);
+
+        // Cute 4-pointed sparkle SVG (rounded corners using stroke-linecap)
+        sparkle.innerHTML = `
+            <svg viewBox="0 0 32 32" width="100%" height="100%" aria-hidden="true" focusable="false">
+                <path
+                    d="M16 2 L18 14 L30 16 L18 18 L16 30 L14 18 L2 16 L14 14 Z"
+                    fill="currentColor"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
+                />
+            </svg>
+        `;
+
+        sparklesContainer.appendChild(sparkle);
+        particles.push(sparkle);
+
+        sparkle.addEventListener('animationend', () => {
+            sparkle.remove();
+            const idx = particles.indexOf(sparkle);
+            if (idx !== -1) particles.splice(idx, 1);
+            if (particles.length === 0) {
+                host.__sparkleBurstRunning = false;
+                sparklesContainer.remove();
+            }
+        }, { once: true });
+    };
+
+    particleAngles.forEach((angle, idx) => createSparkle(angle, delays[idx]));
+
+    // Restore the element's position state after the animation has had time to complete
+    setTimeout(() => {
+        if (shouldRestorePosition) {
+            host.style.position = prevPosition;
+        }
+    }, 700);
+}
+
 export function createQuizPlayerElements() {
     questionEl = document.createElement("div");
     // questionEl.className = "text-xl font-semibold mb-4 dark:text-gray-100"; // Example styling
@@ -84,7 +196,7 @@ function injectStandardIcon(parent, status) {
 
 export function renderCurrentQuestion() {
     if (!DOM.quizContainer || !questionEl) return;
-    DOM.quizContainer.className = "max-w-2xl mx-auto py-8 px-4 sm:px-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl transition-all duration-300";
+    DOM.quizContainer.className = "max-w-2xl mx-auto py-8 px-4 sm:px-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl transition-all duration-300 fade-in";
     questionEl.className = "text-2xl font-bold leading-tight text-gray-800 dark:text-gray-100 mb-8";
     const currentQuestion = State.getCurrentQuestion();
     if (!currentQuestion) {
@@ -128,7 +240,7 @@ export function renderCurrentQuestion() {
             const optionButton = document.createElement("button");
             optionButton.type = "button";
             optionButton.className =
-                "flex items-center space-x-3 border border-gray-400 dark:border-gray-600 rounded px-3 py-2 w-full text-left hover:bg-blue-100 dark:hover:bg-gray-800 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition";
+                "relative flex items-center space-x-3 border border-gray-400 dark:border-gray-600 rounded px-3 py-2 w-full text-left hover:bg-blue-100 dark:hover:bg-gray-800 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition";
 
             const answerValue = currentQuestion.type === "multiple-choice" ? index : (option === "True");
 
@@ -152,6 +264,12 @@ export function renderCurrentQuestion() {
                 if (State.isSubmittedAtIndex(State.getCurrentQuestionIndex())) return;
                 State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), answerValue);
                 State.setSubmittedAtIndex(State.getCurrentQuestionIndex(), true); // Auto-submit for MC/TF
+
+                // If the user selected an incorrect answer, give a subtle "head shake" feedback.
+                if (answerValue !== currentQuestion.correct) {
+                    shakeElementOnce(optionButton);
+                }
+
                 renderFeedbackForQuestion(answerValue);
                 calculateScore(); // Update score immediately
                 updateNavigationButtonsState();
@@ -199,6 +317,7 @@ export function renderCurrentQuestion() {
 
 export function renderFeedbackForQuestion(userAnswer) {
     const currentQuestion = State.getCurrentQuestion();
+    const currentIndex = State.getCurrentQuestionIndex();
     if (!currentQuestion || !DOM.quizContainer) return;
 
     // Standard Logic for Button-based questions (MCQ / TF)
@@ -230,10 +349,18 @@ export function renderFeedbackForQuestion(userAnswer) {
                 isThisUserChoice = (representsTrue === userAnswer);
             }
 
+            const userIsCorrect = isThisCorrectChoice && isThisUserChoice;
+
             // 3. Apply Standardized Styles
             if (isThisCorrectChoice) {
                 button.classList.add("input-feedback-success");
                 injectStandardIcon(button, 'success');
+
+                // Only show sparkle when the user actually got it right (not just showing the correct answer after a wrong choice)
+                if (userIsCorrect && !State.wasSparkleBurstShownAtIndex(currentIndex)) {
+                    sparkleBurstOnce(button);
+                    State.setSparkleBurstShownAtIndex(currentIndex, true);
+                }
             } else if (isThisUserChoice) {
                 button.classList.add("input-feedback-error");
                 injectStandardIcon(button, 'error');

@@ -1,50 +1,772 @@
-<div id="docs-section" class="content-section hidden mx-auto w-1/2 p-6 bg-md-surface dark:bg-gray-800 rounded-lg shadow-md-1">
-  <div class="docs-section__header">
-    <h3 class="docs-section__title text-3xl font-medium text-md-on-surface dark:text-gray-100 mb-6">Documentation</h3>
+<!-- Skip Navigation Link for Accessibility -->
+<a href="#docs-main-content" class="skip-link sr-only sr-only-focusable">Skip to documentation content</a>
+
+<!-- Documentation Section Container -->
+<div id="docs-section" class="content-section hidden mx-auto w-full p-6 bg-md-surface dark:bg-gray-800 rounded-lg shadow-md-1" role="region" aria-label="Documentation">
+ <aside class="lg:w-64 flex-shrink-0">
+    <div class="sticky top-8 space-y-8">
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-3">
+          Getting Started
+        </h3>
+        <nav class="flex flex-col border-l border-gray-200 dark:border-gray-700 ml-3">
+          <a href="#overview" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Overview
+          </a>
+          <a href="#api-key" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            API Key Setup
+          </a>
+        </nav>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-3">
+          Creating Quizzes
+        </h3>
+        <nav class="flex flex-col border-l border-gray-200 dark:border-gray-700 ml-3">
+          <a href="#creating-quizzes" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Methods
+          </a>
+          <a href="#json-format" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            JSON Format
+          </a>
+          <a href="#code-example" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Code Example
+          </a>
+        </nav>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-3">
+          Using Quizzes
+        </h3>
+        <nav class="flex flex-col border-l border-gray-200 dark:border-gray-700 ml-3">
+          <a href="#taking-quizzes" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Taking Quizzes
+          </a>
+          <a href="#managing-quizzes" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Managing Quizzes
+          </a>
+        </nav>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 px-3">
+          Additional Resources
+        </h3>
+        <nav class="flex flex-col border-l border-gray-200 dark:border-gray-700 ml-3">
+          <a href="#advanced-features" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Advanced Features
+          </a>
+          <a href="#troubleshooting" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Troubleshooting
+          </a>
+          <a href="#faq" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            FAQ
+          </a>
+          <a href="#summary" class="block py-2 px-3 -ml-px border-l-2 border-transparent hover:border-orange-500 hover:text-orange-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm font-medium">
+            Quick Reference
+          </a>
+        </nav>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main id="docs-main-content" class="docs-main lg:ml-64" role="main">
+    <header class="docs-header mb-10 pb-8 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-4">Kwek Kwek Quiz Documentation</h1>
+      <div class="flex flex-wrap gap-4 text-sm text-gray-500">
+        <span>Last updated: March 2026</span>
+        <span>•</span>
+        <span>Author: ljzh04</span>
+      </div>
+    </header>
+
+    <div class="docs-content prose prose-orange dark:prose-invert max-w-none"></div>
+
+    <!-- Reading Progress Indicator -->
+    <div class="docs-progress mb-6" aria-label="Reading progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="docs-progress__bar w-0 bg-blue-600 h-2 rounded-full transition-all duration-300" id="reading-progress"></div>
+    </div>
+
+    <!-- Documentation Content -->
+    <article class="docs-content" itemscope itemtype="https://schema.org/Document">
+      <!-- Overview Section -->
+      <section id="overview" class="docs-section mb-12 scroll-mt-6" aria-labelledby="overview-heading">
+        <h2 id="overview-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Welcome to Kwek Kwek Quiz</h2>
+
+        <div class="docs-intro mb-8" itemprop="description">
+          <p class="text-lg text-gray-600 dark:text-gray-300 mb-4">Kwek Kwek Quiz is a comprehensive quiz application that supports multiple question formats, AI-powered quiz generation, and collaborative features through peer-to-peer sharing.</p>
+
+          <div class="docs-callout bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400/50 p-4 rounded-md" role="note" aria-label="Tip">
+            <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Tip:</strong> You can use the app offline once loaded - all data is stored locally in your browser.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Getting Started Section -->
+      <section id="api-key" class="docs-section mb-12 scroll-mt-6" aria-labelledby="api-key-heading">
+        <h2 id="api-key-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Getting Started</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <p class="text-gray-600 dark:text-gray-300 mb-4">To get started with Kwek Kwek Quiz, you'll need to set up a few things depending on which features you want to use.</p>
+
+          <div class="docs-card mb-6 bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm">
+            <h3 class="docs-card__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-4">API Key Setup</h3>
+            <div class="docs-card__content">
+              <p class="text-gray-600 dark:text-gray-300 mb-3">To use the AI Quiz Generation feature, you'll need a Gemini API Key. You can obtain one from <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" class="text-md-primary dark:text-purple-400 hover:underline" aria-label="Open Google AI Studio in a new tab">Google AI Studio</a>.</p>
+
+              <div class="docs-callout bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 dark:border-amber-400/50 p-4 mb-4" role="note" aria-label="Important note">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Note:</strong> The API key is only required for AI-powered features. You can still use the app for manual quiz creation and taking without an API key.</p>
+              </div>
+
+              <div class="docs-steps" aria-label="Setup steps">
+                <h4 class="text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3">Setup Steps</h4>
+                <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                  <li>Go to <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" class="text-md-primary dark:text-purple-400 hover:underline">Google AI Studio</a></li>
+                  <li>Sign in with your Google account</li>
+                  <li>Create a new API key in the settings</li>
+                  <li>Copy the API key to your clipboard</li>
+                  <li>Paste it into the Gemini API Key field in the "Settings" page under "API Keys"</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Creating Quizzes Section -->
+      <section id="creating-quizzes" class="docs-section mb-12 scroll-mt-6" aria-labelledby="creating-quizzes-heading">
+        <h2 id="creating-quizzes-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Creating Quizzes</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <p class="text-gray-600 dark:text-gray-300 mb-6">Kwek Kwek Quiz offers multiple ways to create quizzes depending on your needs and technical expertise.</p>
+
+          <div class="docs-methods space-y-6">
+            <!-- Method 1 -->
+            <div class="docs-method bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/HowTo">
+              <meta itemprop="name" content="Manual JSON Creation">
+              <h3 class="docs-method__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-3" itemprop="headline">1. Manual JSON Creation</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" itemprop="description">For developers or those familiar with JSON, you can directly create quizzes by writing valid JSON.</p>
+
+              <div class="docs-callout bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 dark:border-green-400/50 p-4" role="note" aria-label="Best for">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Best for:</strong> Precise control, complex quiz structures, or when you have existing quiz data.</p>
+              </div>
+            </div>
+
+            <!-- Method 2 -->
+            <div class="docs-method bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/HowTo">
+              <meta itemprop="name" content="AI-Powered Generation">
+              <h3 class="docs-method__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-3" itemprop="headline">2. AI-Powered Generation</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" itemprop="description">Use the AI to generate quizzes from text descriptions. This requires an API key but is great for quick quiz creation.</p>
+
+              <div class="docs-callout bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400/50 p-4" role="note" aria-label="Best for">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Best for:</strong> Quick quiz creation, educational content, or when you need diverse question types.</p>
+              </div>
+            </div>
+
+            <!-- Method 3 -->
+            <div class="docs-method bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/HowTo">
+              <meta itemprop="name" content="Sample Quizzes">
+              <h3 class="docs-method__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-3" itemprop="headline">3. Sample Quizzes</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" itemprop="description">Load pre-built sample quizzes to see examples or use as templates for your own quizzes.</p>
+
+              <div class="docs-callout bg-purple-50 dark:bg-purple-900/30 border-l-4 border-purple-500 dark:border-purple-400/50 p-4" role="note" aria-label="Best for">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Best for:</strong> Learning the format, testing the app, or getting started quickly.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- JSON Format Subsection -->
+          <div id="json-format" class="docs-subsection mt-12" aria-labelledby="json-format-heading">
+            <h3 id="json-format-heading" class="docs-subsection__title text-2xl font-semibold text-md-on-surface dark:text-gray-100 mb-6">JSON Format</h3>
+
+            <div class="docs-section-content">
+              <p class="text-gray-600 dark:text-gray-300 mb-6">Quizzes are represented as JSON arrays containing question objects. Each question must have specific properties depending on its type.</p>
+
+              <!-- Question Object Structure -->
+              <div class="docs-definition mb-8 bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm">
+                <h4 class="docs-definition__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-4">Question Object Structure</h4>
+                <div class="docs-definition__content">
+                  <div class="docs-table overflow-x-auto mb-4">
+                    <table class="w-full min-w-[600px]" role="table" aria-label="Question object properties">
+                      <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-600">
+                          <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Property</th>
+                          <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Type</th>
+                          <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Required</th>
+                          <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody class="text-sm text-gray-600 dark:text-gray-300">
+                        <tr class="border-b border-gray-200 dark:border-gray-600">
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">type</code></td>
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">string</code></td>
+                          <td class="py-3 px-4">Yes</td>
+                          <td class="py-3 px-4">Question type: "multiple-choice", "true-false", "fill-in-the-blank", or "identification"</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 dark:border-gray-600">
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">question</code></td>
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">string</code></td>
+                          <td class="py-3 px-4">Yes</td>
+                          <td class="py-3 px-4">Markdown-formatted question text</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 dark:border-gray-600">
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">correct</code></td>
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">any</code></td>
+                          <td class="py-3 px-4">Yes</td>
+                          <td class="py-3 px-4">Answer: index (MCQ), boolean (T/F), or string (other types)</td>
+                        </tr>
+                        <tr>
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">options</code></td>
+                          <td class="py-3 px-4"><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">array</code></td>
+                          <td class="py-3 px-4">Only for MCQ</td>
+                          <td class="py-3 px-4">Array of option strings</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="docs-callout bg-gray-50 dark:bg-gray-700/50 border-l-4 border-gray-500 dark:border-gray-400/50 p-4" role="note" aria-label="Important">
+                    <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Important:</strong> All strings must be properly escaped for JSON. Use double quotes inside strings and escape them with backslashes if needed.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Question Type Examples -->
+              <div class="docs-examples mb-8">
+                <h4 class="docs-examples__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-6">Question Type Examples</h4>
+
+                <div class="docs-example mb-6" itemscope itemtype="https://schema.org/Code">
+                  <h5 class="docs-example__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="name">Multiple Choice</h5>
+<div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
+    <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
+      <span class="text-sm text-gray-400 font-mono">JSON</span>
+      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+              aria-label="Copy code to clipboard" 
+              onclick='navigator.clipboard.writeText(`{
+  "type": "multiple-choice",
+  "question": "What is the capital of France?",
+  "options": ["Berlin", "Madrid", "Paris", "Rome"],
+  "correct": 2
+}`)'>
+        <span class="material-symbols-outlined text-sm">content_copy</span>
+        Copy
+      </button>
+    </div>
+    <pre class="p-4 overflow-x-auto m-0"><code class="language-json text-gray-100 text-sm">{
+  "type": "multiple-choice",
+  "question": "What is the capital of France?",
+  "options": ["Berlin", "Madrid", "Paris", "Rome"],
+  "correct": 2
+}</code></pre>
   </div>
-  
-  <div class="docs-content">
-    <p>Welcome to the Kwek Kwek Quiz documentation!</p>
-    
-    <h6>Getting Started</h6>
-    <p>To use the AI Quiz Generation feature, you'll need a Gemini API Key. You can obtain one from <a href="https://aistudio.google.com/" target="_blank" class="text-md-primary dark:text-purple-400 hover:underline">Google AI Studio</a>. Paste this key into the API Key field in the "App" section or manage it in "Settings".</p>
-    
-    <h6>Creating Quizzes</h6>
-    <p>You can create quizzes by:</p>
-    <ul>
-        <li>Pasting valid JSON into the "Quiz JSON" textarea. Use the "Format JSON" button to prettify it or convert YAML to JSON.</li>
-        <li>Pasting text into the "Quiz JSON" textarea and clicking "Generate JSON" to use AI to create a quiz (requires API Key).</li>
-        <li>Loading a sample quiz using the "Sample" button.</li>
-    </ul>
-    
-    <p><strong>JSON Format Example:</strong></p>
-    <div class="code-block">
-        <pre><code class="language-json">[
+                </div>
+
+                <div class="docs-example mb-6" itemscope itemtype="https://schema.org/Code">
+                  <h5 class="docs-example__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="name">True/False</h5>
+                  <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
+                    <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
+                      <span class="text-sm text-gray-400">JSON</span>
+                      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
+                        Copy
+                      </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">{
+  "type": "true-false",
+  "question": "The Earth is flat.",
+  "correct": false
+}</code></pre>
+                  </div>
+                </div>
+
+                <div class="docs-example mb-6" itemscope itemtype="https://schema.org/Code">
+                  <h5 class="docs-example__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="name">Fill-in-the-Blank</h5>
+                  <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
+                    <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
+                      <span class="text-sm text-gray-400">JSON</span>
+                      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
+                        Copy
+                      </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">{
+  "type": "fill-in-the-blank",
+  "question": "The chemical symbol for water is __.",
+  "correct": "H2O"
+}</code></pre>
+                  </div>
+                </div>
+
+                <div class="docs-example" itemscope itemtype="https://schema.org/Code">
+                  <h5 class="docs-example__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="name">Identification</h5>
+                  <div class="code-block bg-gray-900 rounded-lg overflow-hidden" itemprop="code">
+                    <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
+                      <span class="text-sm text-gray-400">JSON</span>
+                      <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
+                        <span class="material-symbols-outlined text-sm">content_copy</span>
+                        Copy
+                      </button>
+                    </div>
+                    <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">{
+  "type": "identification",
+  "question": "Who wrote 'To Kill a Mockingbird'?",
+  "correct": "Harper Lee"
+}</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Complete Example Subsection -->
+          <div id="code-example" class="docs-subsection mt-12" aria-labelledby="code-example-heading">
+            <h3 id="code-example-heading" class="docs-subsection__title text-2xl font-semibold text-md-on-surface dark:text-gray-100 mb-6">Complete Example</h3>
+
+            <div class="docs-section-content">
+              <p class="text-gray-600 dark:text-gray-300 mb-6">Here's a complete example showing all question types in a single quiz.</p>
+
+              <div class="code-block mb-6 bg-gray-900 rounded-lg overflow-hidden" itemscope itemtype="https://schema.org/Code">
+                <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
+                  <span class="text-sm text-gray-400">quiz.json</span>
+                  <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" aria-label="Copy code to clipboard" data-lang="json">
+                    <span class="material-symbols-outlined text-sm">content_copy</span>
+                    Copy
+                  </button>
+                </div>
+                <pre class="p-4 overflow-x-auto"><code class="language-json text-gray-100 text-sm">[
   {
     "type": "multiple-choice",
-    "question": "What is the capital of France?",
-    "options": ["Berlin", "Madrid", "Paris", "Rome"],
-    "correct": 2 
+    "question": "### What does this Python code do?\n```python\ndef add(a, b):\n    return a + b\n```",
+    "options": ["Subtracts", "Adds", "Divides", "Multiplies"],
+    "correct": 1
   },
   {
     "type": "true-false",
-    "question": "The earth is flat.",
-    "correct": false
+    "question": "**The Sun rises in the East.**",
+    "correct": true
   },
   {
     "type": "fill-in-the-blank",
-    "question": "The chemical symbol for water is __.",
-    "correct": "H2O"
+    "question": "The chemical symbol for **water** is H<sub>2</sub>_.",
+    "correct": "O"
+  },
+  {
+    "type": "identification",
+    "question": "Who wrote 'To Kill a Mockingbird'?",
+    "correct": "Harper Lee"
   }
 ]</code></pre>
+              </div>
+
+              <div class="docs-callout bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400/50 p-4" role="note" aria-label="Tip">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Tip:</strong> You can use Markdown formatting in questions to make them more engaging. Supported elements include headers (###), bold (**text**), italics (*text*), and code blocks (```code```).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Taking Quizzes Section -->
+      <section id="taking-quizzes" class="docs-section mb-12 scroll-mt-6" aria-labelledby="taking-quizzes-heading">
+        <h2 id="taking-quizzes-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Taking Quizzes</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <p class="text-gray-600 dark:text-gray-300 mb-6">Once a quiz is loaded, you can navigate through questions and submit answers using various methods.</p>
+
+          <!-- Navigation Table -->
+          <div class="docs-navigation mb-8">
+            <h3 class="docs-navigation__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-4">Navigation</h3>
+            <div class="docs-table overflow-x-auto mb-4">
+              <table class="w-full min-w-[600px]" role="table" aria-label="Quiz navigation controls">
+                <thead>
+                  <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Control</th>
+                    <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Action</th>
+                    <th scope="col" class="text-left font-medium text-md-on-surface dark:text-gray-100 py-3 px-4">Description</th>
+                  </tr>
+                </thead>
+                <tbody class="text-sm text-gray-600 dark:text-gray-300">
+                  <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <td class="py-3 px-4"><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">Previous</kbd></td>
+                    <td class="py-3 px-4">Click or press <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">←</kbd></td>
+                    <td class="py-3 px-4">Go to previous question</td>
+                  </tr>
+                  <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <td class="py-3 px-4"><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">Next</kbd></td>
+                    <td class="py-3 px-4">Click or press <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">→</kbd></td>
+                    <td class="py-3 px-4">Go to next question</td>
+                  </tr>
+                  <tr class="border-b border-gray-200 dark:border-gray-600">
+                    <td class="py-3 px-4"><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">Home</kbd></td>
+                    <td class="py-3 px-4">Click or press <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">Home</kbd></td>
+                    <td class="py-3 px-4">Go to first question</td>
+                  </tr>
+                  <tr>
+                    <td class="py-3 px-4"><kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">End</kbd></td>
+                    <td class="py-3 px-4">Click or press <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono">End</kbd></td>
+                    <td class="py-3 px-4">Go to last question</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="docs-callout bg-gray-50 dark:bg-gray-700/50 border-l-4 border-gray-500 dark:border-gray-400/50 p-4" role="note" aria-label="Keyboard shortcuts tip">
+              <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Tip:</strong> You can use keyboard shortcuts to navigate quickly through quizzes.</p>
+            </div>
+          </div>
+
+          <!-- Answering Questions -->
+          <div class="docs-answering mb-8">
+            <h3 class="docs-answering__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-6">Answering Questions</h3>
+
+            <!-- Multiple Choice & True/False -->
+            <div class="docs-answer-type mb-6">
+              <h4 class="docs-answer-type__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3">Multiple Choice & True/False</h4>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">Click on an option to select and submit your answer immediately.</p>
+
+              <div class="docs-example bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4" aria-label="Example interaction">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">Example: Click "Paris" to answer "What is the capital of France?"</p>
+                <div class="flex gap-2 flex-wrap" role="group" aria-label="Multiple choice options">
+                  <button class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Berlin</button>
+                  <button class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Madrid</button>
+                  <button class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-md border border-blue-200 dark:border-blue-500 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors" aria-pressed="true">Paris</button>
+                  <button class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Rome</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fill-in-the-Blank & Identification -->
+            <div class="docs-answer-type">
+              <h4 class="docs-answer-type__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3">Fill-in-the-Blank & Identification</h4>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">Type your answer in the input field and press Enter or click Submit.</p>
+
+              <div class="docs-example bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4" aria-label="Example interaction">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">Example: Type "H2O" and press Enter to answer "The chemical symbol for water is __."</p>
+                <div class="flex items-center gap-2">
+                  <div class="flex-1">
+                    <label for="answer-input" class="sr-only">Answer input</label>
+                    <input type="text" id="answer-input" value="H2O" class="w-full px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400" placeholder="Type your answer...">
+                  </div>
+                  <button class="bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 transition-colors">Submit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips & Best Practices -->
+          <div class="docs-tips">
+            <h3 class="docs-tips__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-4">Tips & Best Practices</h3>
+            <div class="docs-tips__content space-y-4">
+              <div class="docs-tip flex items-start" role="note" aria-label="Tip">
+                <div class="mr-3 flex-shrink-0">
+                  <span class="bg-green-100 text-green-800 text-xs rounded-full px-2 py-1 font-medium" role="img" aria-label="Tip icon">Tip</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-gray-600 dark:text-gray-300">Use the "Format JSON" button to validate and pretty-print your JSON if you're having issues.</p>
+                </div>
+              </div>
+
+              <div class="docs-tip flex items-start" role="note" aria-label="Note">
+                <div class="mr-3 flex-shrink-0">
+                  <span class="bg-yellow-100 text-yellow-800 text-xs rounded-full px-2 py-1 font-medium" role="img" aria-label="Note icon">Note</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-gray-600 dark:text-gray-300">The app saves your progress automatically, but you can also manually save quizzes to local storage.</p>
+                </div>
+              </div>
+
+              <div class="docs-tip flex items-start" role="note" aria-label="Info">
+                <div class="mr-3 flex-shrink-0">
+                  <span class="bg-blue-100 text-blue-800 text-xs rounded-full px-2 py-1 font-medium" role="img" aria-label="Info icon">Info</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-gray-600 dark:text-gray-300">You can take quizzes offline once they're loaded - no internet connection needed.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Managing Quizzes Section -->
+      <section id="managing-quizzes" class="docs-section mb-12 scroll-mt-6" aria-labelledby="managing-quizzes-heading">
+        <h2 id="managing-quizzes-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Managing Quizzes</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <p class="text-gray-600 dark:text-gray-300 mb-6">Kwek Kwek Quiz provides several ways to manage your quizzes for easy access and organization.</p>
+
+          <!-- Saving Quizzes -->
+          <div class="docs-management mb-8">
+            <h3 class="docs-management__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-4">Saving Quizzes</h3>
+
+            <div class="docs-steps mb-4" aria-label="How to save a quiz">
+              <h4 class="text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3">How to Save a Quiz</h4>
+              <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                <li>Enter a name for your quiz in the "Quiz Name" field</li>
+                <li>Click the "Save" button (floppy disk icon)</li>
+                <li>Your quiz will be saved to your browser's local storage</li>
+                <li>The quiz will appear in the "Saved Quizzes" dropdown</li>
+              </ol>
+            </div>
+
+            <div class="docs-callout bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 dark:border-amber-400/50 p-4" role="note" aria-label="Storage information">
+              <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Note:</strong> Saved quizzes are stored locally in your browser and won't be available on other devices or after clearing browser data.</p>
+            </div>
+          </div>
+
+          <!-- Loading Quizzes -->
+          <div class="docs-management mb-8">
+            <h3 class="docs-management__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-4">Loading Quizzes</h3>
+
+            <div class="docs-steps mb-4" aria-label="How to load a saved quiz">
+              <h4 class="text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3">How to Load a Saved Quiz</h4>
+              <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                <li>Select a quiz from the "Saved Quizzes" dropdown</li>
+                <li>Click on the quiz name to load it</li>
+                <li>The quiz will replace the current content in the editor</li>
+                <li>You can now edit, take, or share the loaded quiz</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Deleting Quizzes -->
+          <div class="docs-management">
+            <h3 class="docs-management__title text-xl font-semibold text-md-on-surface dark:text-gray-100 mb-4">Deleting Quizzes</h3>
+
+            <div class="docs-steps" aria-label="How to delete a saved quiz">
+              <h4 class="text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3">How to Delete a Saved Quiz</h4>
+              <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                <li>Select the quiz you want to delete from the dropdown</li>
+                <li>Click the "Delete" button (trash can icon)</li>
+                <li>Confirm the deletion when prompted</li>
+                <li>The quiz will be removed from local storage</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Advanced Features Section -->
+      <section id="advanced-features" class="docs-section mb-12 scroll-mt-6" aria-labelledby="advanced-features-heading">
+        <h2 id="advanced-features-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Advanced Features</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <p class="text-gray-600 dark:text-gray-300 mb-6">Kwek Kwek Quiz includes several advanced features for power users and collaborative learning.</p>
+
+          <div class="docs-features space-y-6">
+            <!-- Peer-to-Peer Sharing -->
+            <div class="docs-feature bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/HowTo">
+              <meta itemprop="name" content="Peer-to-Peer Sharing">
+              <h3 class="docs-feature__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="headline">Peer-to-Peer Sharing</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" itemprop="description">Share quizzes directly with others without needing a server or internet connection.</p>
+
+              <div class="docs-callout bg-purple-50 dark:bg-purple-900/30 border-l-4 border-purple-500 dark:border-purple-400/50 p-4" role="note" aria-label="How it works">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>How it works:</strong> Generate a unique code, share it with the recipient, and they can connect directly to receive the quiz.</p>
+              </div>
+            </div>
+
+            <!-- Offline Mode -->
+            <div class="docs-feature bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/HowTo">
+              <meta itemprop="name" content="Offline Mode">
+              <h3 class="docs-feature__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="headline">Offline Mode</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" itemprop="description">Once loaded, quizzes work completely offline without requiring an internet connection.</p>
+
+              <div class="docs-callout bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 dark:border-green-400/50 p-4" role="note" aria-label="Perfect for">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Perfect for:</strong> Studying on the go, areas with poor connectivity, or when you want to minimize data usage.</p>
+              </div>
+            </div>
+
+            <!-- Progress Tracking -->
+            <div class="docs-feature bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/HowTo">
+              <meta itemprop="name" content="Progress Tracking">
+              <h3 class="docs-feature__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-3" itemprop="headline">Progress Tracking</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4" itemprop="description">Track your progress through quizzes with visual indicators and detailed summaries.</p>
+
+              <div class="docs-callout bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400/50 p-4" role="note" aria-label="Features">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>Features:</strong> Progress bars, score tracking, detailed results with explanations.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Troubleshooting Section -->
+      <section id="troubleshooting" class="docs-section mb-12 scroll-mt-6" aria-labelledby="troubleshooting-heading">
+        <h2 id="troubleshooting-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Troubleshooting</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <p class="text-gray-600 dark:text-gray-300 mb-6">Having issues? Here are some common problems and their solutions.</p>
+
+          <div class="docs-troubleshooting space-y-6">
+            <!-- JSON Parse Error -->
+            <div class="docs-issue bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/FAQPage">
+              <div class="docs-issue__header">
+                <h3 class="docs-issue__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-2" itemprop="headline">JSON Parse Error</h3>
+              </div>
+              <div class="docs-issue__content">
+                <p class="text-gray-600 dark:text-gray-300 mb-4"><strong>Symptoms:</strong> "Invalid JSON generated" error when using AI features.</p>
+
+                <div class="docs-steps" aria-label="Solutions for JSON parse error">
+                  <h4 class="text-md font-medium text-md-on-surface dark:text-gray-100 mb-3">Solutions</h4>
+                  <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                    <li>Check your API key is valid and has Gemini access</li>
+                    <li>Try a simpler prompt - the AI might be confused</li>
+                    <li>Check the console for the raw AI output to see what went wrong</li>
+                    <li>Try again later - the API might be experiencing issues</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Upload Issues -->
+            <div class="docs-issue bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/FAQPage">
+              <div class="docs-issue__header">
+                <h3 class="docs-issue__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-2" itemprop="headline">Image Upload Issues</h3>
+              </div>
+              <div class="docs-issue__content">
+                <p class="text-gray-600 dark:text-gray-300 mb-4"><strong>Symptoms:</strong> Image not showing or quiz generation failing with image.</p>
+
+                <div class="docs-steps" aria-label="Solutions for image upload issues">
+                  <h4 class="text-md font-medium text-md-on-surface dark:text-gray-100 mb-3">Solutions</h4>
+                  <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                    <li>Ensure the image is in a supported format (JPEG, PNG, WebP)</li>
+                    <li>Check the image size - very large images might cause issues</li>
+                    <li>Try a different image if the current one isn't working</li>
+                    <li>Make sure your API key has image analysis capabilities</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- Saving/Loading Issues -->
+            <div class="docs-issue bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/FAQPage">
+              <div class="docs-issue__header">
+                <h3 class="docs-issue__title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-2" itemprop="headline">Saving/Loading Issues</h3>
+              </div>
+              <div class="docs-issue__content">
+                <p class="text-gray-600 dark:text-gray-300 mb-4"><strong>Symptoms:</strong> Quizzes not saving or loading correctly.</p>
+
+                <div class="docs-steps" aria-label="Solutions for saving/loading issues">
+                  <h4 class="text-md font-medium text-md-on-surface dark:text-gray-100 mb-3">Solutions</h4>
+                  <ol class="docs-steps__list text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                    <li>Check if local storage is enabled in your browser</li>
+                    <li>Clear browser cache and try again</li>
+                    <li>Try a different browser if the issue persists</li>
+                    <li>Check if you're in private/incognito mode (which might block storage)</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section id="faq" class="docs-section mb-12 scroll-mt-6" aria-labelledby="faq-heading">
+        <h2 id="faq-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Frequently Asked Questions</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <div class="docs-faq space-y-4" itemscope itemtype="https://schema.org/FAQPage">
+            <!-- FAQ Item 1 -->
+            <div class="docs-faq__item bg-white dark:bg-gray-700 rounded-lg shadow-sm" itemscope itemtype="https://schema.org/Question">
+              <meta itemprop="name" content="Do I need an internet connection to use the app?">
+              <button class="docs-faq__question w-full text-left p-6 flex justify-between items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="faq-answer-1">
+                <span class="docs-faq__question-text text-sm font-medium text-md-on-surface dark:text-gray-100" itemprop="text">Do I need an internet connection to use the app?</span>
+                <span class="material-symbols-outlined text-sm text-gray-500 dark:text-gray-400" aria-hidden="true">expand_more</span>
+              </button>
+              <div id="faq-answer-1" class="docs-faq__answer p-6 pt-0 hidden" role="region" aria-labelledby="faq-question-1" itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                <meta itemprop="text" content="You only need an internet connection for AI-powered features (quiz generation) and when initially loading the app. Once a quiz is loaded, you can use it completely offline. Saved quizzes and peer-to-peer sharing also work without internet.">
+                <p class="text-sm text-gray-600 dark:text-gray-300">You only need an internet connection for AI-powered features (quiz generation) and when initially loading the app. Once a quiz is loaded, you can use it completely offline. Saved quizzes and peer-to-peer sharing also work without internet.</p>
+              </div>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="docs-faq__item bg-white dark:bg-gray-700 rounded-lg shadow-sm" itemscope itemtype="https://schema.org/Question">
+              <meta itemprop="name" content="Can I export my quizzes?">
+              <button class="docs-faq__question w-full text-left p-6 flex justify-between items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="faq-answer-2">
+                <span class="docs-faq__question-text text-sm font-medium text-md-on-surface dark:text-gray-100" itemprop="text">Can I export my quizzes?</span>
+                <span class="material-symbols-outlined text-sm text-gray-500 dark:text-gray-400" aria-hidden="true">expand_more</span>
+              </button>
+              <div id="faq-answer-2" class="docs-faq__answer p-6 pt-0 hidden" role="region" aria-labelledby="faq-question-2" itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                <meta itemprop="text" content="Currently, quizzes are stored locally in your browser. You can copy the JSON from the editor and save it manually, or use the peer-to-peer sharing feature to send quizzes to others. Export functionality may be added in future versions.">
+                <p class="text-sm text-gray-600 dark:text-gray-300">Currently, quizzes are stored locally in your browser. You can copy the JSON from the editor and save it manually, or use the peer-to-peer sharing feature to send quizzes to others. Export functionality may be added in future versions.</p>
+              </div>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="docs-faq__item bg-white dark:bg-gray-700 rounded-lg shadow-sm" itemscope itemtype="https://schema.org/Question">
+              <meta itemprop="name" content="How do I add images to my quizzes?">
+              <button class="docs-faq__question w-full text-left p-6 flex justify-between items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="faq-answer-3">
+                <span class="docs-faq__question-text text-sm font-medium text-md-on-surface dark:text-gray-100" itemprop="text">How do I add images to my quizzes?</span>
+                <span class="material-symbols-outlined text-sm text-gray-500 dark:text-gray-400" aria-hidden="true">expand_more</span>
+              </button>
+              <div id="faq-answer-3" class="docs-faq__answer p-6 pt-0 hidden" role="region" aria-labelledby="faq-question-3" itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                <meta itemprop="text" content="You can add context to AI-generated quizzes by clicking the 'Add Context' button and uploading an image. The AI will use this image to generate relevant questions. For manual quizzes, you can include image URLs in your JSON questions.">
+                <p class="text-sm text-gray-600 dark:text-gray-300">You can add context to AI-generated quizzes by clicking the "Add Context" button and uploading an image. The AI will use this image to generate relevant questions. For manual quizzes, you can include image URLs in your JSON questions.</p>
+              </div>
+            </div>
+
+            <!-- FAQ Item 4 -->
+            <div class="docs-faq__item bg-white dark:bg-gray-700 rounded-lg shadow-sm" itemscope itemtype="https://schema.org/Question">
+              <meta itemprop="name" content="Is my data private?">
+              <button class="docs-faq__question w-full text-left p-6 flex justify-between items-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" aria-expanded="false" aria-controls="faq-answer-4">
+                <span class="docs-faq__question-text text-sm font-medium text-md-on-surface dark:text-gray-100" itemprop="text">Is my data private?</span>
+                <span class="material-symbols-outlined text-sm text-gray-500 dark:text-gray-400" aria-hidden="true">expand_more</span>
+              </button>
+              <div id="faq-answer-4" class="docs-faq__answer p-6 pt-0 hidden" role="region" aria-labelledby="faq-question-4" itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                <meta itemprop="text" content="Yes! Kwek Kwek Quiz is designed with privacy in mind. All your data is stored locally in your browser - nothing is sent to any servers. The only exception is when using AI features, where your prompt and image (if provided) are sent to Google's API for processing, but this is optional.">
+                <p class="text-sm text-gray-600 dark:text-gray-300">Yes! Kwek Kwek Quiz is designed with privacy in mind. All your data is stored locally in your browser - nothing is sent to any servers. The only exception is when using AI features, where your prompt and image (if provided) are sent to Google's API for processing, but this is optional.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary Section -->
+      <section id="summary" class="docs-section mb-12 scroll-mt-6" aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="docs-section__title text-3xl font-bold text-md-on-surface dark:text-gray-100 mb-6" itemprop="headline">Quick Reference</h2>
+
+        <div class="docs-section-content" itemprop="text">
+          <div class="docs-summary grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="docs-summary__card bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/ItemList">
+              <h3 class="docs-summary__card-title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-4" itemprop="headline">Key Points</h3>
+              <ul class="docs-summary__list text-sm text-gray-600 dark:text-gray-300 space-y-2" itemprop="about">
+                <li>Quizzes are JSON arrays of question objects</li>
+                <li>Four question types: multiple-choice, true-false, fill-in-the-blank, identification</li>
+                <li>AI features require a Gemini API key</li>
+                <li>All data is stored locally in your browser</li>
+                <li>Works completely offline once loaded</li>
+              </ul>
+            </div>
+
+            <div class="docs-summary__card bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm" itemscope itemtype="https://schema.org/ItemList">
+              <h3 class="docs-summary__card-title text-lg font-medium text-md-on-surface dark:text-gray-100 mb-4" itemprop="headline">Next Steps</h3>
+              <ol class="docs-summary__list text-sm text-gray-600 dark:text-gray-300 space-y-2" itemprop="about">
+                <li>Get your Gemini API key from <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" class="text-md-primary dark:text-purple-400 hover:underline">Google AI Studio</a></li>
+                <li>Try generating a sample quiz using the "Sample" button</li>
+                <li>Explore the AI generation feature with a simple prompt</li>
+                <li>Save your first quiz and try loading it later</li>
+                <li>Share a quiz with a friend using peer-to-peer sharing</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="docs-footer mt-12 pt-6 border-t border-gray-200 dark:border-gray-700" role="contentinfo">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+      <p class="mb-2 md:mb-0">&copy; 2026 Kwek Kwek Quiz. All rights reserved.</p>
+      <nav class="flex gap-4" aria-label="Footer navigation">
+        <a href="#overview" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Overview</a>
+        <a href="#api-key" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">API Setup</a>
+        <a href="#troubleshooting" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Help</a>
+      </nav>
     </div>
-    
-    <p class="mt-2">Ensure your JSON follows the structure of an array of question objects. Each object needs <code>type</code>, <code>question</code>, and <code>correct</code>. Multiple-choice questions also need an <code>options</code> array (correct is the 0-based index).</p>
-    
-    <h6>Taking Quizzes</h6>
-    <p>Once a quiz is loaded, navigate through questions using "Next" and "Previous". For multiple-choice and true/false, clicking an option submits it. For fill-in-the-blank or identification, type your answer and click "Submit" or press Enter.</p>
-    
-    <h6>Managing Quizzes</h6>
-    <p>Enter a "Quiz Name" and click "Save" to store your current quiz in the browser's local storage. Select a saved quiz from the dropdown to load it. Use "Delete" to remove the selected saved quiz.</p>
-  </div>
+  </footer>
 </div>

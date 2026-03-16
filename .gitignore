@@ -48,3 +48,4 @@ pnpm-debug.log*
 /.svelte-kit
 /.output
 /project/
+.cocoindex_code/

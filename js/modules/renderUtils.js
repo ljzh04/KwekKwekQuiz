@@ -26,11 +26,13 @@ export function renderMarkdownWithLaTeX(markdownText) {
 <div class="code-block bg-gray-900 rounded-lg overflow-hidden my-4" itemprop="code">
     <div class="code-header flex justify-between items-center px-4 py-2 bg-gray-800">
         <span class="text-sm text-gray-400 font-mono">${displayLang}</span>
-        <button class="code-copy text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
-                aria-label="Copy code to clipboard" 
-                onclick="navigator.clipboard.writeText(\`${code.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`)">
-            <span class="material-symbols-outlined text-sm">content_copy</span>
-            Copy
+        <button class="copy-btn text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1" 
+                aria-label="Copy code to clipboard"
+                data-lang="${baseLang}">
+            <span class="copy-label">Copy</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>
         </button>
     </div>
     <pre class="p-4 overflow-x-auto m-0"><code class="${lang} text-gray-100 text-sm">${highlightedCode}</code></pre>
@@ -61,7 +63,8 @@ export function attachCopyHandlers() {
         const originalIconHTML = icon.outerHTML;
 
         btn.addEventListener('click', () => {
-            const codeElement = btn.nextElementSibling?.querySelector('code');
+            const codeBlockDiv = btn.closest('.code-block');
+            const codeElement = codeBlockDiv?.querySelector('pre code');
             if (!codeElement) {
                 console.warn("Copy button clicked, but no code element found nearby.");
                 return;

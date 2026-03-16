@@ -109,7 +109,6 @@ pre code {
   display: flex;
   align-items: center;
   gap: 4px;
-  position: absolute !important;
   top: 8px !important;
   right: 8px !important;
   background: var(--md-sys-color-surface-container) !important;

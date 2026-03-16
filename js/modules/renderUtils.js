@@ -57,12 +57,11 @@ export function attachCopyHandlers() {
         if (btn.dataset.copyHandlerAttached) return;
         btn.dataset.copyHandlerAttached = 'true';
 
-        const labelSpan = btn.querySelector('.copy-label');
-        const icon = btn.querySelector('svg');
-        const originalLabel = labelSpan.textContent;
-        const originalIconHTML = icon.outerHTML;
-
         btn.addEventListener('click', () => {
+            const labelSpan = btn.querySelector('.copy-label');
+            const icon = btn.querySelector('svg');
+            const originalLabel = labelSpan.textContent;
+            const originalIconHTML = icon.outerHTML;
             const codeBlockDiv = btn.closest('.code-block');
             const codeElement = codeBlockDiv?.querySelector('pre code');
             if (!codeElement) {

@@ -3,8 +3,9 @@ import jsyaml from 'js-yaml';
 import * as DOM from './dom.js';
 import * as State from './state.js';
 import { showError, clearError, validateQuizData, sanitizeInput, showSuccess } from './utils.js';
+import { initializeQuizBuilder, loadQuestionsFromJson } from './quizBuilder.js';
 // import { toggleDarkMode, toggleAnimations } from './settingsController.js'; // Handled in settingsController.initSettings
-import { 
+import {
     handleSaveQuiz, 
     handleDeleteQuiz, 
     handleSavedQuizSelectChange,
@@ -12,6 +13,7 @@ import {
     handleImportQuizzes,      // NEW
     handleClearAllQuizzes     // NEW
 } from './storageManager.js';
+import { jsonStateManager } from './jsonStateManager.js';
 import {
     initializePeer,
     startListening,
@@ -22,6 +24,7 @@ import {
 } from './p2pShare.js';
 // import { showQuizSetupScreen } from './uiController.js'; // showQuizSetupScreen is for app internal, not global home
 import { handleGenerateQuizRequest } from './geminiService.js';
+import { handleGenerateInBuilderMode } from './quizBuilder.js';
 import { startQuiz, handleSubmitAnswer, goToPrevQuestion, goToNextQuestion, restartCurrentQuiz } from './quizEngine.js';
 import { showQuizSetupScreen as showAppSetupScreen } from './uiController.js'; // For backToSetupBtn
 
@@ -466,7 +469,7 @@ export function attachAllEventHandlers() {
     if (DOM.saveQuizBtn) DOM.saveQuizBtn.addEventListener("click", handleSaveQuiz);
     if (DOM.deleteQuizBtn) DOM.deleteQuizBtn.addEventListener("click", handleDeleteQuiz);
     if (DOM.savedQuizzesSelect) DOM.savedQuizzesSelect.addEventListener("change", handleSavedQuizSelectChange);
-    if (DOM.generateBtn) DOM.generateBtn.addEventListener("click", handleGenerateQuizRequest);
+    if (DOM.generateBtn) DOM.generateBtn.addEventListener("click", handleGenerateButton);
 
     // P2P Share Modal Event Handlers
     if (DOM.shareQuizBtn) DOM.shareQuizBtn.addEventListener("click", handleOpenShareModal);
@@ -568,5 +571,13 @@ export function handleUseReceivedQuiz() {
         handleCloseDownloadModal();
     } else {
         showError('No quiz data received yet.');
+    }
+}
+
+function handleGenerateButton() {
+    if (DOM.quizBuilder && !DOM.quizBuilder.classList.contains('hidden')) {
+        handleGenerateInBuilderMode();
+    } else {
+        handleGenerateQuizRequest();
     }
 }

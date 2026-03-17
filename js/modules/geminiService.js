@@ -1,7 +1,9 @@
 // js/modules/geminiService.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as DOM from './dom.js';
-import { showError, clearError } from './utils.js';
+import { jsonStateManager } from './jsonStateManager.js';
+import { showError, showSuccess, clearError } from './utils.js';
+import { loadQuestionsFromJson } from './quizBuilder.js';
 
 /**
  * Gemini Service for handling AI-powered quiz generation
@@ -141,7 +143,6 @@ export class GeminiService {
       this.client = new GoogleGenerativeAI(apiKey);
       this.apiKey = apiKey;
       clearError();
-      console.log("Gemini client initialized/re-initialized.");
       return true;
     } catch (error) {
       showError("Failed to initialize Gemini client: " + error.message);
@@ -344,13 +345,18 @@ export class GeminiService {
   /**
    * Processes API response and extracts JSON
    * @param {string} rawText - Raw text response
-   * @returns {Object> Parsed JSON object
+   * @returns {Object} Parsed JSON object
    */
   _processResponse(rawText) {
-    const cleanedText = rawText
-      .replace(/```json\s*/gi, '')
-      .replace(/```/g, '')
-      .trim();
+    let cleanedText = rawText.trim();
+    
+    const startsWithCodeBlock = cleanedText.startsWith('```');
+    const endsWithCodeBlock = cleanedText.endsWith('```');
+    
+    if (startsWithCodeBlock && endsWithCodeBlock) {
+      cleanedText = cleanedText.slice(3, -3).trim();
+      cleanedText = cleanedText.replace(/^\w+\s*/, '');
+    }
 
     try {
       return JSON.parse(cleanedText);
@@ -385,23 +391,27 @@ export class GeminiService {
 
   // ==================== MAIN REQUEST HANDLER ====================
   /**
-   * Main method to handle quiz generation request
+   * Main method to handle quiz generation request with improved state management
    * @param {Object} ui - UI elements
    * @returns {Promise<void>>
    */
   async handleGenerateQuizRequest(ui) {
-    // Validate UI elements
-    if (!ui.apiKeySettingInput || !ui.quizJsonInput || !ui.generateBtn) {
+    if (!ui.apiKeySettingInput || !ui.generateBtn) {
       console.error("Required UI elements not found");
       return;
     }
 
-    const userPrompt = ui.quizJsonInput.value.trim();
     const imageFile = ui.quizImageInput?.files?.[0] || null;
     const apiKey = ui.apiKeySettingInput.value.trim();
 
     // Validate inputs
-    if (!this.validateAndInitializeClient(apiKey)) return;
+    if (!this.validateAndInitializeClient(apiKey)) {
+      return;
+    }
+
+    // Get user prompt from appropriate source based on mode
+    const userPrompt = this._getUserPrompt();
+    
     if (!userPrompt && !imageFile) {
       showError("Please enter a prompt or upload an image to generate a quiz.");
       return;
@@ -414,19 +424,110 @@ export class GeminiService {
       this._updateUIState(ui, true, "Generating quiz content...");
       clearError();
 
-      const promptData = this._preparePrompt(basePrompt, userPrompt, imageFile);
+      // Prepare prompt with context-aware generation
+      const promptData = this._prepareSmartPrompt(basePrompt, userPrompt, imageFile);
       const rawText = await this._callGeminiAPI(promptData.text, { image: promptData.image });
       const parsedJSON = this._processResponse(rawText);
 
-      ui.quizJsonInput.value = JSON.stringify(parsedJSON, null, 2);
+      // Handle the generated data based on context
+      await this._handleGeneratedData(parsedJSON, ui);
+      
       clearError();
+      showSuccess("Quiz generated successfully!");
     } catch (error) {
       console.error("Quiz generation failed:", error);
-      ui.quizJsonInput.value = `Error during AI generation. Original prompt: "${userPrompt}"`;
       showError(error.message);
     } finally {
       this._updateUIState(ui, false, null);
       ui.originalButtonText = originalButtonText;
+    }
+  }
+
+  /**
+   * Get user prompt from the appropriate source based on current mode
+   * @private
+   * @returns {string} User prompt
+   */
+  _getUserPrompt() {
+    // Try to get prompt from JSON state manager first
+    const currentState = jsonStateManager.getCurrentData();
+    if (currentState && typeof currentState === 'string' && currentState.trim() !== '') {
+      return currentState;
+    }
+
+    // Fall back to DOM element if state manager doesn't have data
+    if (typeof DOM.quizJsonInput !== 'undefined' && DOM.quizJsonInput && DOM.quizJsonInput.value) {
+      return DOM.quizJsonInput.value.trim();
+    }
+
+    return '';
+  }
+
+  /**
+   * Prepare smart prompt that considers existing context and mode
+   * @private
+   * @param {string} basePrompt - Base prompt text
+   * @param {string} userPrompt - User-provided prompt
+   * @param {File} [imageFile] - Optional image file
+   * @returns {Object} Prepared prompt content
+   */
+  _prepareSmartPrompt(basePrompt, userPrompt, imageFile) {
+    const context = jsonStateManager.getAIContext(userPrompt);
+    
+    let enhancedPrompt = basePrompt;
+    
+    if (context.hasExistingData) {
+      // Context-aware generation for existing quizzes
+      if (context.mode === 'builder') {
+        enhancedPrompt = `I have ${context.existingQuestions.length} existing quiz questions in builder mode. Please generate 3-5 additional questions based on this context and the following prompt:\n\nExisting Questions:\n${JSON.stringify(context.existingQuestions, null, 2)}\n\nNew Prompt:\n${userPrompt}\n\nPlease return only the new questions in JSON format, do not include the existing questions.`;
+      } else {
+        enhancedPrompt = `I have ${context.existingQuestions.length} existing quiz questions. Please generate 3-5 additional questions based on this context and the following prompt:\n\nExisting Questions:\n${JSON.stringify(context.existingQuestions, null, 2)}\n\nNew Prompt:\n${userPrompt}\n\nPlease return only the new questions in JSON format, do not include the existing questions.`;
+      }
+    } else {
+      // Standard generation for new quizzes
+      enhancedPrompt = basePrompt + (userPrompt || "Please generate 5 quiz questions.");
+    }
+
+    return this._preparePrompt(enhancedPrompt, '', imageFile);
+  }
+
+  /**
+   * Handle generated data based on context and mode
+   * @private
+   * @param {Object|Array} generatedData - Generated quiz data
+   * @param {Object} ui - UI elements
+   */
+  async _handleGeneratedData(generatedData, ui) {
+    const context = jsonStateManager.getAIContext();
+    
+    if (context.hasExistingData) {
+      // Merge with existing data
+      const mergedData = jsonStateManager.mergeNewQuestions(Array.isArray(generatedData) ? generatedData : [generatedData]);
+      const mergedJsonString = JSON.stringify(mergedData, null, 2);
+      
+      // Update UI based on current mode
+      if (context.mode === 'builder') {
+        // Update builder mode - convert to array and render
+        loadQuestionsFromJson(mergedData);
+        if (ui.quizJsonInput) {
+          ui.quizJsonInput.value = mergedJsonString;
+        }
+      } else {
+        // Update editor mode - update textarea
+        if (ui.quizJsonInput) {
+          ui.quizJsonInput.value = mergedJsonString;
+        }
+      }
+    } else {
+      // New quiz generation
+      const jsonString = JSON.stringify(generatedData, null, 2);
+      
+      // Update state manager and UI
+      jsonStateManager.setData(generatedData);
+      
+      if (ui.quizJsonInput) {
+        ui.quizJsonInput.value = jsonString;
+      }
     }
   }
 }
@@ -445,4 +546,9 @@ export async function handleGenerateQuizRequest() {
   };
 
   await geminiService.handleGenerateQuizRequest(ui);
+}
+
+// Attach to window for global access
+if (typeof window !== 'undefined') {
+  window.handleGenerateQuizRequest = handleGenerateQuizRequest;
 }

@@ -78,8 +78,9 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.7; transform: scale(1.2) rotate(10deg); }
 }
-/* --- 2. Editor Unit --- */
-.editor-unit {
+
+/* --- 2. Editor Unit & Quiz Builder --- */
+.editor-unit, .quiz-builder {
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 12px;
   overflow: hidden;
@@ -88,9 +89,9 @@
   transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
 }
 
-.editor-unit:focus-within {
+.editor-unit:focus-within, .quiz-builder:focus-within {
   border-color: var(--md-sys-color-primary);
-  box-shadow: var(--md-sys-elevation-2), 0 0 0 4px rgba(103, 80, 164, 0.1);
+  box-shadow: var(--md-sys-elevation-2), 0 0 4px rgba(103, 80, 164, 0.1);
 }
 
 .editor-unit.drag-active {
@@ -98,12 +99,30 @@
   background-color: var(--md-sys-color-primary-container);
 }
 
-/* Toolbar & Canvas */
-.editor-toolbar {
+/* Standardized Interface Components */
+.menu-bar, .ribbon-bar {
   background-color: var(--md-sys-color-surface-container-high);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
   backdrop-filter: blur(8px);
   min-height: 56px;
+}
+
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+}
+
+.ribbon-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
 }
 
 #quiz-json-input {
@@ -138,9 +157,48 @@
   font-size: 12px;
   min-height: 40px;
   padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* --- 3. Buttons & Interactions --- */
+/* --- 3. Quiz Builder Specific Styles --- */
+.builder-content {
+  min-height: 300px;
+}
+
+.empty-state {
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+}
+
+.question-card {
+  transition: all 0.2s ease;
+}
+
+.question-card:hover {
+  box-shadow: var(--md-sys-elevation-2);
+}
+
+.option-input {
+  transition: border-color 0.2s ease;
+}
+
+.option-input:focus {
+  border-color: var(--md-sys-color-primary);
+  outline: none;
+}
+
+.add-option-btn, .remove-option-btn, .remove-question-btn {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-option-btn:hover, .remove-option-btn:hover, .remove-question-btn:hover {
+  opacity: 0.8;
+}
+
+/* --- 4. Buttons & Interactions --- */
 .md-filled-button, .md-filled-tonal-button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -160,15 +218,15 @@
 
 /* Quiz Feedback Animations */
 @keyframes pulse-green {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  0% { box-shadow: 0 0 rgba(34, 197, 94, 0.4); }
   70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 rgba(34, 197, 94, 0); }
 }
 
 @keyframes pulse-red {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 0); }
+  100% { box-shadow: 0 0 rgba(239, 68, 0); }
 }
 
 
@@ -181,7 +239,7 @@
 
 .input-feedback-error {
     border-color: #ef4444 !important;
-    background-color: rgba(239, 68, 68, 0.05) !important;
+    background-color: rgba(34, 197, 94, 0.05) !important;
     padding-right: 3rem !important;
     /* Optional: include the micro-shake animation here */
 }
@@ -191,7 +249,6 @@
     line-height: 1 !important;
     height: 36px; /* Force the icon container to be a standard size */
     width: 24px;
-    display: blflexock !important;
     align-items: center;
     justify-content: center;
 }
@@ -252,9 +309,14 @@
 #mode-indicator.json-mode { background: var(--md-sys-color-primary-container); }
 #mode-indicator.prompt-mode { background: var(--md-sys-color-secondary-container); }
 
+#builder-mode-indicator { 
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
 /* --- 5. Responsive & Dark Mode --- */
 @media (max-width: 768px) {
-  .editor-toolbar, .identity-section, .library-section .flex {
+  .menu-bar, .ribbon-bar, .identity-section, .library-section .flex {
     flex-direction: column;
     align-items: stretch;
   }
@@ -262,6 +324,6 @@
   .identity-section button, .library-section button { width: 100%; }
 }
 
-html.dark .editor-unit { border-color: var(--md-sys-color-outline-variant); }
-html.dark .editor-toolbar { background-color: var(--md-sys-color-surface-variant); }
+html.dark .editor-unit, html.dark .quiz-builder { border-color: var(--md-sys-color-outline-variant); }
+html.dark .menu-bar, html.dark .ribbon-bar { background-color: var(--md-sys-color-surface-variant); }
 html.dark .library-section { background-color: rgba(255, 255, 255, 0.05); }

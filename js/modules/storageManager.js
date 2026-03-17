@@ -2,6 +2,7 @@
 import * as DOM from './dom.js';
 import { validateQuizData, sanitizeInput, showError, clearError, showSuccess, showInfo } from './utils.js';
 import { setQuizData as setStateQuizData } from './state.js';
+import { loadQuestionsFromJson } from './quizBuilder.js';
 
 const SAVED_QUIZZES_STORAGE_ID = "savedQuizzes";
 
@@ -98,7 +99,7 @@ export function handleDeleteQuiz() {
 
 export function handleSavedQuizSelectChange() {
     clearError();
-    if (!DOM.savedQuizzesSelect || !DOM.quizJsonInput || !DOM.quizNameInput) return;
+    if (!DOM.savedQuizzesSelect || !DOM.quizJsonInput || !DOM.quizNameInput || !DOM.quizBuilder) return;
     const name = DOM.savedQuizzesSelect.value;
     if (!name) return;
 
@@ -106,6 +107,13 @@ export function handleSavedQuizSelectChange() {
     if (saved[name]) {
         DOM.quizJsonInput.value = JSON.stringify(saved[name], null, 2);
         DOM.quizNameInput.value = sanitizeInput(name);
+        
+        if (DOM.quizBuilder && !DOM.quizBuilder.classList.contains('hidden')) {
+            const jsonData = JSON.parse(DOM.quizJsonInput.value);
+            loadQuestionsFromJson(jsonData);
+        } else {
+        }
+        
         DOM.quizNameInput.dataset.editingExisting = "true"; // Flag that we are editing an existing quiz
     }
 }

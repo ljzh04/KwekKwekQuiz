@@ -31,6 +31,22 @@ export const savedQuizzesSelect = document.getElementById("saved-quizzes");
 export const quizNameInput = document.getElementById('quiz-name-input');
 // export const homeBtn = document.getElementById("home-btn"); // Removed as sidebar 'App' link replaces it
 
+// Quiz Editor
+export const editorUnit = document.getElementById('editor-unit');
+
+// Quiz Builder Elements
+export const quizBuilder = document.getElementById('quiz-builder');
+export const addQuestionBtn = document.getElementById('add-question-btn');
+export const switchToEditorBtn = document.getElementById('switch-to-editor-btn');
+export const switchToBuilderBtn = document.getElementById('switch-to-builder-btn');
+export const questionsContainer = document.getElementById('questions-container');
+export const builderModeIndicator = document.getElementById('builder-mode-indicator');
+export const previewQuizBtn = document.getElementById('preview-quiz-btn');
+
+// Standardized interface elements
+export const menuBar = document.querySelector('.menu-bar');
+export const ribbonBar = document.querySelector('.ribbon-bar');
+
 // --- Quiz Player (within App Section) ---
 export const quizContainer = document.getElementById("quiz-container");
 export const prevBtn = document.getElementById("prev-btn");

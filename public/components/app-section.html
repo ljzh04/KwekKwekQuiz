@@ -31,9 +31,78 @@
 </header>
 
 <section id="quiz-setup" class="quiz-setup space-y-6">
-  <div id="editor-unit" class="editor-unit border border-md-outline dark:border-gray-600 rounded-xl overflow-hidden shadow-sm">
+  <!-- Quiz Builder Interface (default view) -->
+  <div id="quiz-builder" class="quiz-builder border border-md-outline dark:border-gray-600 rounded-xl overflow-hidden shadow-sm">
+    <!-- Menu bar: contains mode toggle in the top right -->
+    <div class="menu-bar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
+      <h3 class="text-sm font-semibold text-md-on-surface dark:text-gray-200">Visual Quiz Builder</h3>
+      <div class="flex items-center gap-2">
+        <button id="switch-to-editor-btn" class="text-sm flex items-center gap-1 py-1.5 px-3 rounded-md hover:bg-md-surface dark:hover:bg-gray-600 text-md-on-surface-variant dark:text-gray-300 transition-colors">
+          <span class="material-symbols-outlined text-md">code</span>
+          <span>Editor Mode</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Ribbon bar: generate button only (no add context in builder mode) -->
+    <div class="ribbon-bar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
+      <div class="flex items-center gap-2">
+        <button id="generate-json-btn" class="md-filled-button flex items-center gap-2 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-all">
+          <span class="material-symbols-outlined text-lg">auto_fix_high</span>
+          <span class="text-sm">Generate More Questions</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content should have the questions/types/inputs + an add question button at the very end of the question list -->
+    <div class="builder-content p-4 bg-md-surface dark:bg-gray-900">
+      <div id="questions-container" class="space-y-4">
+        <!-- Questions will be added here dynamically -->
+        <div class="empty-state text-center py-12 text-md-on-surface-variant dark:text-gray-400">
+          <div class="material-symbols-outlined text-4xl mb-2 mx-auto opacity-50">quiz</div>
+          <p class="text-lg font-medium">No questions yet</p>
+          <p class="text-sm mt-1">Click "Add Question" to get started building your quiz</p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <button id="add-question-btn" class="md-filled-button flex items-center gap-1 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1 px-3 rounded-md shadow-sm transition-all text-xs w-full justify-center">
+          <span class="material-symbols-outlined text-base">add</span>
+          <span>Add Question</span>
+        </button>
+      </div>
+    </div>
     
-    <div class="editor-toolbar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
+    <!-- Status bar: contain the mode text, and the launch button -->
+    <footer class="status-bar flex items-center justify-between px-4 py-1.5 bg-gray-50 dark:bg-gray-800 border-t border-md-outline dark:border-gray-600 text-xs">
+      <div class="flex items-center gap-4">
+        <span id="builder-mode-indicator" class="text-[10px] uppercase tracking-wider text-md-on-surface-variant opacity-75 font-bold">
+          Mode: Visual Builder
+        </span>
+      </div>
+      
+      <button id="preview-quiz-btn" aria-label="Preview Quiz" title="Preview Quiz"
+        class="flex items-center gap-2 px-5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transform hover:-translate-y-0.5 active:translate-y-0 transition-all">
+        <span class="material-symbols-outlined text-lg">preview</span>
+        <span class="text-xs font-bold uppercase tracking-widest">Preview</span>
+      </button>
+    </footer>
+  </div>
+
+  <!-- JSON Editor Interface (hidden by default) -->
+  <div id="editor-unit" class="editor-unit border border-md-outline dark:border-gray-600 rounded-xl overflow-hidden shadow-sm hidden">
+    <!-- Menu bar: The mode toggle should also be on the top right -->
+    <div class="menu-bar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
+      <h3 class="text-sm font-semibold text-md-on-surface dark:text-gray-200">JSON Editor</h3>
+      <div class="flex items-center gap-2">
+        <button id="switch-to-builder-btn" class="text-sm flex items-center gap-1 py-1.5 px-3 rounded-md hover:bg-md-surface dark:hover:bg-gray-600 text-md-on-surface-variant dark:text-gray-300 transition-colors">
+          <span class="material-symbols-outlined text-md">draw</span>
+          <span>Builder Mode</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Ribbon bar: generate button + add context button, format, sample -->
+    <div class="ribbon-bar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
       <div class="flex items-center gap-2">
         <button id="generate-json-btn" class="md-filled-button flex items-center gap-2 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-all">
           <span class="material-symbols-outlined text-lg">auto_fix_high</span>
@@ -45,9 +114,7 @@
           <span class="text-sm hidden sm:inline">Add Context</span>
           <input type="file" id="quiz-image-input" accept="image/*" class="hidden">
         </label>
-      </div>
-      
-      <div class="flex items-center gap-1">
+        
         <button id="format-json-btn" class="text-sm flex items-center gap-1 py-1.5 px-3 rounded-md hover:bg-md-surface dark:hover:bg-gray-600 text-md-on-surface-variant dark:text-gray-300 transition-colors">
           <span class="material-symbols-outlined text-md">format_align_left</span>
           Format
@@ -59,6 +126,7 @@
       </div>
     </div>
 
+    <!-- Content: empty text input -->
     <div class="canvas-container relative">
       <div id="image-preview-container" class="absolute top-4 right-4 z-10 hidden">
         <div class="relative group">
@@ -74,10 +142,11 @@
       <div id="autocomplete-dropdown" class="autocomplete-dropdown absolute z-50 hidden bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto min-w-[200px]"></div>
     </div>
     
+    <!-- Status bar: mode text(bottom left) + launch button(bottom right) -->
     <footer class="status-bar flex items-center justify-between px-4 py-1.5 bg-gray-50 dark:bg-gray-800 border-t border-md-outline dark:border-gray-600 text-xs">
       <div class="flex items-center gap-4">
         <span id="mode-indicator" class="text-[10px] uppercase tracking-wider text-md-on-surface-variant opacity-75 font-bold">
-          Mode: Prompt
+          Mode: Editor
         </span>
       </div>
       

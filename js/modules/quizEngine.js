@@ -100,7 +100,7 @@ export function goToNextQuestion() {
 
     if (!State.isSubmittedAtIndex(currentIndex)) {
         showError("Please submit your answer before proceeding.");
-        // For MC/TF, this check might be redundant due to auto-submit, but good for FITB
+        // For text-input questions, this check might be redundant due to auto-submit, but good for FITB
         return;
     }
 

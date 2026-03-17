@@ -4,7 +4,7 @@
   background-color: var(--md-sys-color-surface);
   border-radius: 12px;
   padding: 24px;
-  max-width: 800px;
+  max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
@@ -81,13 +81,33 @@ html.dark #docs-section {
   text-decoration: underline;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1023px) {
   #docs-section {
     padding: 1rem;
-  }
-  
-  #docs-section {
     flex-direction: column;
+  }
+
+  .docs-navigation {
+    position: relative;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .docs-main {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  #docs-section {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .docs-navigation {
+    position: sticky;
+    top: 2rem;
+    height: calc(100vh - 4rem);
   }
 }
 

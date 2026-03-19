@@ -8,6 +8,7 @@
 
 import * as DOM from './dom.js';
 import { showSuccess, showError } from './utils.js'; // Added showError
+import { startQuiz } from './quizEngine.js';
 
 /**
  * @constant {string}
@@ -36,6 +37,10 @@ function updateThemeIcons(isDark) {
         DOM.moonIconSetting.classList.toggle('hidden', !isDark);
         DOM.sunIconSetting.classList.toggle('hidden', isDark);
     }
+    // Update checkbox state
+    if (DOM.darkModeToggleSetting) {
+        DOM.darkModeToggleSetting.checked = isDark;
+    }
 }
 
 /**
@@ -58,9 +63,62 @@ function updateAnimationIcons(animationsEnabled) {
         DOM.boltOnIconSetting.classList.toggle('hidden', !animationsEnabled);
         DOM.boltOffIconSetting.classList.toggle('hidden', animationsEnabled);
     }
+    // Update checkbox state
+    if (DOM.animationToggleSetting) {
+        DOM.animationToggleSetting.checked = animationsEnabled;
+    }
     // Update aria-pressed for all toggles
     if(DOM.animationToggle) DOM.animationToggle.setAttribute("aria-pressed", String(animationsEnabled));
-    if(DOM.animationToggleSetting) DOM.animationToggleSetting.setAttribute("aria-pressed", String(animationsEnabled));
+}
+
+/**
+ * Updates the shuffle icons based on the current shuffle state.
+ * @function updateShuffleIcons
+ * @param {boolean} shuffleEnabled - Whether shuffling is currently enabled
+ * @private
+ * @todo Add support for more visual indicators
+ * @toimprove Optimize DOM queries for better performance
+ * @tofix Ensure proper icon visibility in all themes
+ */
+function updateShuffleIcons(shuffleEnabled) {
+    // Settings page icons
+    if (DOM.shuffleOnSetting && DOM.shuffleOffSetting) {
+        DOM.shuffleOnSetting.classList.toggle('hidden', !shuffleEnabled);
+        DOM.shuffleOffSetting.classList.toggle('hidden', shuffleEnabled);
+    }
+    // Update checkbox state
+    if (DOM.randomizeQuestionsSetting) {
+        DOM.randomizeQuestionsSetting.checked = shuffleEnabled;
+    }
+    // Update aria-pressed for the toggle
+    if(DOM.randomizeQuestionsSetting && DOM.randomizeQuestionsSetting.tagName !== 'INPUT') {
+        DOM.randomizeQuestionsSetting.setAttribute("aria-pressed", String(shuffleEnabled));
+    }
+}
+
+/**
+ * Updates the swap calls icons based on the current state.
+ * @function updateSwapCallsIcons
+ * @param {boolean} swapEnabled - Whether swapping choices is currently enabled
+ * @private
+ * @todo Add support for more visual indicators
+ * @toimprove Optimize DOM queries for better performance
+ * @tofix Ensure proper icon visibility in all themes
+ */
+function updateSwapCallsIcons(swapEnabled) {
+    // Settings page icons
+    if (DOM.swapCallsOnSetting && DOM.swapCallsOffSetting) {
+        DOM.swapCallsOnSetting.classList.toggle('hidden', !swapEnabled);
+        DOM.swapCallsOffSetting.classList.toggle('hidden', swapEnabled);
+    }
+    // Update checkbox state
+    if (DOM.randomizeChoicesSetting) {
+        DOM.randomizeChoicesSetting.checked = swapEnabled;
+    }
+    // Update aria-pressed for the toggle
+    if(DOM.randomizeChoicesSetting && DOM.randomizeChoicesSetting.tagName !== 'INPUT') {
+        DOM.randomizeChoicesSetting.setAttribute("aria-pressed", String(swapEnabled));
+    }
 }
 
 /**
@@ -82,6 +140,12 @@ export function initSettings() {
     document.documentElement.classList.toggle("animations-disabled", !animationsEnabled);
     updateAnimationIcons(animationsEnabled);
 
+    // Quiz Settings persistence
+    const randomizeQuestions = localStorage.getItem("randomizeQuestions") === "true";
+    const randomizeChoices = localStorage.getItem("randomizeChoices") === "true";
+    updateShuffleIcons(randomizeQuestions);
+    updateSwapCallsIcons(randomizeChoices);
+
     // API Key persistence
     loadApiKeyToInputs();
 
@@ -94,12 +158,20 @@ export function initSettings() {
         DOM.animationToggle.addEventListener('click', toggleAnimations);
     }
 
-    // Settings Page Toggles
+    // Settings Page Toggles (using 'change' for checkboxes)
     if (DOM.darkModeToggleSetting) {
-        DOM.darkModeToggleSetting.addEventListener('click', toggleDarkMode);
+        DOM.darkModeToggleSetting.addEventListener('change', toggleDarkMode);
     }
     if (DOM.animationToggleSetting) {
-        DOM.animationToggleSetting.addEventListener('click', toggleAnimations);
+        DOM.animationToggleSetting.addEventListener('change', toggleAnimations);
+    }
+
+    // Quiz Settings Toggles
+    if (DOM.randomizeQuestionsSetting) {
+        DOM.randomizeQuestionsSetting.addEventListener('change', toggleRandomizeQuestions);
+    }
+    if (DOM.randomizeChoicesSetting) {
+        DOM.randomizeChoicesSetting.addEventListener('change', toggleRandomizeChoices);
     }
 
     // API Key Management in Settings
@@ -217,3 +289,33 @@ function handleClearApiKeyFromSettings() {
 //         DOM.apiKeyInput.value = DOM.apiKeySettingInput.value;
 //     });
 // }
+
+/**
+ * Toggles the randomize questions setting.
+ * @function toggleRandomizeQuestions
+ * @returns {void}
+ * @todo Add smooth transition effects
+ * @toimprove Optimize for better performance
+ * @tofix Ensure consistent application across all components
+ */
+export function toggleRandomizeQuestions() {
+    const randomizeQuestions = localStorage.getItem("randomizeQuestions") !== "true";
+    localStorage.setItem("randomizeQuestions", String(randomizeQuestions));
+    updateShuffleIcons(randomizeQuestions);
+    showSuccess(`Randomize question order ${randomizeQuestions ? 'enabled' : 'disabled'}.`);
+}
+
+/**
+ * Toggles the randomize choices setting.
+ * @function toggleRandomizeChoices
+ * @returns {void}
+ * @todo Add smooth transition effects
+ * @toimprove Optimize for better performance
+ * @tofix Ensure consistent application across all components
+ */
+export function toggleRandomizeChoices() {
+    const randomizeChoices = localStorage.getItem("randomizeChoices") !== "true";
+    localStorage.setItem("randomizeChoices", String(randomizeChoices));
+    updateSwapCallsIcons(randomizeChoices);
+    showSuccess(`Randomize choice order ${randomizeChoices ? 'enabled' : 'disabled'}.`);
+}

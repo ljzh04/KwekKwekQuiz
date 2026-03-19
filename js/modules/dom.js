@@ -589,6 +589,49 @@ export const importQuizzesInput = document.getElementById('import-quizzes-input'
  */
 export const clearAllQuizzesBtn = document.getElementById('clear-all-quizzes-btn');
 
+// Quiz Settings
+/**
+ * @memberof domElements
+ * @type {HTMLButtonElement|null}
+ * @description Toggle for randomizing question order
+ */
+export const randomizeQuestionsSetting = document.getElementById('randomize-questions-setting');
+
+/**
+ * @memberof domElements
+ * @type {HTMLButtonElement|null}
+ * @description Toggle for randomizing choice order
+ */
+export const randomizeChoicesSetting = document.getElementById('randomize-choices-setting');
+
+/**
+ * @memberof domElements
+ * @type {HTMLElement|null}
+ * @description On icon for shuffle toggle
+ */
+export const shuffleOnSetting = document.getElementById('shuffle-on-setting');
+
+/**
+ * @memberof domElements
+ * @type {HTMLElement|null}
+ * @description Off icon for shuffle toggle
+ */
+export const shuffleOffSetting = document.getElementById('shuffle-off-setting');
+
+/**
+ * @memberof domElements
+ * @type {HTMLElement|null}
+ * @description On icon for swap calls toggle
+ */
+export const swapCallsOnSetting = document.getElementById('swap-calls-on-setting');
+
+/**
+ * @memberof domElements
+ * @type {HTMLElement|null}
+ * @description Off icon for swap calls toggle
+ */
+export const swapCallsOffSetting = document.getElementById('swap-calls-off-setting');
+
 /**
  * @memberof domElements
  * @type {HTMLButtonElement|null}

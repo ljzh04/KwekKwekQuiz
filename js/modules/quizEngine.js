@@ -26,7 +26,49 @@ export function startQuiz(quizContent) {
         showError("Invalid quiz data structure. Cannot start quiz.");
         return false;
     }
-    State.setQuizData(shuffleArray(quizContent));
+    
+    // Apply randomization based on settings
+    let randomizedQuizContent = [...quizContent]; // Create a copy to avoid modifying original
+    
+    // Check if we should randomize question order
+    const randomizeQuestions = localStorage.getItem("randomizeQuestions") === "true";
+    if (randomizeQuestions) {
+        randomizedQuizContent = shuffleArray(randomizedQuizContent);
+    }
+    
+    // Check if we should randomize choice order for each question
+    const randomizeChoices = localStorage.getItem("randomizeChoices") === "true";
+    if (randomizeChoices) {
+        randomizedQuizContent = randomizedQuizContent.map(question => {
+            if (question.type === "multiple-choice" && Array.isArray(question.options)) {
+                // Store the original correct answer index before shuffling
+                const originalCorrect = question.correct;
+                
+                // Create an array of [originalIndex, option] pairs to track original indices
+                const indexedOptions = question.options.map((option, index) => ({ 
+                    option, 
+                    index 
+                }));
+                
+                // Shuffle the indexed options
+                const shuffledIndexedOptions = shuffleArray(indexedOptions);
+                
+                // Extract the new options and update the correct answer index
+                const newOptions = shuffledIndexedOptions.map(item => item.option);
+                const newCorrectIndex = shuffledIndexedOptions.findIndex(item => item.index === originalCorrect);
+                
+                // Return the question with shuffled options and updated correct answer index
+                return {
+                    ...question,
+                    options: newOptions,
+                    correct: newCorrectIndex
+                };
+            }
+            return question; // Return unchanged for non-multiple-choice questions
+        });
+    }
+    
+    State.setQuizData(randomizedQuizContent);
     State.resetQuizState(State.getQuizData().length); // Pass length for array initialization
     
     resetSummaryContainer();

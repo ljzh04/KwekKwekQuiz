@@ -348,6 +348,7 @@ function createQuestionHTML(question, index) {
                         <span class="material-symbols-outlined text-sm">delete</span>
                     </button>
                 </div>
+            </div>
             
             <div class="mb-3">
                 <label class="block text-sm font-medium mb-1 text-md-on-surface dark:text-gray-300">Question Text</label>

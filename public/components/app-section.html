@@ -47,9 +47,9 @@
     <!-- Ribbon bar: generate button only (no add context in builder mode) -->
     <div class="ribbon-bar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
       <div class="flex items-center gap-2">
-        <button id="generate-json-btn" class="md-filled-button flex items-center gap-2 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-all">
+        <button id="builder-generate-btn" class="md-filled-button flex items-center gap-2 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-all">
           <span class="material-symbols-outlined text-lg">auto_fix_high</span>
-          <span class="text-sm">Generate More Questions</span>
+          <span class="text-sm">Generate More</span>
         </button>
       </div>
     </div>
@@ -82,8 +82,8 @@
       
       <button id="preview-quiz-btn" aria-label="Preview Quiz" title="Preview Quiz"
         class="flex items-center gap-2 px-5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transform hover:-translate-y-0.5 active:translate-y-0 transition-all">
-        <span class="material-symbols-outlined text-lg">preview</span>
-        <span class="text-xs font-bold uppercase tracking-widest">Preview</span>
+        <span class="material-symbols-outlined text-lg">play_arrow</span>
+        <span class="text-xs font-bold uppercase tracking-widest">Practice</span>
       </button>
     </footer>
   </div>
@@ -104,9 +104,9 @@
     <!-- Ribbon bar: generate button + add context button, format, sample -->
     <div class="ribbon-bar flex flex-wrap items-center justify-between gap-3 p-3 bg-md-surface-variant dark:bg-gray-700 border-b border-md-outline dark:border-gray-600">
       <div class="flex items-center gap-2">
-        <button id="generate-json-btn" class="md-filled-button flex items-center gap-2 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-all">
+        <button id="editor-generate-btn" class="md-filled-button flex items-center gap-2 bg-md-primary hover:bg-opacity-90 text-white font-medium py-1.5 px-4 rounded-md shadow-sm transition-all">
           <span class="material-symbols-outlined text-lg">auto_fix_high</span>
-          <span class="text-sm">Generate AI</span>
+          <span class="text-sm">Prompt AI</span>
         </button>
         
         <label for="quiz-image-input" class="cursor-pointer flex items-center gap-2 py-1.5 px-3 rounded-md border border-md-outline hover:bg-md-surface dark:hover:bg-gray-600 transition-all text-md-on-surface dark:text-gray-200">
@@ -145,7 +145,7 @@
     <!-- Status bar: mode text(bottom left) + launch button(bottom right) -->
     <footer class="status-bar flex items-center justify-between px-4 py-1.5 bg-gray-50 dark:bg-gray-800 border-t border-md-outline dark:border-gray-600 text-xs">
       <div class="flex items-center gap-4">
-        <span id="mode-indicator" class="text-[10px] uppercase tracking-wider text-md-on-surface-variant opacity-75 font-bold">
+        <span id="editor-mode-indicator" class="text-[10px] uppercase tracking-wider text-md-on-surface-variant opacity-75 font-bold">
           Mode: Editor
         </span>
       </div>
@@ -153,7 +153,7 @@
       <button id="load-quiz-btn" aria-label="Load Quiz" title="Launch Quiz"
         class="flex items-center gap-2 px-5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transform hover:-translate-y-0.5 active:translate-y-0 transition-all">
         <span class="material-symbols-outlined text-lg">play_arrow</span>
-        <span class="text-xs font-bold uppercase tracking-widest">Launch</span>
+        <span class="text-xs font-bold uppercase tracking-widest">Practice</span>
       </button>
     </footer>
   </div>

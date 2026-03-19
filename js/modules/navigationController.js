@@ -1,7 +1,22 @@
-// js/modules/navigationController.js
-import * as DOM from './dom.js'; 
-import { showQuizSetupScreen as showAppSetupScreen } from './uiController.js'
+/**
+ * @fileoverview Navigation Controller module for KwekKwekQuiz
+ * Handles sidebar navigation and content switching functionality.
+ * @module navigationController
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
 
+import * as DOM from './dom.js'; 
+import { showQuizSetupScreen as showAppSetupScreen } from './uiController.js';
+
+/**
+ * Initializes the navigation system by setting up event listeners for sidebar and content switching.
+ * @function initNavigation
+ * @returns {void}
+ * @todo Add keyboard navigation support for accessibility
+ * @toimprove Implement smooth transitions between sections
+ * @tofix Ensure proper cleanup of event listeners on navigation changes
+ */
 export function initNavigation() {
     if (!DOM.sidebar || !DOM.sidebarToggle || !DOM.sidebarOverlay || !DOM.sidebarLinks.length || !DOM.contentSections.length || !DOM.mainTitle) {
         console.warn("Navigation elements not found, sidebar/navigation might not work.");
@@ -24,6 +39,16 @@ export function initNavigation() {
     });
 
     // --- Content Switching ---
+    /**
+     * Switches the visible content section and updates the navigation state.
+     * @function switchContent
+     * @param {string} targetSectionId - The ID of the section to switch to
+     * @param {boolean} [forceAppReset=false] - Whether to force a reset of the app section
+     * @returns {void}
+     * @todo Add animation effects when switching sections
+     * @toimprove Optimize for better performance with many sections
+     * @tofix Ensure proper cleanup of previous section states
+     */
     function switchContent(targetSectionId, forceAppReset = false) {
         DOM.contentSections.forEach(section => {
             if (section.id === targetSectionId) {
@@ -101,6 +126,14 @@ export function initNavigation() {
     });
 
     // --- Handle Initial Page Load and Hash Changes ---
+    /**
+     * Loads content based on the current URL hash.
+     * @function loadContentFromHash
+     * @returns {void}
+     * @todo Add error handling for invalid hash values
+     * @toimprove Cache loaded sections for faster switching
+     * @tofix Ensure proper handling of nested hash routes
+     */
     function loadContentFromHash() {
         const hash = window.location.hash.substring(1);
         if (!hash) {

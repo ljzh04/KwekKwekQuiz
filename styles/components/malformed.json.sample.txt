@@ -1,0 +1,161 @@
+
+  {
+    "type": "multiple-choice",
+    "question": "### Which HTML tag is used to define the largest heading?",
+    "options": [
+      "<h6>",
+      "<heading>",
+      "<h1>",
+      "<head>"
+    ],
+    "correct": 2
+  },
+  {
+    "type": "true-false",
+    "question": "**True or False:** In HTML, the `<br>` tag requires a closing tag `</br>`.",
+    "correct": false
+  },
+  {
+    "type": "fill-in-the-blank",
+    "question": "To create a hyperlink in HTML, the `href` attribute is used within the `<a>` tag. The acronym **URL** stands for Uniform ________ Locator.",
+    "correct": "Resource"
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### What does the CSS property `z-index` control?",
+    "options": [
+      "The zoom level of an element",
+      "The stack order of elements",
+      "The horizontal alignment",
+      "The opacity of an element"
+    ],
+    "correct": 1
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### Which CSS selector is used to target an element with a specific ID?",
+    "options": [
+      "`.` (Dot)",
+      "`#` (Hash)",
+      `"*"` (Asterisk),
+      "`:` (Colon)"
+    ],
+    "correct": 1
+  },
+  {
+    "type": "true-false",
+    "question": "**True or False:** The CSS property `padding` adds space *inside* an element's border, while `margin` adds space *outside* the border.",
+    "correct": true
+  },
+  {
+    "type": "fill-in-the-blank",
+    "question": "In the CSS Box Model, the property used to set the thickness of the line surrounding the content and padding is called the ________.",
+    "correct": "border"
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### What is the correct JavaScript syntax to change the content of the following HTML element?\n\n```html\n<p id=\"demo\">This is a test.</p>\n```",
+    "options": [
+      "document.getElement(\"p\").innerHTML = \"Hello World!\";",
+      "document.getElementById(\"demo\").innerHTML = \"Hello World!\";",
+      "#demo.innerHTML = \"Hello World!\";",
+      "document.getElementByName(\"p\").innerHTML = \"Hello World!\";"
+    ],
+    "correct": 1
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### How do you declare a JavaScript variable that cannot be reassigned?",
+    "options": [
+      "var",
+      "let",
+      "const",
+      "fixed"
+    ],
+    "correct": 2
+  },
+  {
+    "type": "true-false",
+    "question": "**True or False:** JavaScript is the same as the Java programming language.",
+    "correct": false
+  },
+  {
+    "type": "fill-in-the-blank",
+    "question": "In JavaScript, the method used to write text into the browser's console for debugging is `console.____()`.",
+    "correct": "log"
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### Which HTML element is used to specify a footer for a document or section?",
+    "options": [
+      "<bottom>",
+      "<section>",
+      "<footer>",
+      "<aside>"
+    ],
+    "correct": 2
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### Which CSS property is used to change the text color of an element?",
+    "options": [
+      "fgcolor",
+      "text-color",
+      "color",
+      "font-style"
+    ],
+    "correct": 2
+  },
+  {
+    "type": "true-false",
+    "question": "**True or False:** In CSS, `position: absolute;` positions an element relative to its nearest positioned ancestor.",
+    "correct": true
+  },
+  {
+    "type": "fill-in-the-blank",
+    "question": "The HTML attribute used to provide alternative text for an image if it cannot be displayed is `___`.",
+    "correct": "alt"
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### What is the result of `typeof []` in JavaScript?",
+    "options": [
+      "\"array\"",
+      "\"object\"",
+      "\"list\"",
+      "\"undefined\""
+    ],
+    "correct": 1
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### Which CSS property is used to make text bold?",
+    "options": [
+      "font-weight",
+      "text-decoration",
+      "font-style",
+      "font-bold"
+    ],
+    "correct": 0
+  },
+  {
+    "type": "true-false",
+    "question": "**True or False:** The HTML `<ul>` tag defines a numbered list.",
+    "correct": false
+  },
+  {
+    "type": "fill-in-the-blank",
+    "question": "In JavaScript, the `===` operator compares both the value and the ________ of the variables.",
+    "correct": "type"
+  },
+  {
+    "type": "multiple-choice",
+    "question": "### Which tag is used to include an external JavaScript file?",
+    "options": [
+      "<link>",
+      "<javascript>",
+      "<js>",
+      "<script>"
+    ],
+    "correct": 3
+  }

@@ -1,10 +1,26 @@
-// js/modules/quizEngine.js
+/**
+ * @fileoverview Quiz Engine module for KwekKwekQuiz
+ * Manages the core quiz functionality including starting, scoring, and navigation.
+ * @module quizEngine
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import * as DOM from './dom.js';
 import * as State from './state.js';
 import { shuffleArray, validateQuizData, showError, clearError } from './utils.js';
 import { showQuizPlayerScreen, showResultsScreen, updateNavigationButtonsState, resetSummaryContainer } from './uiController.js';
 import { renderCurrentQuestion, renderFeedbackForQuestion, renderQuizResults, shakeElementOnce, sparkleBurstOnce } from './quizPlayer.js';
 
+/**
+ * Starts a quiz with the provided content.
+ * @function startQuiz
+ * @param {Array} quizContent - The quiz questions and settings
+ * @returns {boolean} True if the quiz started successfully, false otherwise
+ * @todo Add support for timed quizzes
+ * @toimprove Implement better error handling for invalid quiz data
+ * @tofix Ensure proper cleanup of previous quiz state
+ */
 export function startQuiz(quizContent) {
     if (!validateQuizData(quizContent)) {
         showError("Invalid quiz data structure. Cannot start quiz.");
@@ -20,6 +36,14 @@ export function startQuiz(quizContent) {
     return true;
 }
 
+/**
+ * Calculates the current score based on user answers.
+ * @function calculateScore
+ * @returns {void}
+ * @todo Add support for partial credit scoring
+ * @toimprove Optimize for large quiz sets
+ * @tofix Ensure accurate scoring for all question types
+ */
 export function calculateScore() {
     State.resetScore();
     const quizData = State.getQuizData();
@@ -42,6 +66,14 @@ export function calculateScore() {
     });
 }
 
+/**
+ * Handles the submission of an answer for the current question.
+ * @function handleSubmitAnswer
+ * @returns {void}
+ * @todo Add support for essay-type questions with manual grading
+ * @toimprove Provide more detailed feedback for incorrect answers
+ * @tofix Ensure proper state management when submitting answers
+ */
 export function handleSubmitAnswer() {
     clearError();
     const currentIndex = State.getCurrentQuestionIndex();
@@ -83,6 +115,14 @@ export function handleSubmitAnswer() {
     updateNavigationButtonsState();
 }
 
+/**
+ * Navigates to the previous question in the quiz.
+ * @function goToPrevQuestion
+ * @returns {void}
+ * @todo Add animation when transitioning between questions
+ * @toimprove Optimize navigation performance
+ * @tofix Ensure proper state management when navigating backwards
+ */
 export function goToPrevQuestion() {
     clearError();
     const currentIndex = State.getCurrentQuestionIndex();
@@ -93,6 +133,14 @@ export function goToPrevQuestion() {
     }
 }
 
+/**
+ * Navigates to the next question in the quiz or finishes the quiz if at the end.
+ * @function goToNextQuestion
+ * @returns {void}
+ * @todo Add option to skip questions and return later
+ * @toimprove Implement smooth transitions between questions
+ * @tofix Ensure proper quiz completion handling
+ */
 export function goToNextQuestion() {
     clearError();
     const currentIndex = State.getCurrentQuestionIndex();
@@ -116,6 +164,14 @@ export function goToNextQuestion() {
     }
 }
 
+/**
+ * Restarts the current quiz from the beginning.
+ * @function restartCurrentQuiz
+ * @returns {void}
+ * @todo Add confirmation dialog before restarting
+ * @toimprove Preserve user preferences during restart
+ * @tofix Ensure complete state reset when restarting
+ */
 export function restartCurrentQuiz() {
     // Assumes quizData is already loaded and valid
     State.resetQuizState(); // Resets index, score, answers for the current quizData

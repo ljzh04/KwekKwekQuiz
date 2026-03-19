@@ -20,63 +20,225 @@
   outline: none;
 }
 
-#generate-json-btn {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate; /* Ensures pseudo-elements stay behind the text */
+/* Enhanced Generate Button with AI Studio Vibecode Glow Effect */
+/* Container for the button to handle the overflow glow */
+.btn-wrapper {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
 }
 
-/* Animated Gradient Background */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+#generate-json-btn {
+  --border-width: 2px;
+  --bg-color: #0f172a;
+  
+  /* Use the animated --angle variable here */
+  background: 
+    linear-gradient(var(--bg-color), var(--bg-color)) padding-box, 
+    conic-gradient(from var(--angle), #3b82f6, #ef4444, #3b82f6) border-box;
+  
+  border: var(--border-width) solid transparent;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 40px; /* Works even on very wide buttons */
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  
+  /* The Magic: Animate the custom property */
+  animation: rotate-gradient 4s linear infinite;
+}
+
+/* The Rotating Border Layer */
+
 #generate-json-btn::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg, 
-    #ff6b6b, 
-    #4ecdc4, 
-    #ff6b6b
-  );
-  background-size: 200% 100%;
-  opacity: 0;
+  inset: -5px;
   z-index: -1;
-  transition: opacity 0.4s ease;
+  background: conic-gradient(from var(--angle), #3b82f6, #ef4444, #3b82f6);
+  filter: blur(20px);
+  opacity: 0;
+  transition: opacity 0.3s;
+  animation: rotate-gradient 4s linear infinite; /* Keeps it in sync */
 }
 
 #generate-json-btn:hover::before {
-  opacity: 1;
-  animation: moveGradient 2s linear infinite;
+  opacity: 0.3;
 }
 
+/* The Inner Background (Mask) */
 #generate-json-btn::after {
   content: '';
   position: absolute;
-  inset: 0;
-  box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  inset: var(--border-width); /* Creates the border thickness */
+  background: var(--bg-color);
+  border-radius: calc(8px - var(--border-width));
   z-index: -1;
+  transition: background 0.3s ease;
 }
 
-#generate-json-btn:hover::after {
-  opacity: 1;
+/* External Glow (the "Vibe") */
+.glow-effect {
+  position: absolute;
+  inset: -5px;
+  background: linear-gradient(90deg, var(--blue-color), var(--red-color));
+  filter: blur(15px);
+  opacity: 0;
+  z-index: -3;
+  transition: opacity 0.3s ease;
+}
+
+/* --- Interactions --- */
+
+#generate-json-btn:hover {
+  animation-duration: 2s; /* Faster on hover */
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+#generate-json-btn:hover::before {
+  animation-duration: 1.5s; /* Speed up the "AI processing" look */
+}
+
+#generate-json-btn:hover .glow-effect {
+  opacity: 0.6;
 }
 
 #generate-json-btn:active {
-  transform: scale(0.96);
+  transform: translateY(0) scale(0.97);
 }
 
-@keyframes moveGradient {
-  from { background-position: 0% 0%; }
-  to { background-position: 200% 0%; }
-}
-#generate-json-btn:hover .material-symbols-outlined {
-  animation: sparkle 1.5s ease infinite;
+/* --- Animations --- */
+
+@keyframes rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-@keyframes sparkle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.2) rotate(10deg); }
+@keyframes rotate-gradient {
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* Loading State */
+#generate-json-btn.loading::before {
+  animation-duration: 0.8s;
+  background: conic-gradient(
+    from 0deg,
+    var(--blue-color),
+    var(--red-color),
+    var(--blue-color)
+  );
+}
+
+@keyframes glowPulse {
+  0%, 100% { 
+    opacity: 0.3;
+    filter: blur(6px);
+  }
+  50% { 
+    opacity: 0.8;
+    filter: blur(12px);
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.5));
+  }
+  50% { 
+    transform: scale(1.2) rotate(10deg);
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8));
+  }
+}
+
+@keyframes buttonPulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 0 0 rgba(59, 130, 246, 0.4),
+      0 0 0 0 rgba(239, 68, 68, 0.4),
+      0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+  50% { 
+    box-shadow: 
+      0 0 20px 5px rgba(59, 130, 246, 0.3),
+      0 0 20px 5px rgba(239, 68, 68, 0.3),
+      0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Loading dots animation */
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.loading-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: loadingBounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loadingBounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Enhanced loading animation with Tailwind classes */
+.loading-dots.flex.items-center.gap-2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-dots .w-2.h-2.bg-white.rounded-full.animate-bounce {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  animation: tailwindBounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dots .w-2.h-2.bg-white.rounded-full.animate-bounce[style*="animation-delay: -0.3s"] {
+  animation-delay: -0.3s;
+}
+
+.loading-dots .w-2.h-2.bg-white.rounded-full.animate-bounce[style*="animation-delay: -0.1s"] {
+  animation-delay: -0.1s;
+}
+
+@keyframes tailwindBounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Loading state styling */
+#generate-json-btn.loading {
+  opacity: 0.9;
+  cursor: not-allowed;
+}
+
+#generate-json-btn.loading .ml-2.whitespace-nowrap {
+  opacity: 1;
+  font-weight: 600;
 }
 
 /* --- 2. Editor Unit & Quiz Builder --- */
@@ -309,7 +471,7 @@
 #mode-indicator.json-mode { background: var(--md-sys-color-primary-container); }
 #mode-indicator.prompt-mode { background: var(--md-sys-color-secondary-container); }
 
-#builder-mode-indicator { 
+#builder-mode-indicator, #editor-mode-indicator { 
   background: var(--md-sys-color-tertiary-container);
   color: var(--md-sys-color-on-tertiary-container);
 }

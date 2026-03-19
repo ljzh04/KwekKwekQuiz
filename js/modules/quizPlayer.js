@@ -1,4 +1,11 @@
-// js/modules/quizPlayer.js
+/**
+ * @fileoverview Quiz Player module for KwekKwekQuiz
+ * Handles the display and interaction of quiz questions during gameplay.
+ * @module quizPlayer
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 //import *_ from 'lodash'; // If you decide to use it for deep cloning or other utilities
 import * as DOM from './dom.js';
 import * as State from './state.js';
@@ -7,11 +14,44 @@ import { getFeedbackClasses, showError, clearError } from './utils.js';
 import { updateProgressBar, updateNavigationButtonsState } from './uiController.js';
 import { calculateScore, goToNextQuestion } from './quizEngine.js'; // For auto-submit behavior
 
-let questionEl, optionsList, inputWrapper, inputField; // Module-level elements for reuse
+/**
+ * @type {HTMLElement}
+ * @private
+ * @description Element for displaying the question text
+ */
+let questionEl;
+
+/**
+ * @type {HTMLElement}
+ * @private
+ * @description Element for displaying the options list
+ */
+let optionsList;
+
+/**
+ * @type {HTMLElement}
+ * @private
+ * @description Wrapper element for the input field
+ */
+let inputWrapper;
+
+/**
+ * @type {HTMLInputElement}
+ * @private
+ * @description Input field for text-based questions
+ */
+let inputField;
 
 /**
  * Apply a single-run shake animation to an element (e.g., when user selects an incorrect answer).
  * This utility ensures the animation can be retriggered by reapplying the class.
+ * @function animateElementOnce
+ * @param {HTMLElement} element - The element to animate
+ * @param {string} animationClass - The CSS class that defines the animation
+ * @returns {void}
+ * @todo Add support for custom animation durations
+ * @toimprove Optimize performance for repeated animations
+ * @tofix Ensure animations work properly with all element types
  */
 export function animateElementOnce(element, animationClass) {
     if (!element) return;
@@ -26,10 +66,28 @@ export function animateElementOnce(element, animationClass) {
     element.addEventListener('animationend', cleanup, { once: true });
 }
 
+/**
+ * Applies a shake animation to an element once.
+ * @function shakeElementOnce
+ * @param {HTMLElement} element - The element to shake
+ * @returns {void}
+ * @todo Add configurable intensity levels
+ * @toimprove Optimize for performance with many simultaneous animations
+ * @tofix Ensure proper cleanup of event listeners
+ */
 export function shakeElementOnce(element) {
     animateElementOnce(element, 'shake-anim');
 }
 
+/**
+ * Applies a pop animation to an element once.
+ * @function popElementOnce
+ * @param {HTMLElement} element - The element to pop
+ * @returns {void}
+ * @todo Add configurable scale factors
+ * @toimprove Optimize for performance with many simultaneous animations
+ * @tofix Ensure proper cleanup of event listeners
+ */
 export function popElementOnce(element) {
     animateElementOnce(element, 'pop-anim');
 }
@@ -37,6 +95,12 @@ export function popElementOnce(element) {
 /**
  * Emit a three-particle sparkle burst from the center of an element.
  * Runs once per invocation and cleans up after the animation completes.
+ * @function sparkleBurstOnce
+ * @param {HTMLElement} element - The element to emit sparkles from
+ * @returns {void}
+ * @todo Add configurable particle count and angles
+ * @toimprove Optimize for performance with many simultaneous animations
+ * @tofix Ensure proper cleanup of all animation resources
  */
 export function sparkleBurstOnce(element) {
     if (!element) return;
@@ -121,6 +185,14 @@ export function sparkleBurstOnce(element) {
     }, 700);
 }
 
+/**
+ * Creates the necessary DOM elements for the quiz player.
+ * @function createQuizPlayerElements
+ * @returns {void}
+ * @todo Add support for different question layouts
+ * @toimprove Optimize element creation for performance
+ * @tofix Ensure proper cleanup of created elements
+ */
 export function createQuizPlayerElements() {
     questionEl = document.createElement("div");
     // questionEl.className = "text-xl font-semibold mb-4 dark:text-gray-100"; // Example styling
@@ -176,6 +248,17 @@ export function createQuizPlayerElements() {
     });
 }
 
+/**
+ * Injects a standard feedback icon into the parent element.
+ * @function injectStandardIcon
+ * @param {HTMLElement} parent - The parent element to inject the icon into
+ * @param {string} status - The status of the answer ('success' or 'error')
+ * @returns {void}
+ * @private
+ * @todo Add support for more icon types
+ * @toimprove Optimize DOM manipulation for performance
+ * @tofix Ensure proper positioning of the icon
+ */
 function injectStandardIcon(parent, status) {
     const oldIcon = parent.querySelector(".feedback-icon");
     if (oldIcon) oldIcon.remove();
@@ -194,6 +277,14 @@ function injectStandardIcon(parent, status) {
     parent.appendChild(icon);
 }
 
+/**
+ * Renders the current question to the quiz container.
+ * @function renderCurrentQuestion
+ * @returns {void}
+ * @todo Add support for rich media content in questions
+ * @toimprove Optimize rendering for complex question layouts
+ * @tofix Ensure proper cleanup of previous question elements
+ */
 export function renderCurrentQuestion() {
     if (!DOM.quizContainer || !questionEl) return;
     DOM.quizContainer.className = "max-w-2xl mx-auto py-8 px-4 sm:px-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl transition-all duration-300 fade-in";
@@ -315,6 +406,15 @@ export function renderCurrentQuestion() {
 }
 
 
+/**
+ * Renders feedback for a specific question based on the user's answer.
+ * @function renderFeedbackForQuestion
+ * @param {any} userAnswer - The answer provided by the user
+ * @returns {void}
+ * @todo Add more detailed feedback explanations
+ * @toimprove Optimize feedback rendering for performance
+ * @tofix Ensure proper feedback display for all question types
+ */
 export function renderFeedbackForQuestion(userAnswer) {
     const currentQuestion = State.getCurrentQuestion();
     const currentIndex = State.getCurrentQuestionIndex();
@@ -403,6 +503,16 @@ export function renderFeedbackForQuestion(userAnswer) {
     }
 }
 
+/**
+ * Handles keydown events for option buttons.
+ * @function optionButtonKeydownHandler
+ * @param {KeyboardEvent} event - The keydown event
+ * @returns {void}
+ * @private
+ * @todo Add support for additional keyboard shortcuts
+ * @toimprove Optimize event handling for performance
+ * @tofix Ensure proper accessibility for keyboard navigation
+ */
 function optionButtonKeydownHandler(event) {
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -411,6 +521,14 @@ function optionButtonKeydownHandler(event) {
     }
 }
 
+/**
+ * Adds keyboard navigation functionality to option buttons.
+ * @function addKeyboardNavigationToOptions
+ * @returns {void}
+ * @todo Add support for arrow key navigation
+ * @toimprove Optimize event listener management
+ * @tofix Ensure proper cleanup of event listeners
+ */
 export function addKeyboardNavigationToOptions() {
     if (!DOM.quizContainer) return;
     const optionButtons = DOM.quizContainer.querySelectorAll("ul li button");
@@ -420,6 +538,14 @@ export function addKeyboardNavigationToOptions() {
     });
 }
 
+/**
+ * Renders the quiz results at the end of the quiz.
+ * @function renderQuizResults
+ * @returns {void}
+ * @todo Add option to review incorrect answers
+ * @toimprove Optimize rendering for large quiz sets
+ * @tofix Ensure proper display of results on all screen sizes
+ */
 export function renderQuizResults() {
     if (!DOM.summaryContainer) return;
     DOM.summaryContainer.innerHTML = "";
@@ -490,7 +616,17 @@ export function renderQuizResults() {
     attachCopyHandlers();
 }
 
-/** Helper to format the answer strings for display **/
+/**
+ * Helper function to format the answer strings for display
+ * @function formatAnswerDisplay
+ * @param {Object} question - The question object
+ * @param {any} val - The answer value to format
+ * @returns {string} The formatted answer string
+ * @private
+ * @todo Add support for more question types
+ * @toimprove Optimize string formatting for performance
+ * @tofix Ensure proper escaping of special characters
+ */
 function formatAnswerDisplay(question, val) {
     if (val === undefined || val === "") return "<em>No answer provided</em>";
     if (question.type === "multiple-choice") return question.options[val] || val;
@@ -498,7 +634,18 @@ function formatAnswerDisplay(question, val) {
     return val;
 }
 
-/** Helper to create a styled answer comparison box **/
+/**
+ * Helper function to create a styled answer comparison box
+ * @function createAnswerBox
+ * @param {string} label - The label for the answer box
+ * @param {string} value - The answer value to display
+ * @param {string} type - The type of answer ('success', 'error', or 'info')
+ * @returns {HTMLElement} The created answer box element
+ * @private
+ * @todo Add support for rich text formatting in answers
+ * @toimprove Optimize DOM creation for performance
+ * @tofix Ensure consistent styling across different browsers
+ */
 function createAnswerBox(label, value, type) {
     const box = document.createElement("div");
     const colors = {
@@ -515,7 +662,17 @@ function createAnswerBox(label, value, type) {
     return box;
 }
 
-/** Helper for correctness logic **/
+/**
+ * Helper function for correctness logic
+ * @function checkIsCorrect
+ * @param {Object} question - The question object
+ * @param {any} userAnswer - The user's answer
+ * @returns {boolean} Whether the answer is correct
+ * @private
+ * @todo Add support for partial credit scoring
+ * @toimprove Optimize comparison logic for performance
+ * @tofix Ensure accurate comparison for all data types
+ */
 function checkIsCorrect(question, userAnswer) {
     if (question.type === "multiple-choice" || question.type === "true-false") {
         return userAnswer === question.correct;

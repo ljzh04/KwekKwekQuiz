@@ -1,276 +1,451 @@
-// js/modules/jsonStateManager.js
-import * as State from './state.js';
-import { validateQuizData, showError, clearError } from './utils.js';
+/**
+ * @fileoverview JSON State Manager module for KwekKwekQuiz
+ * Centralized state management for quiz input data across builder and editor modes.
+ * @module jsonStateManager
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
+import { validateQuizData, showError } from './utils.js';
 
 /**
- * Centralized JSON State Manager
- * 
- * This module acts as the single source of truth for quiz data across the application.
- * It handles conversions between different formats and manages data flow between
- * builder mode, editor mode, and AI generation.
+ * Centralized Input Mode State Manager
+ *
+ * Single source of truth for quiz input data across builder and editor modes.
+ * Uses an observer pattern: modules subscribe to state changes and update
+ * their own DOM/UI accordingly, eliminating scattered DOM-class checks.
+ *
+ * Data flow:
+ *   Action → setMode() / setQuestions() / fromJSONString()
+ *         → notifies all subscribers
+ *         → each subscriber updates its own UI projection
+ * @class JSONStateManager
+ * @todo Add state persistence across browser sessions
+ * @toimprove Implement undo/redo functionality for state changes
+ * @tofix Ensure proper cleanup of subscribers to prevent memory leaks
  */
 class JSONStateManager {
     constructor() {
-        this.currentMode = 'builder'; // 'builder' or 'editor'
-        this.builderData = []; // Array format for builder mode
-        this.editorData = null; // Parsed JSON object for editor mode
-        this.rawJSONString = ''; // String format for textarea
+        /** @type {'builder' | 'editor'} */
+        this._mode = 'builder';
+
+        /** @type {Array<Object>} Canonical question array (always normalized) */
+        this._questions = [];
+
+        /** @type {string} Raw text from the editor textarea (may not be valid JSON) */
+        this._rawEditorText = '';
+
+        /** @type {Set<Function>} Subscriber callbacks */
+        this._subscribers = new Set();
+    }
+
+    // ─── Subscriber Pattern ───────────────────────────────────────────
+
+    /**
+     * Register a callback invoked on every state change.
+     * @param {Function} callback - receives no arguments; reads state via getters
+     * @returns {Function} unsubscribe function
+     * @todo Add validation for callback function signature
+     * @toimprove Implement batched notifications for performance
+     * @tofix Ensure proper error isolation in subscriber callbacks
+     */
+    subscribe(callback) {
+        if (typeof callback !== 'function') {
+            throw new TypeError('subscribe() requires a function');
+        }
+        this._subscribers.add(callback);
+        return () => this._subscribers.delete(callback);
     }
 
     /**
-     * Set the current mode and update internal state accordingly
-     * @param {string} mode - 'builder' or 'editor'
+     * @private
+     * Notify all subscribers
+     * @todo Add error boundaries for individual subscriber failures
+     * @toimprove Batch notifications to prevent excessive updates
+     * @tofix Ensure notifications don't cause infinite loops
      */
-    setMode(mode) {
-        if (mode !== 'builder' && mode !== 'editor') {
-            throw new Error('Invalid mode. Must be "builder" or "editor"');
+    _notify() {
+        for (const cb of this._subscribers) {
+            try { cb(); } catch (e) { console.error('State subscriber error:', e); }
         }
-        this.currentMode = mode;
     }
+
+    // ─── Mode ─────────────────────────────────────────
 
     /**
      * Get the current mode
-     * @returns {string} Current mode
+     * @returns {'builder' | 'editor'} The current mode
      */
     getMode() {
-        return this.currentMode;
+        return this._mode;
     }
 
     /**
-     * Set data from builder mode (array format)
-     * @param {Array} questions - Array of question objects
+     * Switch mode. Caller is responsible for syncing data BEFORE calling this
+     * if switching from editor mode (call fromJSONString first to parse
+     * textarea content into questions), or AFTER (builder auto-syncs).
+     * @param {'builder' | 'editor'} mode - The mode to switch to
+     * @throws {Error} If an invalid mode is provided
+     * @todo Add transition animations when switching modes
+     * @toimprove Validate data integrity before mode switching
+     * @tofix Ensure proper state preservation during mode transitions
      */
-    setBuilderData(questions) {
-        this.builderData = Array.isArray(questions) ? questions : [];
-        this.currentMode = 'builder';
-        this._syncToEditor();
+    setMode(mode) {
+        if (mode === this._mode) return;
+        if (mode !== 'builder' && mode !== 'editor') {
+            throw new Error('Invalid mode. Must be "builder" or "editor"');
+        }
+
+        // Sync data when leaving a mode
+        if (this._mode === 'editor' && mode === 'builder') {
+            // Editor text is already captured via fromJSONString() by the caller
+            // Questions are already normalized
+        }
+        // When entering editor, caller should call syncToEditor() after
+
+        this._mode = mode;
+        this._notify();
     }
 
     /**
-     * Set data from editor mode (JSON string)
-     * @param {string} jsonString - JSON string from textarea
+     * Check if currently in builder mode
+     * @returns {boolean} True if in builder mode, false otherwise
      */
-    setEditorData(jsonString) {
-        this.rawJSONString = jsonString || '';
-        this.currentMode = 'editor';
-        
+    isBuilderMode() {
+        return this._mode === 'builder';
+    }
+
+    /**
+     * Check if currently in editor mode
+     * @returns {boolean} True if in editor mode, false otherwise
+     */
+    isEditorMode() {
+        return this._mode === 'editor';
+    }
+
+    // ─── Questions (Canonical Data) ───────────────────────────
+
+    /**
+     * Get a shallow copy of the questions array.
+     * Always returns an array — safe to use from any mode.
+     * @returns {Array<Object>} A copy of the questions array
+     * @todo Add deep cloning to prevent accidental mutations
+     * @toimprove Implement memoization for performance
+     * @tofix Ensure returned array is immutable
+     */
+    getQuestions() {
+        return [...this._questions];
+    }
+
+    /**
+     * Replace all questions. Triggers subscribers.
+     * @param {Array<Object>} questions - The new questions array
+     * @todo Add validation for question format before setting
+     * @toimprove Optimize for large question sets
+     * @tofix Prevent setting invalid question structures
+     */
+    setQuestions(questions) {
+        this._questions = Array.isArray(questions) ? questions : [];
+        this._rawEditorText = this._questions.length > 0
+            ? JSON.stringify(this._questions, null, 2)
+            : this._rawEditorText; // preserve prompt text if questions empty
+        this._notify();
+    }
+
+    /**
+     * Append new questions (e.g., from AI generation).
+     * @param {Array<Object>} newQuestions - The questions to append
+     * @todo Add validation for new question format
+     * @toimprove Optimize for bulk additions
+     * @tofix Prevent appending invalid question structures
+     */
+    appendQuestions(newQuestions) {
+        if (!Array.isArray(newQuestions) || newQuestions.length === 0) return;
+        this._questions = [...this._questions, ...newQuestions];
+        this._rawEditorText = JSON.stringify(this._questions, null, 2);
+        this._notify();
+    }
+
+    /**
+     * Get the number of questions
+     * @returns {number} The number of questions
+     */
+    getQuestionCount() {
+        return this._questions.length;
+    }
+
+    /**
+     * Check if there are any valid questions
+     * @returns {boolean} True if there are questions, false otherwise
+     */
+    hasQuestions() {
+        return this._questions.length > 0;
+    }
+
+    // ─── JSON String (Editor Textarea) ────────────────────────────────
+
+    /**
+     * Get the current editor text. In builder mode this is derived from questions;
+     * in editor mode it's the raw textarea content.
+     * @returns {string} The current editor text
+     * @todo Add formatting options for the JSON string
+     * @toimprove Cache formatted strings for performance
+     * @tofix Ensure consistent formatting across modes
+     */
+    toJSONString() {
+        if (this._mode === 'builder') {
+            return this._questions.length > 0
+                ? JSON.stringify(this._questions, null, 2)
+                : '';
+        }
+        return this._rawEditorText;
+    }
+
+    /**
+     * Parse a JSON string and update internal state.
+     * Used when switching from editor → builder, loading saved quizzes, etc.
+     * @param {string} jsonString - The JSON string to parse
+     * @returns {boolean} Whether parsing succeeded
+     * @todo Add more detailed error reporting for parsing failures
+     * @toimprove Support for different JSON formats
+     * @tofix Handle malformed JSON gracefully without losing state
+     */
+    fromJSONString(jsonString) {
+        this._rawEditorText = jsonString || '';
+        if (this._rawEditorText.trim() === '') {
+            this._questions = [];
+            return true;
+        }
         try {
-            if (this.rawJSONString.trim() === '') {
-                this.editorData = null;
-                this.builderData = [];
-            } else {
-                this.editorData = JSON.parse(this.rawJSONString);
-                this._syncToBuilder();
-            }
-        } catch (error) {
-            showError('Invalid JSON format in editor. Please check your syntax.');
-            console.error('JSON parse error:', error);
-            this.editorData = null;
-            this.builderData = [];
+            const parsed = JSON.parse(this._rawEditorText);
+            this._questions = Array.isArray(parsed) ? parsed : [parsed];
+            return true;
+        } catch (e) {
+            // Text is not valid JSON — could be a prompt string
+            this._questions = [];
+            return false;
         }
     }
 
     /**
-     * Set data from AI generation or other sources
-     * @param {Object|Array} data - Quiz data in any format
+     * Set raw editor text without parsing (e.g., while user is typing a prompt).
+     * Does NOT update questions or notify subscribers.
+     * @param {string} text - The raw text to set
+     * @todo Add rate limiting for frequent updates
+     * @toimprove Optimize for large text changes
+     * @tofix Prevent unnecessary state updates during typing
      */
-    setData(data) {
-        if (Array.isArray(data)) {
-            this.setBuilderData(data);
-        } else if (typeof data === 'object' && data !== null) {
-            this.setEditorData(JSON.stringify(data, null, 2));
-        } else if (typeof data === 'string') {
-            this.setEditorData(data);
-        } else {
-            showError('Invalid data format. Expected array, object, or JSON string.');
-        }
+    setRawEditorText(text) {
+        this._rawEditorText = text || '';
+        // Intentionally no _notify() — this is for live typing, not state changes
     }
 
     /**
-     * Get data in the format appropriate for the current mode
-     * @returns {Object|Array|string} Data in appropriate format
+     * Get raw editor text (may not be valid JSON).
+     * @returns {string} The raw editor text
      */
-    getCurrentData() {
-        switch (this.currentMode) {
-            case 'builder':
-                return this.getBuilderData();
-            case 'editor':
-                return this.getEditorData();
-            default:
-                return this.getJSONString();
-        }
+    getRawEditorText() {
+        return this._rawEditorText;
     }
 
     /**
-     * Get data as array (for builder mode)
-     * @returns {Array} Array of question objects
+     * Sync current questions to the editor text representation.
+     * Call this when switching to editor mode to populate the textarea.
+     * @returns {string} The JSON string
+     * @todo Add formatting options for the synced text
+     * @toimprove Optimize for large question sets
+     * @tofix Ensure consistent formatting when syncing
      */
-    getBuilderData() {
-        return [...this.builderData];
+    syncToEditor() {
+        this._rawEditorText = this._questions.length > 0
+            ? JSON.stringify(this._questions, null, 2)
+            : this._rawEditorText;
+        return this._rawEditorText;
     }
 
-    /**
-     * Get data as parsed object (for editor mode)
-     * @returns {Object|null} Parsed JSON object or null
-     */
-    getEditorData() {
-        return this.editorData ? { ...this.editorData } : null;
-    }
+    // ─── AI Context ───────────────────────────────────────────────────
 
     /**
-     * Get data as JSON string (for textarea)
-     * @returns {string} JSON string
-     */
-    getJSONString() {
-        if (this.currentMode === 'builder' && this.builderData.length > 0) {
-            return JSON.stringify(this.builderData, null, 2);
-        } else if (this.editorData) {
-            return JSON.stringify(this.editorData, null, 2);
-        }
-        return this.rawJSONString || '';
-    }
-
-    /**
-     * Get data suitable for AI generation (always array format)
-     * @returns {Array} Array of question objects
+     * Get data suitable for AI generation (always array format).
+     * @returns {Array<Object>} The questions array for AI
+     * @todo Add filtering options for AI context
+     * @toimprove Optimize data structure for AI consumption
+     * @tofix Ensure data format compatibility with AI services
      */
     getAIData() {
-        if (this.currentMode === 'builder' && this.builderData.length > 0) {
-            return this.builderData;
-        } else if (this.editorData && Array.isArray(this.editorData)) {
-            return this.editorData;
-        } else if (this.editorData) {
-            // Convert single object to array
-            return [this.editorData];
-        }
-        return [];
+        return [...this._questions];
     }
 
     /**
-     * Validate current data
-     * @returns {boolean} Whether data is valid
-     */
-    isValid() {
-        const data = this.getAIData();
-        return validateQuizData(data);
-    }
-
-    /**
-     * Clear all data
-     */
-    clear() {
-        this.builderData = [];
-        this.editorData = null;
-        this.rawJSONString = '';
-    }
-
-    /**
-     * Sync builder data to editor format
-     * @private
-     */
-    _syncToEditor() {
-        if (this.builderData.length > 0) {
-            this.editorData = this.builderData;
-            this.rawJSONString = JSON.stringify(this.builderData, null, 2);
-        } else {
-            this.editorData = null;
-            this.rawJSONString = '';
-        }
-    }
-
-    /**
-     * Sync editor data to builder format
-     * @private
-     */
-    _syncToBuilder() {
-        if (this.editorData) {
-            if (Array.isArray(this.editorData)) {
-                this.builderData = this.editorData;
-            } else {
-                // Convert single object to array
-                this.builderData = [this.editorData];
-            }
-        } else {
-            this.builderData = [];
-        }
-    }
-
-    /**
-     * Merge new questions with existing data (for AI generation)
-     * @param {Array} newQuestions - New questions to add
-     * @returns {Array} Combined questions array
-     */
-    mergeNewQuestions(newQuestions) {
-        if (!Array.isArray(newQuestions) || newQuestions.length === 0) {
-            return this.getAIData();
-        }
-
-        const existingQuestions = this.getAIData();
-        const combinedQuestions = [...existingQuestions, ...newQuestions];
-        
-        // Update internal state
-        this.setBuilderData(combinedQuestions);
-        
-        return combinedQuestions;
-    }
-
-    /**
-     * Get context for AI generation
-     * @returns {Object} Context object with existing questions and prompt
+     * Get context object for AI prompt construction.
+     * @param {string} [userPrompt=''] - The user's prompt
+     * @returns {Object} The AI context object
+     * @todo Add more context parameters for better AI results
+     * @toimprove Optimize context data for different AI models
+     * @tofix Ensure context is properly formatted for AI services
      */
     getAIContext(userPrompt = '') {
-        const existingQuestions = this.getAIData();
-        const context = {
-            existingQuestions,
+        return {
+            existingQuestions: this.getAIData(),
             userPrompt: userPrompt.trim(),
-            mode: this.currentMode,
-            hasExistingData: existingQuestions.length > 0
+            mode: this._mode,
+            hasExistingData: this._questions.length > 0,
         };
-        
-        return context;
+    }
+
+    // ─── Validation ───────────────────────────────────────────
+
+    /**
+     * Validate current questions data.
+     * @returns {boolean} Whether the data is valid
+     * @todo Add more comprehensive validation rules
+     * @toimprove Optimize validation for large datasets
+     * @tofix Provide detailed validation error messages
+     */
+    isValid() {
+        return validateQuizData(this._questions);
+    }
+
+    /**
+     * Determine if the raw editor text is valid JSON (not a prompt).
+     * @returns {boolean} Whether the text is valid JSON
+     * @todo Add support for validating different JSON schemas
+     * @toimprove Optimize validation for large JSON strings
+     * @tofix Handle edge cases in JSON validation
+     */
+    isEditorTextValidJSON() {
+        if (!this._rawEditorText || this._rawEditorText.trim() === '') return false;
+        try {
+            JSON.parse(this._rawEditorText);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    // ─── Reset ────────────────────────────────────────────────
+
+    /**
+     * Clear all data and reset to builder mode
+     * @todo Add confirmation for clearing all data
+     * @toimprove Preserve some user preferences during reset
+     * @tofix Ensure complete cleanup of all state properties
+     */
+    clear() {
+        this._mode = 'builder';
+        this._questions = [];
+        this._rawEditorText = '';
+        this._notify();
     }
 }
 
 // Export singleton instance
 export const jsonStateManager = new JSONStateManager();
 
-// Export convenience functions for backward compatibility
+// ─── Convenience Exports (backward compatibility) ─────────────────────
+
+/**
+ * Get the current JSON data
+ * @function getCurrentJSONData
+ * @returns {Array<Object>} The current questions array
+ * @deprecated Use jsonStateManager.getQuestions() instead
+ */
 export function getCurrentJSONData() {
-    return jsonStateManager.getCurrentData();
+    return jsonStateManager.getQuestions();
 }
 
+/**
+ * Set JSON data
+ * @function setJSONData
+ * @param {Array<Object>|string} data - The data to set
+ * @deprecated Use jsonStateManager.setQuestions() or jsonStateManager.fromJSONString() instead
+ */
 export function setJSONData(data) {
-    jsonStateManager.setData(data);
+    if (typeof data === 'string') {
+        jsonStateManager.fromJSONString(data);
+    } else {
+        jsonStateManager.setQuestions(Array.isArray(data) ? data : [data]);
+    }
 }
 
+/**
+ * Get JSON string
+ * @function getJSONString
+ * @returns {string} The JSON string representation
+ * @deprecated Use jsonStateManager.toJSONString() instead
+ */
 export function getJSONString() {
-    return jsonStateManager.getJSONString();
+    return jsonStateManager.toJSONString();
 }
 
+/**
+ * Get builder data
+ * @function getBuilderData
+ * @returns {Array<Object>} The questions array for builder mode
+ * @deprecated Use jsonStateManager.getQuestions() instead
+ */
 export function getBuilderData() {
-    return jsonStateManager.getBuilderData();
+    return jsonStateManager.getQuestions();
 }
 
+/**
+ * Get editor data
+ * @function getEditorData
+ * @returns {Array<Object>} The questions array for editor mode
+ * @deprecated Use jsonStateManager.getQuestions() instead
+ */
 export function getEditorData() {
-    return jsonStateManager.getEditorData();
+    return jsonStateManager.getQuestions();
 }
 
+/**
+ * Get AI data
+ * @function getAIData
+ * @returns {Array<Object>} The questions array for AI processing
+ * @deprecated Use jsonStateManager.getAIData() instead
+ */
 export function getAIData() {
     return jsonStateManager.getAIData();
 }
 
+/**
+ * Check if JSON data is valid
+ * @function isValidJSONData
+ * @returns {boolean} Whether the data is valid
+ * @deprecated Use jsonStateManager.isValid() instead
+ */
 export function isValidJSONData() {
     return jsonStateManager.isValid();
 }
 
+/**
+ * Clear JSON data
+ * @function clearJSONData
+ * @deprecated Use jsonStateManager.clear() instead
+ */
 export function clearJSONData() {
     jsonStateManager.clear();
 }
 
+/**
+ * Merge new questions
+ * @function mergeNewQuestions
+ * @param {Array<Object>} newQuestions - The questions to merge
+ * @returns {Array<Object>} The updated questions array
+ * @deprecated Use jsonStateManager.appendQuestions() instead
+ */
 export function mergeNewQuestions(newQuestions) {
-    return jsonStateManager.mergeNewQuestions(newQuestions);
+    jsonStateManager.appendQuestions(newQuestions);
+    return jsonStateManager.getQuestions();
 }
 
+/**
+ * Get AI context
+ * @function getAIContext
+ * @param {string} [userPrompt=''] - The user's prompt
+ * @returns {Object} The AI context object
+ * @deprecated Use jsonStateManager.getAIContext() instead
+ */
 export function getAIContext(userPrompt = '') {
     return jsonStateManager.getAIContext(userPrompt);
 }

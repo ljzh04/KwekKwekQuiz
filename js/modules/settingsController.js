@@ -1,9 +1,30 @@
-// js/modules/settingsController.js
+/**
+ * @fileoverview Settings Controller module for KwekKwekQuiz
+ * Handles theme, animation, and API key settings functionality.
+ * @module settingsController
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import * as DOM from './dom.js';
 import { showSuccess, showError } from './utils.js'; // Added showError
 
+/**
+ * @constant {string}
+ * @private
+ * @description The storage key for the API key
+ */
 const API_KEY_STORAGE_ID = 'geminiApiKey';
 
+/**
+ * Updates the theme icons based on the current theme.
+ * @function updateThemeIcons
+ * @param {boolean} isDark - Whether the dark theme is currently active
+ * @private
+ * @todo Add support for more theme variants
+ * @toimprove Optimize DOM queries for better performance
+ * @tofix Ensure proper icon visibility in all themes
+ */
 function updateThemeIcons(isDark) {
     // Global header icons
     if (DOM.moonIcon && DOM.sunIcon) {
@@ -17,6 +38,15 @@ function updateThemeIcons(isDark) {
     }
 }
 
+/**
+ * Updates the animation icons based on the current animation state.
+ * @function updateAnimationIcons
+ * @param {boolean} animationsEnabled - Whether animations are currently enabled
+ * @private
+ * @todo Add support for animation speed settings
+ * @toimprove Optimize DOM queries for better performance
+ * @tofix Ensure proper icon visibility in all themes
+ */
 function updateAnimationIcons(animationsEnabled) {
     // Global header icons
     if (DOM.boltOnIcon && DOM.boltOffIcon) {
@@ -33,6 +63,14 @@ function updateAnimationIcons(animationsEnabled) {
     if(DOM.animationToggleSetting) DOM.animationToggleSetting.setAttribute("aria-pressed", String(animationsEnabled));
 }
 
+/**
+ * Initializes the settings controller by setting up event listeners and loading saved settings.
+ * @function initSettings
+ * @returns {void}
+ * @todo Add support for more settings options
+ * @toimprove Optimize initialization for better performance
+ * @tofix Ensure proper initialization order of all settings
+ */
 export function initSettings() {
     // Theme persistence
     const isDark = localStorage.getItem("theme") === "dark";
@@ -84,6 +122,14 @@ export function initSettings() {
     console.log("Settings controller initialized.");
 }
 
+/**
+ * Toggles the dark mode setting.
+ * @function toggleDarkMode
+ * @returns {void}
+ * @todo Add smooth transition effects
+ * @toimprove Optimize theme switching for better performance
+ * @tofix Ensure consistent theme application across all components
+ */
 export function toggleDarkMode() {
     const isDark = document.documentElement.classList.toggle("dark");
     localStorage.setItem("theme", isDark ? "dark" : "light");
@@ -91,6 +137,14 @@ export function toggleDarkMode() {
     showSuccess(`Dark mode ${isDark ? 'enabled' : 'disabled'}.`);
 }
 
+/**
+ * Toggles the animations setting.
+ * @function toggleAnimations
+ * @returns {void}
+ * @todo Add support for different animation presets
+ * @toimprove Optimize animation toggling for better performance
+ * @tofix Ensure proper cleanup of animations when disabled
+ */
 export function toggleAnimations() {
     // Check current state from the class, not aria-pressed, to be source of truth
     const currentlyDisabled = document.documentElement.classList.contains("animations-disabled");
@@ -104,6 +158,14 @@ export function toggleAnimations() {
 
 
 // API Key Management Functions
+/**
+ * Loads the saved API key into the input fields.
+ * @function loadApiKeyToInputs
+ * @returns {void}
+ * @todo Add validation for the loaded API key
+ * @toimprove Optimize for better performance with large keys
+ * @tofix Ensure proper loading of keys with special characters
+ */
 export function loadApiKeyToInputs() {
     const savedKey = localStorage.getItem(API_KEY_STORAGE_ID);
     if (savedKey) {
@@ -111,6 +173,15 @@ export function loadApiKeyToInputs() {
         if (DOM.apiKeySettingInput) DOM.apiKeySettingInput.value = savedKey;
     }
 }
+
+/**
+ * Handles saving the API key from the settings page.
+ * @function handleSaveApiKeyFromSettings
+ * @returns {void}
+ * @todo Add validation for the entered API key
+ * @toimprove Provide more detailed feedback on save success/failure
+ * @tofix Ensure proper sanitization of the API key before saving
+ */
 function handleSaveApiKeyFromSettings() {
     if (DOM.apiKeySettingInput && DOM.apiKeySettingInput.value.trim()) {
         const keyToSave = DOM.apiKeySettingInput.value.trim();
@@ -122,6 +193,14 @@ function handleSaveApiKeyFromSettings() {
     }
 }
 
+/**
+ * Handles clearing the saved API key.
+ * @function handleClearApiKeyFromSettings
+ * @returns {void}
+ * @todo Add additional confirmation for sensitive operations
+ * @toimprove Provide more detailed feedback on clear success/failure
+ * @tofix Ensure complete removal of the API key from storage
+ */
 function handleClearApiKeyFromSettings() {
     if (confirm('Are you sure you want to clear the saved API Key?')) {
         localStorage.removeItem(API_KEY_STORAGE_ID);

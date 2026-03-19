@@ -1,14 +1,53 @@
-// js/modules/p2pShare.js
+/**
+ * @fileoverview P2P Sharing module for KwekKwekQuiz
+ * Handles peer-to-peer sharing of quizzes using WebRTC technology.
+ * @module p2pShare
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import * as DOM from './dom.js';
 import { showError, clearError, showSuccess, showInfo } from './utils.js';
 import { validateQuizData } from './utils.js';
 
+/**
+ * @type {Peer | null}
+ * @private
+ * @description Global PeerJS instance
+ */
 let peer = null;
+
+/**
+ * @type {DataConnection | null}
+ * @private
+ * @description Current active connection
+ */
 let currentConnection = null;
+
+/**
+ * @type {boolean}
+ * @private
+ * @description Flag indicating if the peer is listening for connections
+ */
 let isListening = false;
+
+/**
+ * @type {any}
+ * @private
+ * @description Data received from a peer
+ */
 let receivedData = null;
 
-// Generate a short 4-6 character alphanumeric ID
+/**
+ * Generate a short 4-6 character alphanumeric ID
+ * @function generateShortId
+ * @param {number} [length=5] - Length of the ID to generate
+ * @returns {string} Generated short ID
+ * @private
+ * @todo Add validation to ensure generated IDs are unique within the network
+ * @toimprove Use cryptographically secure random generation
+ * @tofix Ensure consistent character set across all instances
+ */
 function generateShortId(length = 5) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid confusing chars
     let id = '';
@@ -18,7 +57,14 @@ function generateShortId(length = 5) {
     return id;
 }
 
-// Initialize PeerJS
+/**
+ * Initialize PeerJS connection
+ * @function initializePeer
+ * @returns {Peer | null} The initialized Peer instance or null if failed
+ * @todo Add error handling for PeerJS initialization failures
+ * @toimprove Implement retry mechanism for connection failures
+ * @tofix Ensure proper cleanup of previous peer connections
+ */
 export function initializePeer() {
     if (typeof Peer === 'undefined') {
         console.error('PeerJS not loaded');
@@ -64,7 +110,16 @@ export function initializePeer() {
     return peer;
 }
 
-// Handle incoming connection (when someone sends data to us)
+/**
+ * Handle incoming connection (when someone sends data to us)
+ * @function handleIncomingConnection
+ * @param {DataConnection} conn - The incoming connection
+ * @returns {void}
+ * @private
+ * @todo Add validation for incoming data format
+ * @toimprove Implement data encryption for security
+ * @tofix Ensure proper cleanup of previous connections
+ */
 function handleIncomingConnection(conn) {
     if (currentConnection) {
         conn.close();
@@ -111,7 +166,16 @@ function handleIncomingConnection(conn) {
     });
 }
 
-// Display received JSON in the download modal preview
+/**
+ * Display received JSON in the download modal preview
+ * @function displayReceivedJson
+ * @param {any} data - The received data to display
+ * @returns {void}
+ * @private
+ * @todo Add syntax highlighting for the JSON display
+ * @toimprove Implement collapsible sections for large JSON objects
+ * @tofix Ensure proper escaping of special characters in JSON
+ */
 function displayReceivedJson(data) {
     if (DOM.receivedJsonPreview) {
         DOM.receivedJsonPreview.textContent = JSON.stringify(data, null, 2);
@@ -121,7 +185,17 @@ function displayReceivedJson(data) {
     }
 }
 
-// Update status display in modals
+/**
+ * Update status display in modals
+ * @function updateStatus
+ * @param {string} message - The status message to display
+ * @param {string} [type='info'] - The type of status ('success', 'error', 'warning', 'info')
+ * @returns {void}
+ * @private
+ * @todo Add more status types for better user feedback
+ * @toimprove Implement auto-hiding of status messages after a delay
+ * @tofix Ensure status messages are properly cleared when switching contexts
+ */
 function updateStatus(message, type = 'info') {
     const colorClass = {
         'success': 'text-green-600 dark:text-green-400',
@@ -140,7 +214,14 @@ function updateStatus(message, type = 'info') {
     }
 }
 
-// Start listening for incoming connections (Share mode)
+/**
+ * Start listening for incoming connections (Share mode)
+ * @function startListening
+ * @returns {void}
+ * @todo Add notification when a connection is established
+ * @toimprove Implement automatic timeout for listening mode
+ * @tofix Ensure proper UI state management when starting/stopping listening
+ */
 export function startListening() {
     if (!peer) {
         showError('P2P system not initialized');
@@ -158,7 +239,14 @@ export function startListening() {
     showInfo('Share your code with the receiver');
 }
 
-// Stop listening
+/**
+ * Stop listening for connections
+ * @function stopListening
+ * @returns {void}
+ * @todo Add confirmation dialog before stopping listening
+ * @toimprove Implement graceful disconnection from active connections
+ * @tofix Ensure all UI elements are properly updated when stopping
+ */
 export function stopListening() {
     isListening = false;
     if (DOM.startReceivingBtn) {
@@ -174,7 +262,15 @@ export function stopListening() {
     updateStatus('Stopped listening', 'info');
 }
 
-// Connect to a peer and request data (Download mode)
+/**
+ * Connect to a peer and request data (Download mode)
+ * @function connectToPeer
+ * @param {string} targetId - The ID of the target peer to connect to
+ * @returns {void}
+ * @todo Add validation for peer ID format
+ * @toimprove Implement connection timeout and retry logic
+ * @tofix Handle edge cases when target peer is unavailable
+ */
 export function connectToPeer(targetId) {
     if (!peer) {
         showError('P2P system not initialized');
@@ -234,12 +330,26 @@ export function connectToPeer(targetId) {
     });
 }
 
-// Get the received quiz data
+/**
+ * Get the received quiz data
+ * @function getReceivedData
+ * @returns {any} The received data or null if none
+ * @todo Add data validation before returning received data
+ * @toimprove Implement data caching for better performance
+ * @tofix Ensure data integrity when returning received data
+ */
 export function getReceivedData() {
     return receivedData;
 }
 
-// Clear received data after it's been used
+/**
+ * Clear received data after it's been used
+ * @function clearReceivedData
+ * @returns {void}
+ * @todo Add confirmation before clearing important data
+ * @toimprove Implement data backup before clearing
+ * @tofix Ensure all related UI elements are updated after clearing
+ */
 export function clearReceivedData() {
     receivedData = null;
     if (DOM.receivedJsonPreview) {
@@ -250,7 +360,14 @@ export function clearReceivedData() {
     }
 }
 
-// Destroy peer connection (cleanup)
+/**
+ * Destroy peer connection (cleanup)
+ * @function destroyPeer
+ * @returns {void}
+ * @todo Add confirmation before destroying active connections
+ * @toimprove Implement graceful shutdown of all connections
+ * @tofix Ensure complete cleanup of all peer-related resources
+ */
 export function destroyPeer() {
     if (currentConnection) {
         currentConnection.close();

@@ -1,7 +1,27 @@
-// js/modules/toastNotification.js
+/**
+ * @fileoverview Toast notification module for KwekKwekQuiz
+ * Provides a toast notification system for displaying messages to the user.
+ * @module toastNotification
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
 
+/**
+ * @type {HTMLElement}
+ * @private
+ * @description The container element for toast notifications
+ */
 let toastContainer = null;
 
+/**
+ * Creates the toast container element if it doesn't exist.
+ * @function createToastContainer
+ * @returns {void}
+ * @private
+ * @todo Add support for positioning options (top-left, bottom-right, etc.)
+ * @toimprove Optimize DOM queries for better performance
+ * @tofix Ensure proper cleanup of the container when no longer needed
+ */
 function createToastContainer() {
     if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -11,6 +31,17 @@ function createToastContainer() {
     }
 }
 
+/**
+ * Shows a toast notification with the specified message, type, and duration.
+ * @function showToast
+ * @param {string} message - The message to display in the toast
+ * @param {'info'|'success'|'error'|'warning'} [type='info'] - The type of toast to display
+ * @param {number} [duration=3000] - The duration to show the toast in milliseconds (0 for persistent)
+ * @returns {HTMLElement} The created toast element
+ * @todo Add support for custom styling options
+ * @toimprove Optimize animation performance
+ * @tofix Ensure proper cleanup of event listeners when toast is removed
+ */
 export function showToast(message, type = 'info', duration = 3000) {
     createToastContainer();
     
@@ -51,6 +82,16 @@ export function showToast(message, type = 'info', duration = 3000) {
     return toast;
 }
 
+/**
+ * Removes a toast notification with a fade-out animation.
+ * @function removeToast
+ * @param {HTMLElement} toast - The toast element to remove
+ * @returns {void}
+ * @private
+ * @todo Add support for custom removal animations
+ * @toimprove Optimize animation performance
+ * @tofix Ensure proper cleanup of event listeners when toast is removed
+ */
 function removeToast(toast) {
     if (toast && toast.parentNode) {
         toast.classList.add('translate-x-full', 'opacity-0');
@@ -62,6 +103,16 @@ function removeToast(toast) {
     }
 }
 
+/**
+ * Gets the CSS classes for a toast based on its type.
+ * @function getToastClasses
+ * @param {'info'|'success'|'error'|'warning'} type - The type of toast
+ * @returns {string} The CSS classes for the toast
+ * @private
+ * @todo Add support for custom color schemes
+ * @toimprove Optimize for performance with many toast types
+ * @tofix Ensure proper contrast in all color themes
+ */
 function getToastClasses(type) {
     const baseClasses = 'text-white';
     switch (type) {
@@ -77,6 +128,16 @@ function getToastClasses(type) {
     }
 }
 
+/**
+ * Gets the icon for a toast based on its type.
+ * @function getToastIcon
+ * @param {'info'|'success'|'error'|'warning'} type - The type of toast
+ * @returns {string} The HTML for the icon
+ * @private
+ * @todo Add support for custom icons
+ * @toimprove Optimize for performance with many toast types
+ * @tofix Ensure proper sizing of icons in all themes
+ */
 function getToastIcon(type) {
     switch (type) {
         case 'success':

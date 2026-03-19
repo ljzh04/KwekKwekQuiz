@@ -1,19 +1,25 @@
-// js/modules/eventHandlers.js
+/**
+ * @fileoverview Event handlers module for KwekKwekQuiz
+ * Contains all event handler functions for the application.
+ * @module eventHandlers
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import jsyaml from 'js-yaml';
 import * as DOM from './dom.js';
 import * as State from './state.js';
 import { showError, clearError, validateQuizData, sanitizeInput, showSuccess } from './utils.js';
-import { initializeQuizBuilder, loadQuestionsFromJson } from './quizBuilder.js';
-// import { toggleDarkMode, toggleAnimations } from './settingsController.js'; // Handled in settingsController.initSettings
-import {
-    handleSaveQuiz, 
-    handleDeleteQuiz, 
-    handleSavedQuizSelectChange,
-    handleExportQuizzes,      // NEW
-    handleImportQuizzes,      // NEW
-    handleClearAllQuizzes     // NEW
-} from './storageManager.js';
 import { jsonStateManager } from './jsonStateManager.js';
+import { handleGenerateInBuilderMode } from './quizBuilder.js';
+import {
+    handleSaveQuiz,
+    handleDeleteQuiz,
+    handleSavedQuizSelectChange,
+    handleExportQuizzes,
+    handleImportQuizzes,
+    handleClearAllQuizzes
+} from './storageManager.js';
 import {
     initializePeer,
     startListening,
@@ -22,23 +28,39 @@ import {
     getReceivedData,
     clearReceivedData
 } from './p2pShare.js';
-// import { showQuizSetupScreen } from './uiController.js'; // showQuizSetupScreen is for app internal, not global home
 import { handleGenerateQuizRequest } from './geminiService.js';
-import { handleGenerateInBuilderMode } from './quizBuilder.js';
 import { startQuiz, handleSubmitAnswer, goToPrevQuestion, goToNextQuestion, restartCurrentQuiz } from './quizEngine.js';
-import { showQuizSetupScreen as showAppSetupScreen } from './uiController.js'; // For backToSetupBtn
+import { showQuizSetupScreen as showAppSetupScreen } from './uiController.js';
 
+// ─── Editor Mode Handlers ─────────────────────────────────────
+
+/**
+ * Handles the load quiz button click event.
+ * Parses the JSON input and starts the quiz if valid.
+ * @function handleLoadQuizBtn
+ * @returns {void}
+ * @todo Add more detailed validation for quiz structure
+ * @toimprove Consider adding a preview mode before loading
+ * @tofix Ensure proper error handling for edge cases
+ */
 function handleLoadQuizBtn() {
     clearError();
     if (!DOM.quizJsonInput) return;
+
+    const text = DOM.quizJsonInput.value.trim();
+    if (!text) {
+        showError("Editor is empty. Enter or paste quiz JSON first.");
+        return;
+    }
+
     let data;
     try {
-        data = JSON.parse(DOM.quizJsonInput.value);
-        updateModeIndicator();
+        data = JSON.parse(text);
     } catch (e) {
         showError("Invalid JSON format. Please correct and try again.");
         return;
     }
+
     if (!startQuiz(data)) {
         // Error already shown by startQuiz
     } else {
@@ -46,6 +68,15 @@ function handleLoadQuizBtn() {
     }
 }
 
+/**
+ * Handles the format JSON button click event.
+ * Formats the JSON in the editor and converts YAML to JSON if needed.
+ * @function handleFormatJsonBtn
+ * @returns {void}
+ * @todo Add support for other data formats like TOML
+ * @toimprove Optimize for large JSON files to prevent UI blocking
+ * @tofix Handle malformed YAML gracefully
+ */
 function handleFormatJsonBtn() {
     clearError();
     if (!DOM.quizJsonInput) return;
@@ -56,14 +87,18 @@ function handleFormatJsonBtn() {
     }
     try {
         const parsedJson = JSON.parse(input);
-        DOM.quizJsonInput.value = JSON.stringify(parsedJson, null, 2);
-        updateModeIndicator();
+        const formatted = JSON.stringify(parsedJson, null, 2);
+        DOM.quizJsonInput.value = formatted;
+        jsonStateManager.setRawEditorText(formatted);
+        _updateEditorModeIndicator();
         showSuccess("JSON formatted successfully!");
     } catch (jsonError) {
         try {
             const parsedYaml = jsyaml.load(input);
-            DOM.quizJsonInput.value = JSON.stringify(parsedYaml, null, 2);
-            updateModeIndicator();
+            const formatted = JSON.stringify(parsedYaml, null, 2);
+            DOM.quizJsonInput.value = formatted;
+            jsonStateManager.setRawEditorText(formatted);
+            _updateEditorModeIndicator();
             showSuccess("YAML converted to JSON successfully!");
         } catch (yamlError) {
             showError(`Invalid JSON or YAML.\nJSON Error: ${jsonError.message}\nYAML Error: ${yamlError.message}`);
@@ -71,19 +106,83 @@ function handleFormatJsonBtn() {
     }
 }
 
+/**
+ * Handles the load sample button click event.
+ * Loads the sample quiz into the editor and state manager.
+ * @function handleLoadSampleBtn
+ * @returns {void}
+ * @todo Allow users to customize the sample quiz
+ * @toimprove Add more diverse sample quizzes
+ * @tofix Ensure consistent state synchronization
+ */
 function handleLoadSampleBtn() {
     clearError();
+    const sampleJson = State.sampleQuizJson;
+
+    // Always set data via state manager so both modes stay in sync
+    jsonStateManager.fromJSONString(sampleJson);
+
     if (DOM.quizJsonInput) {
-        DOM.quizJsonInput.value = State.sampleQuizJson;
-        updateModeIndicator();
+        DOM.quizJsonInput.value = sampleJson;
     }
+
+    _updateEditorModeIndicator();
+
     if (DOM.quizNameInput) {
         DOM.quizNameInput.value = "Sample Quiz";
-        delete DOM.quizNameInput.dataset.editingExisting; // Clear editing flag
+        delete DOM.quizNameInput.dataset.editingExisting;
     }
     showSuccess("Sample quiz loaded!");
 }
 
+// ─── Editor Textarea Input Tracking ───────────────────────────────────
+
+/**
+ * Handles the editor textarea input event.
+ * Updates the raw editor text in the state manager and updates the mode indicator.
+ * @function handleEditorInput
+ * @returns {void}
+ * @todo Implement debouncing to improve performance
+ * @toimprove Add undo/redo functionality
+ * @tofix Ensure proper synchronization with state manager
+ */
+function handleEditorInput() {
+    if (!DOM.quizJsonInput) return;
+    jsonStateManager.setRawEditorText(DOM.quizJsonInput.value);
+    _updateEditorModeIndicator();
+}
+
+/**
+ * Updates the editor mode indicator based on the content of the editor.
+ * @function _updateEditorModeIndicator
+ * @private
+ * @returns {void}
+ * @todo Add more detailed mode information
+ * @toimprove Consider adding visual cues for different modes
+ * @tofix Ensure accurate detection of editor states
+ */
+function _updateEditorModeIndicator() {
+    if (!DOM.editorModeIndicator) return;
+    const rawText = jsonStateManager.getRawEditorText();
+    if (rawText.trim() === '') {
+        DOM.editorModeIndicator.textContent = 'Mode: Prompt';
+    } else if (jsonStateManager.isEditorTextValidJSON()) {
+        DOM.editorModeIndicator.textContent = 'Mode: Editor';
+    } else {
+        DOM.editorModeIndicator.textContent = 'Mode: Prompt';
+    }
+}
+
+// ─── Settings Handlers ────────────────────────────────────────────────
+
+/**
+ * Toggles the visibility of the API key in the settings input field.
+ * @function handleApiKeyVisibility
+ * @returns {void}
+ * @todo Add password strength indicator
+ * @toimprove Consider using a more secure method for storing API keys
+ * @tofix Ensure proper accessibility for screen readers
+ */
 function handleApiKeyVisibility() {
     const input = DOM.apiKeySettingInput;
     const icon = DOM.apiKeyVisibilityIcon;
@@ -96,7 +195,19 @@ function handleApiKeyVisibility() {
     }
 }
 
-function handleQuizImageChange(event){
+// ─── Image Handlers ───────────────────────────────────────────────────
+
+/**
+ * Handles the quiz image change event.
+ * Displays a preview of the selected image.
+ * @function handleQuizImageChange
+ * @param {Event} event - The change event from the file input
+ * @returns {void}
+ * @todo Add image compression to reduce file size
+ * @toimprove Add support for more image formats
+ * @tofix Ensure proper error handling for corrupted images
+ */
+function handleQuizImageChange(event) {
     const file = event.target.files?.[0];
     if (!file || !DOM.previewImg) {
         if (DOM.previewContainer) DOM.previewContainer.classList.add('hidden');
@@ -109,34 +220,191 @@ function handleQuizImageChange(event){
     }
     clearError();
     const reader = new FileReader();
-    reader.onload = function(e){
+    reader.onload = function (e) {
         DOM.previewImg.src = e.target.result;
         DOM.previewContainer.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
-function handleQuizImageRemove(event){
+
+/**
+ * Handles the quiz image removal event.
+ * Clears the selected image and hides the preview.
+ * @function handleQuizImageRemove
+ * @returns {void}
+ * @todo Add confirmation dialog for image removal
+ * @toimprove Add option to revert to previous image
+ * @tofix Ensure proper cleanup of file input
+ */
+function handleQuizImageRemove() {
     if (DOM.quizImageInput) DOM.quizImageInput.value = '';
     if (DOM.previewContainer) DOM.previewContainer.classList.add('hidden');
 }
 
-function updateModeIndicator() {
-    if (!DOM.modeIndicator || !DOM.quizJsonInput) return;
-    
-    const input = DOM.quizJsonInput.value.trim();
-    if (input === "") {
-        DOM.modeIndicator.textContent = "Mode: Prompt";
-        return;
-    }
-    
-    try {
-        JSON.parse(input);
-        DOM.modeIndicator.textContent = "Mode: Editor";
-    } catch (e) {
-        DOM.modeIndicator.textContent = "Mode: Prompt";
+// ─── Generate Button Dispatch ─────────────────────────────────────────
+
+/**
+ * Handles the generate button click event.
+ * Routes the request to the appropriate handler based on the current mode.
+ * @function handleGenerateButton
+ * @returns {void}
+ * @todo Add loading indicators during generation
+ * @toimprove Optimize routing logic for better performance
+ * @tofix Ensure consistent behavior across different modes
+ */
+function handleGenerateButton() {
+    if (jsonStateManager.isBuilderMode()) {
+        handleGenerateInBuilderMode();
+    } else {
+        handleGenerateQuizRequest();
     }
 }
 
+// ─── P2P Share Modal Handlers ─────────────────────────────────────────
+
+/**
+ * Handles the open share modal event.
+ * Clears received data and stops listening before opening the modal.
+ * @function handleOpenShareModal
+ * @returns {void}
+ * @todo Add validation for P2P connection readiness
+ * @toimprove Improve modal UX with animations
+ * @tofix Ensure proper cleanup of previous connections
+ */
+export function handleOpenShareModal() {
+    if (!DOM.p2pShareModal) return;
+    clearReceivedData();
+    stopListening();
+    DOM.p2pShareModal.classList.remove('hidden');
+}
+
+/**
+ * Handles the close share modal event.
+ * Stops listening and hides the modal.
+ * @function handleCloseShareModal
+ * @returns {void}
+ * @todo Add confirmation for unsaved changes
+ * @toimprove Add smooth transition animations
+ * @tofix Ensure proper cleanup of modal state
+ */
+export function handleCloseShareModal() {
+    if (DOM.p2pShareModal) {
+        DOM.p2pShareModal.classList.add('hidden');
+        stopListening();
+    }
+}
+
+/**
+ * Handles the start receiving event.
+ * Starts the P2P listening process.
+ * @function handleStartReceiving
+ * @returns {void}
+ * @todo Add status indicators for connection state
+ * @toimprove Optimize connection establishment
+ * @tofix Handle connection errors gracefully
+ */
+export function handleStartReceiving() {
+    startListening();
+}
+
+/**
+ * Handles the stop receiving event.
+ * Stops the P2P listening process.
+ * @function handleStopReceiving
+ * @returns {void}
+ * @todo Add confirmation for stopping active connections
+ * @toimprove Provide feedback on connection termination
+ * @tofix Ensure complete disconnection from peers
+ */
+export function handleStopReceiving() {
+    stopListening();
+}
+
+/**
+ * Handles the open download modal event.
+ * Clears received data before opening the modal.
+ * @function handleOpenDownloadModal
+ * @returns {void}
+ * @todo Add validation for download readiness
+ * @toimprove Improve modal UX with animations
+ * @tofix Ensure proper cleanup of previous downloads
+ */
+export function handleOpenDownloadModal() {
+    if (!DOM.p2pDownloadModal) return;
+    clearReceivedData();
+    DOM.p2pDownloadModal.classList.remove('hidden');
+}
+
+/**
+ * Handles the close download modal event.
+ * Clears received data and hides the modal.
+ * @function handleCloseDownloadModal
+ * @returns {void}
+ * @todo Add confirmation for unsaved downloads
+ * @toimprove Add smooth transition animations
+ * @tofix Ensure proper cleanup of modal state
+ */
+export function handleCloseDownloadModal() {
+    if (DOM.p2pDownloadModal) {
+        DOM.p2pDownloadModal.classList.add('hidden');
+        clearReceivedData();
+    }
+}
+
+/**
+ * Handles the connect to peer event.
+ * Initiates a connection to the specified peer ID.
+ * @function handleConnectToPeer
+ * @returns {void}
+ * @todo Add validation for peer ID format
+ * @toimprove Provide feedback during connection attempts
+ * @tofix Handle connection timeouts appropriately
+ */
+export function handleConnectToPeer() {
+    if (!DOM.targetPeerId) return;
+    const targetId = DOM.targetPeerId.value.trim().toUpperCase();
+    connectToPeer(targetId);
+}
+
+/**
+ * Handles the use received quiz event.
+ * Loads the received quiz data into the editor.
+ * @function handleUseReceivedQuiz
+ * @returns {void}
+ * @todo Add validation for received quiz data
+ * @toimprove Provide feedback during data processing
+ * @tofix Ensure proper state synchronization after loading
+ */
+export function handleUseReceivedQuiz() {
+    const data = getReceivedData();
+    if (data && DOM.quizJsonInput) {
+        const jsonString = JSON.stringify(data, null, 2);
+        DOM.quizJsonInput.value = jsonString;
+        jsonStateManager.fromJSONString(jsonString);
+        _updateEditorModeIndicator();
+
+        if (DOM.quizNameInput) {
+            DOM.quizNameInput.value = "";
+            delete DOM.quizNameInput.dataset.editingExisting;
+        }
+        showSuccess('Quiz loaded into editor!');
+        handleCloseDownloadModal();
+    } else {
+        showError('No quiz data received yet.');
+    }
+}
+
+// ─── Autocomplete ─────────────────────────────────────────────────────
+
+/**
+ * Initializes the autocomplete functionality for the quiz editor.
+ * Sets up event listeners and suggestion logic for the JSON editor.
+ * @function initAutocomplete
+ * @returns {void}
+ * @todo Add more comprehensive keyword suggestions
+ * @toimprove Optimize performance for large documents
+ * @tofix Handle edge cases with cursor positioning
+ */
 export function initAutocomplete() {
     if (!DOM.quizJsonInput || !DOM.autocompleteDropdown) return;
 
@@ -154,7 +422,6 @@ export function initAutocomplete() {
         }
 
         currentSuggestions = suggestions;
-        // Keep index 0 highlighted unless we are already navigating
         if (selectedIndex < 0 || selectedIndex >= suggestions.length) {
             selectedIndex = 0;
         }
@@ -167,7 +434,7 @@ export function initAutocomplete() {
                 </div>
             `)
             .join('');
-        
+
         DOM.autocompleteDropdown.classList.remove('hidden');
         positionDropdown();
     }
@@ -175,30 +442,27 @@ export function initAutocomplete() {
     function hideSuggestions() {
         DOM.autocompleteDropdown.classList.add('hidden');
         currentSuggestions = [];
-        selectedIndex = 0; 
+        selectedIndex = 0;
     }
 
     function getSuggestions(query) {
         const text = DOM.quizJsonInput.value;
         const pos = DOM.quizJsonInput.selectionStart;
         const textBefore = text.substring(0, pos).trim();
-        
         const cleanQuery = query.replace(/['"]/g, '').toLowerCase();
-
         const structuralContext = textBefore.substring(0, textBefore.length - query.length).trim();
         const lastChar = structuralContext.slice(-1);
 
         if (lastChar === ':') {
             const matchKey = structuralContext.match(/"(\w+)"\s*:\s*$/);
             const currentKey = matchKey ? matchKey[1] : null;
-
             if (currentKey === 'type') {
                 return typeValues.filter(v => v.includes(cleanQuery));
             }
             if (currentKey === 'correct') {
                 return ["true", "false"].filter(v => v.includes(cleanQuery));
             }
-            return []; 
+            return [];
         }
 
         if (lastChar === '{' || lastChar === ',') {
@@ -208,22 +472,8 @@ export function initAutocomplete() {
         return systemKeys.filter(key => key.toLowerCase().includes(cleanQuery));
     }
 
-    function getCursorPos() {
-        return DOM.quizJsonInput.selectionStart || 0;
-    }
-
-    function getContext() {
-        const text = DOM.quizJsonInput.value;
-        const pos = getCursorPos();
-        const beforeCursor = text.substring(0, pos);
-        const afterCursor = text.substring(pos);
-
-        return { beforeCursor, afterCursor, position: pos };
-    }
-
     function positionDropdown() {
         const coords = getCaretCoordinates();
-        
         DOM.autocompleteDropdown.style.top = `${coords.top + 20}px`;
         DOM.autocompleteDropdown.style.left = `${coords.left}px`;
     }
@@ -231,59 +481,41 @@ export function initAutocomplete() {
     function getCaretCoordinates() {
         const textarea = DOM.quizJsonInput;
         const pos = textarea.selectionStart;
-
         const mirror = document.createElement('div');
         const style = window.getComputedStyle(textarea);
-        
         const properties = [
             'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing',
             'lineHeight', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
             'borderWidth', 'boxSizing', 'width', 'whiteSpace', 'wordWrap'
         ];
-        
         properties.forEach(prop => mirror.style[prop] = style[prop]);
-        
         mirror.style.position = 'absolute';
         mirror.style.visibility = 'hidden';
         mirror.style.top = '0';
         mirror.style.left = '0';
         mirror.style.height = 'auto';
-
-        const content = textarea.value.substring(0, pos);
-        mirror.textContent = content;
-
+        mirror.textContent = textarea.value.substring(0, pos);
         const marker = document.createElement('span');
         marker.textContent = textarea.value.substring(pos) || '.';
         mirror.appendChild(marker);
-
         document.body.appendChild(mirror);
-        
-        const rect = marker.getBoundingClientRect();
-        const textareaRect = textarea.getBoundingClientRect();
-
         const top = marker.offsetTop - textarea.scrollTop;
         const left = marker.offsetLeft - textarea.scrollLeft;
-
         document.body.removeChild(mirror);
-
         return { top, left };
     }
 
     function insertSelection(selected) {
         const text = DOM.quizJsonInput.value;
         const pos = DOM.quizJsonInput.selectionStart;
-        
         const textBefore = text.substring(0, pos);
         const startOfWord = textBefore.search(/["'\w-]+$/);
         const textAfter = text.substring(pos);
         const endOfWord = textAfter.search(/[^"'\w-]/);
         const actualEnd = endOfWord === -1 ? text.length : pos + endOfWord;
-
         const replacement = `"${selected}"`;
-        
         const newText = text.substring(0, startOfWord) + replacement + text.substring(actualEnd);
         DOM.quizJsonInput.value = newText;
-        
         const newPos = startOfWord + replacement.length;
         DOM.quizJsonInput.setSelectionRange(newPos, newPos);
         hideSuggestions();
@@ -293,7 +525,6 @@ export function initAutocomplete() {
         const text = DOM.quizJsonInput.value;
         const pos = DOM.quizJsonInput.selectionStart;
         const lastChar = text[pos - 1];
-
         if (bracketPairs[lastChar] && e.inputType !== 'deleteContentBackward') {
             const nextChar = text[pos];
             if (nextChar !== bracketPairs[lastChar]) {
@@ -301,12 +532,10 @@ export function initAutocomplete() {
                 DOM.quizJsonInput.setSelectionRange(pos, pos);
             }
         }
-
         const beforeCursor = text.substring(0, pos);
         const query = beforeCursor.split(/[\s{}[\],:]+/).pop();
-        
         if (query.length > 0) {
-            selectedIndex = 0; 
+            selectedIndex = 0;
             showSuggestions(getSuggestions(query));
         } else {
             hideSuggestions();
@@ -322,18 +551,14 @@ export function initAutocomplete() {
         if (e.key === 'Backspace') {
             const charBefore = text[pos - 1];
             const charAfter = text[pos];
-
             if (bracketPairs[charBefore] === charAfter) {
                 e.preventDefault();
-        
                 const newText = text.substring(0, pos - 1) + text.substring(pos + 1);
                 textarea.value = newText;
-                
-                const newPos = pos - 1;
-                textarea.setSelectionRange(newPos, newPos);
+                textarea.setSelectionRange(pos - 1, pos - 1);
                 return;
             }
-        }  
+        }
         if (isDropdownOpen) {
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -363,18 +588,6 @@ export function initAutocomplete() {
         }
     }
 
-    function handleClickOnSuggestion(e) {
-        if (e.target.classList.contains('autocomplete-item')) {
-            const selected = e.target.textContent;
-            const context = getContext();
-            const query = context.beforeCursor.split(/[\s{}[\],:]+/).pop();
-            const newText = context.beforeCursor.slice(0, -query.length) + selected + context.afterCursor;
-            DOM.quizJsonInput.value = newText;
-            DOM.quizJsonInput.setSelectionRange(context.position - query.length + selected.length, context.position - query.length + selected.length);
-            hideSuggestions();
-        }
-    }
-
     DOM.quizJsonInput.addEventListener('input', handleInput);
     DOM.quizJsonInput.addEventListener('keydown', handleKeyDown);
     DOM.autocompleteDropdown.addEventListener('click', (e) => {
@@ -385,28 +598,35 @@ export function initAutocomplete() {
         }
     });
     document.addEventListener('click', handleClickOutside);
-
     console.log("Autocomplete initialized");
 }
 
+// ─── Global Keyboard Shortcuts ────────────────────────────────────────
+
+/**
+ * Handles global keydown events for keyboard shortcuts.
+ * Provides navigation and interaction shortcuts throughout the app.
+ * @function globalKeydownHandler
+ * @param {KeyboardEvent} event - The keydown event
+ * @returns {void}
+ * @todo Add customizable keyboard shortcuts
+ * @toimprove Optimize for accessibility compliance
+ * @tofix Ensure shortcuts don't interfere with user input
+ */
 function globalKeydownHandler(event) {
     const activeElement = document.activeElement;
     if (!activeElement) return;
     const activeTag = activeElement.tagName;
 
-    // Don't interfere if user is typing in any input/textarea globally
     if (activeTag === "INPUT" || activeTag === "TEXTAREA") {
-        // Allow Enter for submit button in quiz player text input
         if (DOM.quizContainer && !DOM.quizContainer.classList.contains('hidden') &&
             activeElement === DOM.quizContainer.querySelector("input[type='text']") && event.key === "Enter") {
             // Let quizPlayer's input handler deal with Enter
         } else {
-             return; // Otherwise, don't process global keydowns
+            return;
         }
     }
 
-
-    // Quiz player specific shortcuts
     if (DOM.quizContainer && !DOM.quizContainer.classList.contains('hidden')) {
         if (event.key === "ArrowLeft") {
             if (DOM.prevBtn && !DOM.prevBtn.disabled) {
@@ -448,28 +668,37 @@ function globalKeydownHandler(event) {
     }
 }
 
+// ─── Attach All Event Handlers ────────────────────────────────────────
+
+/**
+ * Attaches all event handlers to their respective DOM elements.
+ * This is the main initialization function for the event system.
+ * @function attachAllEventHandlers
+ * @returns {void}
+ * @todo Add error handling for missing DOM elements
+ * @toimprove Optimize for performance with many event listeners
+ * @tofix Ensure proper cleanup of event listeners on destruction
+ */
 export function attachAllEventHandlers() {
-    // Global Header Toggles (Listeners attached in settingsController.initSettings)
-    // if (DOM.darkModeToggle) DOM.darkModeToggle.addEventListener("click", toggleDarkMode);
-    // if (DOM.animationToggle) DOM.animationToggle.addEventListener("click", toggleAnimations);
-
-    // Home button (now a sidebar link, handled by navigationController)
-    // if (DOM.homeBtn) DOM.homeBtn.addEventListener("click", showQuizSetupScreen);
-
-    // App Section Event Handlers
+    // App Section — Editor mode
     if (DOM.quizImageInput) DOM.quizImageInput.addEventListener("change", handleQuizImageChange);
     if (DOM.removeImgBtn) DOM.removeImgBtn.addEventListener("click", handleQuizImageRemove);
     if (DOM.loadQuizBtn) DOM.loadQuizBtn.addEventListener("click", handleLoadQuizBtn);
+
+    // Editor textarea input tracking
     if (DOM.quizJsonInput) {
-        DOM.quizJsonInput.addEventListener("input", updateModeIndicator);
-        DOM.quizJsonInput.addEventListener("change", updateModeIndicator);
+        DOM.quizJsonInput.addEventListener("input", handleEditorInput);
     }
+
     if (DOM.formatBtn) DOM.formatBtn.addEventListener("click", handleFormatJsonBtn);
     if (DOM.sampleBtn) DOM.sampleBtn.addEventListener("click", handleLoadSampleBtn);
     if (DOM.saveQuizBtn) DOM.saveQuizBtn.addEventListener("click", handleSaveQuiz);
     if (DOM.deleteQuizBtn) DOM.deleteQuizBtn.addEventListener("click", handleDeleteQuiz);
     if (DOM.savedQuizzesSelect) DOM.savedQuizzesSelect.addEventListener("change", handleSavedQuizSelectChange);
-    if (DOM.generateBtn) DOM.generateBtn.addEventListener("click", handleGenerateButton);
+
+    // Generate buttons — both route through the same dispatcher
+    if (DOM.builderGenerateBtn) DOM.builderGenerateBtn.addEventListener("click", handleGenerateButton);
+    if (DOM.editorGenerateBtn) DOM.editorGenerateBtn.addEventListener("click", handleGenerateButton);
 
     // P2P Share Modal Event Handlers
     if (DOM.shareQuizBtn) DOM.shareQuizBtn.addEventListener("click", handleOpenShareModal);
@@ -497,7 +726,7 @@ export function attachAllEventHandlers() {
 
     // Quiz Results Handlers
     if (DOM.restartBtn) DOM.restartBtn.addEventListener("click", restartCurrentQuiz);
-    if (DOM.backToSetupBtn) DOM.backToSetupBtn.addEventListener("click", showAppSetupScreen); // Use specific app setup
+    if (DOM.backToSetupBtn) DOM.backToSetupBtn.addEventListener("click", showAppSetupScreen);
 
     // Settings Page Data Management Handlers
     if (DOM.exportQuizzesBtn) DOM.exportQuizzesBtn.addEventListener("click", handleExportQuizzes);
@@ -514,70 +743,4 @@ export function attachAllEventHandlers() {
     initAutocomplete();
 
     console.log("All event listeners dynamically attached/verified.");
-}
-
-// P2P Share Modal Handlers
-export function handleOpenShareModal() {
-    if (!DOM.p2pShareModal) return;
-    clearReceivedData();
-    stopListening();
-    DOM.p2pShareModal.classList.remove('hidden');
-}
-
-export function handleCloseShareModal() {
-    if (DOM.p2pShareModal) {
-        DOM.p2pShareModal.classList.add('hidden');
-        stopListening();
-    }
-}
-
-export function handleStartReceiving() {
-    startListening();
-}
-
-export function handleStopReceiving() {
-    stopListening();
-}
-
-export function handleOpenDownloadModal() {
-    if (!DOM.p2pDownloadModal) return;
-    clearReceivedData();
-    DOM.p2pDownloadModal.classList.remove('hidden');
-}
-
-export function handleCloseDownloadModal() {
-    if (DOM.p2pDownloadModal) {
-        DOM.p2pDownloadModal.classList.add('hidden');
-        clearReceivedData();
-    }
-}
-
-export function handleConnectToPeer() {
-    if (!DOM.targetPeerId) return;
-    const targetId = DOM.targetPeerId.value.trim().toUpperCase();
-    connectToPeer(targetId);
-}
-
-export function handleUseReceivedQuiz() {
-    const data = getReceivedData();
-    if (data && DOM.quizJsonInput) {
-        DOM.quizJsonInput.value = JSON.stringify(data, null, 2);
-        updateModeIndicator();
-        if (DOM.quizNameInput) {
-            DOM.quizNameInput.value = "";
-            delete DOM.quizNameInput.dataset.editingExisting;
-        }
-        showSuccess('Quiz loaded into editor!');
-        handleCloseDownloadModal();
-    } else {
-        showError('No quiz data received yet.');
-    }
-}
-
-function handleGenerateButton() {
-    if (DOM.quizBuilder && !DOM.quizBuilder.classList.contains('hidden')) {
-        handleGenerateInBuilderMode();
-    } else {
-        handleGenerateQuizRequest();
-    }
 }

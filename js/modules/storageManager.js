@@ -1,20 +1,59 @@
-// js/modules/storageManager.js
+/**
+ * @fileoverview Storage management module for KwekKwekQuiz
+ * Handles saving, loading, importing, and exporting of quizzes using localStorage.
+ * @module storageManager
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import * as DOM from './dom.js';
 import { validateQuizData, sanitizeInput, showError, clearError, showSuccess, showInfo } from './utils.js';
-import { setQuizData as setStateQuizData } from './state.js';
+import { jsonStateManager } from './jsonStateManager.js';
 import { loadQuestionsFromJson } from './quizBuilder.js';
 
+/**
+ * @constant {string}
+ * @private
+ * @description The storage key for saved quizzes
+ */
 const SAVED_QUIZZES_STORAGE_ID = "savedQuizzes";
 
+/**
+ * Retrieves the saved quizzes from localStorage.
+ * @function getSavedQuizzes
+ * @returns {Object} The saved quizzes object
+ * @private
+ * @todo Add error handling for malformed JSON in storage
+ * @toimprove Optimize for large numbers of saved quizzes
+ * @tofix Ensure proper error handling when localStorage is unavailable
+ */
 function getSavedQuizzes() {
     const saved = localStorage.getItem(SAVED_QUIZZES_STORAGE_ID);
     return saved ? JSON.parse(saved) : {};
 }
 
+/**
+ * Stores the quizzes in localStorage.
+ * @function storeQuizzes
+ * @param {Object} quizzes - The quizzes object to store
+ * @returns {void}
+ * @private
+ * @todo Add error handling for storage quota exceeded
+ * @toimprove Optimize for large quiz sets
+ * @tofix Ensure proper error handling when localStorage is unavailable
+ */
 function storeQuizzes(quizzes) {
     localStorage.setItem(SAVED_QUIZZES_STORAGE_ID, JSON.stringify(quizzes));
 }
 
+/**
+ * Loads the saved quizzes into the dropdown menu.
+ * @function loadSavedQuizzesToDropdown
+ * @returns {void}
+ * @todo Add pagination for large numbers of saved quizzes
+ * @toimprove Optimize for performance with many saved quizzes
+ * @tofix Ensure proper cleanup of dropdown options before loading
+ */
 export function loadSavedQuizzesToDropdown() {
     if (!DOM.savedQuizzesSelect) return;
     const saved = getSavedQuizzes();
@@ -27,22 +66,42 @@ export function loadSavedQuizzesToDropdown() {
     });
 }
 
+/**
+ * Handles saving the current quiz.
+ * @function handleSaveQuiz
+ * @returns {void}
+ * @todo Add support for auto-saving drafts
+ * @toimprove Provide more detailed feedback on save success/failure
+ * @tofix Ensure proper validation of quiz data before saving
+ */
 export function handleSaveQuiz() {
     clearError();
-    if (!DOM.quizJsonInput || !DOM.quizNameInput) return;
+    if (!DOM.quizNameInput) return;
 
-    let data;
-    try {
-        data = JSON.parse(DOM.quizJsonInput.value);
-    } catch (e) {
-        showError("Invalid JSON format for quiz data. Please correct and try again.");
-        return;
+    // Get data from the single source of truth — works for both modes
+    let data = jsonStateManager.getQuestions();
+
+    if (data.length === 0) {
+        // No parsed questions — try parsing the raw editor text directly
+        const rawText = jsonStateManager.getRawEditorText().trim();
+        if (rawText) {
+            try {
+                data = JSON.parse(rawText);
+                if (!Array.isArray(data)) data = [data];
+            } catch (e) {
+                showError("Invalid JSON format for quiz data. Please correct and try again.");
+                return;
+            }
+        } else {
+            showError("No quiz data to save. Add questions first.");
+            return;
+        }
     }
+
     if (!validateQuizData(data)) {
-        showError("Invalid quiz data structure. Please check your JSON.");
+        showError("Invalid quiz data structure. Please check your questions.");
         return;
     }
-    // setStateQuizData(data); // Not strictly needed here, only for starting quiz
 
     const quizName = DOM.quizNameInput.value.trim();
     if (!quizName) {
@@ -71,6 +130,14 @@ export function handleSaveQuiz() {
     }
 }
 
+/**
+ * Handles deleting a saved quiz.
+ * @function handleDeleteQuiz
+ * @returns {void}
+ * @todo Add confirmation with quiz details before deletion
+ * @toimprove Provide more detailed feedback on deletion success/failure
+ * @tofix Ensure proper cleanup of UI elements after deletion
+ */
 export function handleDeleteQuiz() {
     clearError();
     if (!DOM.savedQuizzesSelect) return;
@@ -97,28 +164,51 @@ export function handleDeleteQuiz() {
     }
 }
 
+/**
+ * Handles the change event for the saved quiz selection dropdown.
+ * @function handleSavedQuizSelectChange
+ * @returns {void}
+ * @todo Add loading indicator while quiz is being loaded
+ * @toimprove Optimize for performance with large quiz sets
+ * @tofix Ensure proper state management when switching between quizzes
+ */
 export function handleSavedQuizSelectChange() {
     clearError();
-    if (!DOM.savedQuizzesSelect || !DOM.quizJsonInput || !DOM.quizNameInput || !DOM.quizBuilder) return;
+    if (!DOM.savedQuizzesSelect || !DOM.quizNameInput) return;
     const name = DOM.savedQuizzesSelect.value;
     if (!name) return;
 
     const saved = getSavedQuizzes();
     if (saved[name]) {
-        DOM.quizJsonInput.value = JSON.stringify(saved[name], null, 2);
-        DOM.quizNameInput.value = sanitizeInput(name);
-        
-        if (DOM.quizBuilder && !DOM.quizBuilder.classList.contains('hidden')) {
-            const jsonData = JSON.parse(DOM.quizJsonInput.value);
-            loadQuestionsFromJson(jsonData);
-        } else {
+        const jsonString = JSON.stringify(saved[name], null, 2);
+
+        // Load into state manager (single source of truth)
+        jsonStateManager.fromJSONString(jsonString);
+
+        // Update editor textarea
+        if (DOM.quizJsonInput) {
+            DOM.quizJsonInput.value = jsonString;
         }
-        
-        DOM.quizNameInput.dataset.editingExisting = "true"; // Flag that we are editing an existing quiz
+
+        // If in builder mode, loadQuestionsFromJson will re-render via state subscription
+        if (jsonStateManager.isBuilderMode()) {
+            loadQuestionsFromJson(saved[name]);
+        }
+
+        DOM.quizNameInput.value = sanitizeInput(name);
+        DOM.quizNameInput.dataset.editingExisting = "true";
     }
 }
 
 // --- New Data Management Functions for Settings Page ---
+/**
+ * Handles exporting all saved quizzes to a JSON file.
+ * @function handleExportQuizzes
+ * @returns {void}
+ * @todo Add option to select specific quizzes for export
+ * @toimprove Provide more detailed feedback on export success/failure
+ * @tofix Ensure proper file naming and format
+ */
 export function handleExportQuizzes() {
     const savedQuizzes = getSavedQuizzes();
     if (Object.keys(savedQuizzes).length === 0) {
@@ -143,6 +233,15 @@ export function handleExportQuizzes() {
     }
 }
 
+/**
+ * Handles importing quizzes from a JSON file.
+ * @function handleImportQuizzes
+ * @param {Event} event - The file input change event
+ * @returns {void}
+ * @todo Add support for importing from different formats
+ * @toimprove Provide more detailed feedback on import success/failure
+ * @tofix Ensure proper validation of imported quiz data
+ */
 export function handleImportQuizzes(event) {
     const file = event.target.files[0];
     if (!file) {
@@ -208,6 +307,14 @@ export function handleImportQuizzes(event) {
     reader.readAsText(file);
 }
 
+/**
+ * Handles clearing all saved quizzes.
+ * @function handleClearAllQuizzes
+ * @returns {void}
+ * @todo Add additional confirmation for this destructive action
+ * @toimprove Provide more detailed feedback on clear success/failure
+ * @tofix Ensure complete removal of all quiz data from storage
+ */
 export function handleClearAllQuizzes() {
     if (Object.keys(getSavedQuizzes()).length === 0) {
         showInfo("No quizzes to clear.");

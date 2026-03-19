@@ -1,9 +1,15 @@
-// js/modules/geminiService.js
+/**
+ * @fileoverview Gemini Service module for KwekKwekQuiz
+ * Handles AI-powered quiz generation using Google's Gemini API.
+ * @module geminiService
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as DOM from './dom.js';
 import { jsonStateManager } from './jsonStateManager.js';
 import { showError, showSuccess, clearError } from './utils.js';
-import { loadQuestionsFromJson } from './quizBuilder.js';
 
 /**
  * Gemini Service for handling AI-powered quiz generation
@@ -13,14 +19,18 @@ import { loadQuestionsFromJson } from './quizBuilder.js';
  * to any script running in the browser. For production use, consider a backend proxy.
  * 
  * Configuration: Default API key can be set via VITE_GEMINI_API_KEY environment variable.
+ * @class GeminiService
+ * @todo Implement rate limiting to prevent API abuse
+ * @toimprove Add support for different AI models and providers
+ * @tofix Ensure proper error handling for all API interactions
  */
-
 export class GeminiService {
   /**
+   * Creates a new GeminiService instance
    * @param {Object} options - Configuration options
-   * @param {string} options.modelName - Gemini model name
-   * @param {string} options.fallbackPrompt - Fallback prompt when prompt file fails
-   * @param {string} options.baseURL - Base URL for prompt file
+   * @param {string} [options.modelName="models/gemini-flash-latest"] - Gemini model name
+   * @param {string} [options.fallbackPrompt="Generate a quiz in JSON format based on the following topic: "] - Fallback prompt when prompt file fails
+   * @param {string} [options.baseURL=import.meta.env.BASE_URL] - Base URL for prompt file
    */
   constructor(options = {}) {
     this.modelName = options.modelName || "models/gemini-flash-latest";
@@ -33,7 +43,16 @@ export class GeminiService {
   }
 
   // ==================== SECURITY UTILITIES ====================
-  // Obfuscate API key for localStorage storage (simple XOR with fixed key)
+  /**
+   * Obfuscate API key for localStorage storage (simple XOR with fixed key)
+   * @function obfuscateKey
+   * @static
+   * @param {string} key - The API key to obfuscate
+   * @returns {string} The obfuscated API key
+   * @todo Implement stronger encryption for API key storage
+   * @toimprove Use a more secure method for client-side key storage
+   * @tofix Consider moving sensitive operations to a backend service
+   */
   static obfuscateKey(key) {
     if (!key) return '';
     const xorKey = 0x5A; // Simple obfuscation - not cryptographically secure
@@ -42,7 +61,16 @@ export class GeminiService {
     ).join(''));
   }
 
-  // Deobfuscate API key from localStorage
+  /**
+   * Deobfuscate API key from localStorage
+   * @function deobfuscateKey
+   * @static
+   * @param {string} obfuscated - The obfuscated API key
+   * @returns {string} The deobfuscated API key
+   * @todo Implement stronger decryption for API key retrieval
+   * @toimprove Use a more secure method for client-side key retrieval
+   * @tofix Consider moving sensitive operations to a backend service
+   */
   static deobfuscateKey(obfuscated) {
     if (!obfuscated) return '';
     try {
@@ -56,7 +84,16 @@ export class GeminiService {
     }
   }
 
-  // Validate Gemini API key format (basic check for AIza... prefix)
+  /**
+   * Validate Gemini API key format (basic check for AIza... prefix)
+   * @function validateKeyFormat
+   * @static
+   * @param {string} key - The API key to validate
+   * @returns {boolean} Whether the key format is valid
+   * @todo Add more comprehensive API key validation
+   * @toimprove Implement verification against actual API endpoint
+   * @tofix Ensure validation covers all valid key formats
+   */
   static validateKeyFormat(key) {
     if (!key || typeof key !== 'string') return false;
     // Gemini API keys typically start with "AIza"
@@ -68,7 +105,12 @@ export class GeminiService {
    * Loads prompt engineering text with caching and error handling
    * Uses a "loading gate" pattern to ensure only one fetch occurs at a time.
    * All concurrent callers receive the same promise, preventing race conditions.
+   * @async
+   * @function loadPromptEngineeringText
    * @returns {Promise<string>} Resolved prompt text
+   * @todo Add retry mechanism for failed requests
+   * @toimprove Implement progressive loading for large prompt files
+   * @tofix Ensure proper cleanup of loading state on errors
    */
   async loadPromptEngineeringText() {
     // Return cached text immediately if available
@@ -102,8 +144,13 @@ export class GeminiService {
 
   /**
    * Fetches prompt text from file
+   * @async
    * @private
+   * @function _fetchPromptText
    * @returns {Promise<string>} Prompt text
+   * @todo Add timeout mechanism for fetch requests
+   * @toimprove Implement caching with expiration
+   * @tofix Handle CORS errors appropriately
    */
   async _fetchPromptText() {
     const response = await fetch(`${this.baseURL}data/promptEngineeringText.txt`);
@@ -113,11 +160,33 @@ export class GeminiService {
     return await response.text();
   }
 
+  /**
+   * Fetches JSON schema text from file
+   * @async
+   * @private
+   * @function _getJsonSchemaText
+   * @returns {Promise<string>} JSON schema text
+   * @todo Add timeout mechanism for fetch requests
+   * @toimprove Implement caching with expiration
+   * @tofix Handle CORS errors appropriately
+   */
+  async _getJsonSchemaText() {
+    const response = await fetch(`${this.baseURL}data/jsonSchema.txt`);
+    if (!response.ok) {
+      throw new Error(`JSON schema file not found or network error: ${response.statusText}`);
+    }
+    return await response.text();
+  }
+
   // ==================== API KEY MANAGEMENT ====================
   /**
    * Validates API key and initializes client
+   * @function validateAndInitializeClient
    * @param {string} apiKey - API key to validate
-   * @returns {boolean> Whether client is ready
+   * @returns {boolean} Whether client is ready
+   * @todo Add more comprehensive API key validation
+   * @toimprove Implement automatic key refresh mechanisms
+   * @tofix Ensure proper error handling for all client initialization scenarios
    */
   validateAndInitializeClient(apiKey) {
     if (!apiKey) {
@@ -157,8 +226,13 @@ export class GeminiService {
   /**
    * Reads image file as base64 with strict validation
    * Validates MIME type (JPEG/PNG/WebP only) and size (max 4MB)
+   * @async
+   * @function readImageAsBase64
    * @param {File} file - Image file to read
    * @returns {Promise<string>} Base64 string
+   * @todo Add support for additional image formats
+   * @toimprove Implement image compression before encoding
+   * @tofix Ensure proper error handling for all image processing scenarios
    */
   async readImageAsBase64(file) {
     return new Promise((resolve, reject) => {
@@ -212,8 +286,13 @@ export class GeminiService {
   /**
    * Sanitizes user prompt to prevent XSS and control character issues
    * Preserves prompt functionality while removing dangerous content
+   * @private
+   * @function _sanitizePrompt
    * @param {string} prompt - User-provided prompt
    * @returns {string} Sanitized prompt
+   * @todo Add more comprehensive sanitization rules
+   * @toimprove Implement context-aware sanitization
+   * @tofix Ensure sanitization doesn't affect legitimate prompt content
    */
   _sanitizePrompt(prompt) {
     if (!prompt) return '';
@@ -233,13 +312,18 @@ export class GeminiService {
     return sanitized;
   }
 
-  // ==================== PROMPT PREPARATION ====================
+ // ==================== PROMPT PREPARATION ====================
   /**
    * Prepares prompt content for API call
+   * @private
+   * @function _preparePrompt
    * @param {string} basePrompt - Base prompt text
    * @param {string} userPrompt - User-provided prompt
    * @param {File} [imageFile] - Optional image file
-   * @returns {Object> Prepared prompt content
+   * @returns {Object} Prepared prompt content
+   * @todo Add more sophisticated prompt engineering techniques
+   * @toimprove Implement dynamic prompt templates
+   * @tofix Ensure proper formatting for all prompt variations
    */
   _preparePrompt(basePrompt, userPrompt, imageFile) {
     const sanitizedUserPrompt = this._sanitizePrompt(userPrompt);
@@ -258,8 +342,13 @@ export class GeminiService {
   // ==================== API CALL ====================
   /**
    * Maps Gemini API errors to standardized types and user-friendly messages
+   * @private
+   * @function _mapApiError
    * @param {Error} error - The caught error object
    * @returns {{ type: string, message: string }} Standardized error info
+   * @todo Add more specific error type mappings
+   * @toimprove Implement error categorization for better reporting
+   * @tofix Ensure all possible error scenarios are handled
    */
   _mapApiError(error) {
     const { message, code, status, details } = error;
@@ -301,20 +390,30 @@ export class GeminiService {
   }
 
   /**
-   * Calls Gemini API with proper error handling
+   * Calls Gemini API with proper error handling and JSON schema compliance
+   * @async
+   * @private
+   * @function _callGeminiAPI
    * @param {string} prompt - Prompt text
    * @param {Object} [options] - Additional options
-   * @returns {Promise<Object>> API response
+   * @returns {Promise<Object>} API response
+   * @todo Add retry mechanism for failed API calls
+   * @toimprove Implement request/response logging for debugging
+   * @tofix Ensure proper error propagation to calling functions
    */
   async _callGeminiAPI(prompt, options = {}) {
     try {
       const model = this.client.getGenerativeModel({ model: this.modelName });
       let result;
 
+      // Prepare prompt with JSON schema requirements
+      const schemaText = await this._getJsonSchemaText();
+      const enhancedPrompt = `${prompt}\n\n${schemaText}\n\nPlease ensure your response strictly follows this JSON schema and includes at least 20 questions covering all key points in the topic.`;
+
       if (options.image) {
         const imageBase64 = await this.readImageAsBase64(options.image);
         const promptParts = [
-          { text: prompt },
+          { text: enhancedPrompt },
           {
             inlineData: {
               mimeType: options.image.type,
@@ -327,7 +426,7 @@ export class GeminiService {
           contents: [{ role: "user", parts: promptParts }]
         });
       } else {
-        result = await model.generateContent(prompt);
+        result = await model.generateContent(enhancedPrompt);
       }
 
       const response = await result.response;
@@ -344,8 +443,13 @@ export class GeminiService {
   // ==================== RESPONSE PROCESSING ====================
   /**
    * Processes API response and extracts JSON
+   * @private
+   * @function _processResponse
    * @param {string} rawText - Raw text response
    * @returns {Object} Parsed JSON object
+   * @todo Add more robust JSON parsing with recovery options
+   * @toimprove Implement response validation against schema
+   * @tofix Handle various JSON formatting inconsistencies
    */
   _processResponse(rawText) {
     let cleanedText = rawText.trim();
@@ -368,123 +472,128 @@ export class GeminiService {
 
   // ==================== UI STATE MANAGEMENT ====================
   /**
-   * Updates UI state during processing
-   * @param {Object} ui - UI elements
+   * Updates UI state during processing.
+   * Resolves the correct generate button based on current mode.
+   * @private
+   * @function _updateUIState
    * @param {boolean} processing - Whether processing is active
-   * @param {string} [message] - Optional message to display
+   * @param {string} [originalText] - Original button HTML to restore
+   * @todo Add more comprehensive UI state management
+   * @toimprove Implement loading indicators for different processing stages
+   * @tofix Ensure UI state is properly restored after all processing scenarios
    */
-  _updateUIState(ui, processing, message = null) {
-    if (!ui.generateBtn || !ui.quizJsonInput ) return;
+  _updateUIState(processing, originalText) {
+    // Resolve the active generate button based on mode
+    const activeBtn = jsonStateManager.isBuilderMode()
+      ? DOM.builderGenerateBtn
+      : DOM.editorGenerateBtn;
+
+    if (!activeBtn) return;
 
     if (processing) {
-      ui.generateBtn.disabled = true;
-      ui.generateBtn.innerHTML = '<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span> Generating';
-      ui.quizJsonInput.value = message || "Generating quiz content...";
-    } else {
-      ui.generateBtn.disabled = false;
-      ui.generateBtn.innerHTML = ui.originalButtonText;
-      if (message) {
-        ui.quizJsonInput.value = message;
+      activeBtn.disabled = true;
+      if (!this._savedButtonText) {
+        this._savedButtonText = activeBtn.innerHTML;
       }
+      activeBtn.innerHTML = `
+        <span class="loading-dots flex items-center gap-2">
+          <span class="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+          <span class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: -0.3s"></span>
+          <span class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: -0.1s"></span>
+        </span>
+        <span class="ml-2 whitespace-nowrap">Generating</span>
+      `;
+      activeBtn.classList.add('loading');
+    } else {
+      activeBtn.disabled = false;
+      activeBtn.classList.remove('loading');
+      activeBtn.innerHTML = originalText || this._savedButtonText || 'Generate More';
+      this._savedButtonText = null;
     }
   }
 
   // ==================== MAIN REQUEST HANDLER ====================
   /**
-   * Main method to handle quiz generation request with improved state management
-   * @param {Object} ui - UI elements
-   * @returns {Promise<void>>
+   * Main method to handle quiz generation request.
+   * Reads mode and data from jsonStateManager — no DOM mode checks needed.
+   * @async
+   * @function handleGenerateQuizRequest
+   * @returns {Promise<void>}
+   * @todo Add progress tracking for long-running requests
+   * @toimprove Implement cancellation support for ongoing requests
+   * @tofix Ensure proper cleanup of temporary UI states
    */
-  async handleGenerateQuizRequest(ui) {
-    if (!ui.apiKeySettingInput || !ui.generateBtn) {
-      console.error("Required UI elements not found");
+  async handleGenerateQuizRequest() {
+    if (!DOM.apiKeySettingInput) {
+      console.error("API key input not found");
       return;
     }
 
-    const imageFile = ui.quizImageInput?.files?.[0] || null;
-    const apiKey = ui.apiKeySettingInput.value.trim();
+    const activeBtn = jsonStateManager.isBuilderMode()
+      ? DOM.builderGenerateBtn
+      : DOM.editorGenerateBtn;
 
-    // Validate inputs
+    const imageFile = DOM.quizImageInput?.files?.[0] || null;
+    const apiKey = DOM.apiKeySettingInput.value.trim();
+
     if (!this.validateAndInitializeClient(apiKey)) {
       return;
     }
 
-    // Get user prompt from appropriate source based on mode
-    const userPrompt = this._getUserPrompt();
-    
-    if (!userPrompt && !imageFile) {
+    // Get user prompt: in editor mode it's the raw textarea text,
+    // in builder mode it's empty (generation is context-based)
+    const userPrompt = jsonStateManager.isEditorMode()
+      ? jsonStateManager.getRawEditorText().trim()
+      : '';
+
+    if (!userPrompt && !imageFile && !jsonStateManager.hasQuestions()) {
       showError("Please enter a prompt or upload an image to generate a quiz.");
       return;
     }
 
     const basePrompt = await this.loadPromptEngineeringText();
-    const originalButtonText = ui.generateBtn.innerHTML;
+    const originalButtonText = activeBtn?.innerHTML || '';
 
     try {
-      this._updateUIState(ui, true, "Generating quiz content...");
+      this._updateUIState(true, originalButtonText);
       clearError();
 
-      // Prepare prompt with context-aware generation
       const promptData = this._prepareSmartPrompt(basePrompt, userPrompt, imageFile);
       const rawText = await this._callGeminiAPI(promptData.text, { image: promptData.image });
       const parsedJSON = this._processResponse(rawText);
 
-      // Handle the generated data based on context
-      await this._handleGeneratedData(parsedJSON, ui);
-      
+      this._handleGeneratedData(parsedJSON);
+
       clearError();
       showSuccess("Quiz generated successfully!");
     } catch (error) {
       console.error("Quiz generation failed:", error);
       showError(error.message);
     } finally {
-      this._updateUIState(ui, false, null);
-      ui.originalButtonText = originalButtonText;
+      this._updateUIState(false, originalButtonText);
     }
   }
 
   /**
-   * Get user prompt from the appropriate source based on current mode
+   * Prepare smart prompt that considers existing context and mode.
    * @private
-   * @returns {string} User prompt
-   */
-  _getUserPrompt() {
-    // Try to get prompt from JSON state manager first
-    const currentState = jsonStateManager.getCurrentData();
-    if (currentState && typeof currentState === 'string' && currentState.trim() !== '') {
-      return currentState;
-    }
-
-    // Fall back to DOM element if state manager doesn't have data
-    if (typeof DOM.quizJsonInput !== 'undefined' && DOM.quizJsonInput && DOM.quizJsonInput.value) {
-      return DOM.quizJsonInput.value.trim();
-    }
-
-    return '';
-  }
-
-  /**
-   * Prepare smart prompt that considers existing context and mode
-   * @private
+   * @function _prepareSmartPrompt
    * @param {string} basePrompt - Base prompt text
    * @param {string} userPrompt - User-provided prompt
-   * @param {File} [imageFile] - Optional image file
+   * @param {File} imageFile - Optional image file
    * @returns {Object} Prepared prompt content
+   * @todo Add more intelligent context-aware prompting
+   * @toimprove Implement adaptive prompt strategies based on quiz type
+   * @tofix Ensure context is properly incorporated into all prompt variations
    */
   _prepareSmartPrompt(basePrompt, userPrompt, imageFile) {
     const context = jsonStateManager.getAIContext(userPrompt);
-    
+
     let enhancedPrompt = basePrompt;
-    
+
     if (context.hasExistingData) {
-      // Context-aware generation for existing quizzes
-      if (context.mode === 'builder') {
-        enhancedPrompt = `I have ${context.existingQuestions.length} existing quiz questions in builder mode. Please generate 3-5 additional questions based on this context and the following prompt:\n\nExisting Questions:\n${JSON.stringify(context.existingQuestions, null, 2)}\n\nNew Prompt:\n${userPrompt}\n\nPlease return only the new questions in JSON format, do not include the existing questions.`;
-      } else {
-        enhancedPrompt = `I have ${context.existingQuestions.length} existing quiz questions. Please generate 3-5 additional questions based on this context and the following prompt:\n\nExisting Questions:\n${JSON.stringify(context.existingQuestions, null, 2)}\n\nNew Prompt:\n${userPrompt}\n\nPlease return only the new questions in JSON format, do not include the existing questions.`;
-      }
+      enhancedPrompt = `I have ${context.existingQuestions.length} existing quiz questions. Please generate 3-5 additional questions based on this context and the following prompt:\n\nExisting Questions:\n${JSON.stringify(context.existingQuestions, null, 2)}\n\nNew Prompt:\n${userPrompt}\n\nPlease return only the new questions in JSON format, do not include the existing questions.`;
     } else {
-      // Standard generation for new quizzes
       enhancedPrompt = basePrompt + (userPrompt || "Please generate 5 quiz questions.");
     }
 
@@ -492,42 +601,30 @@ export class GeminiService {
   }
 
   /**
-   * Handle generated data based on context and mode
+   * Handle generated data — always writes through jsonStateManager.
+   * Subscribers (quizBuilder, uiController) update their own DOM.
    * @private
-   * @param {Object|Array} generatedData - Generated quiz data
-   * @param {Object} ui - UI elements
+   * @function _handleGeneratedData
+   * @param {Object|Array} generatedData - The data generated by the AI
+   * @todo Add validation for generated quiz data
+   * @toimprove Implement incremental updates for large datasets
+   * @tofix Ensure data integrity during state updates
    */
-  async _handleGeneratedData(generatedData, ui) {
-    const context = jsonStateManager.getAIContext();
-    
-    if (context.hasExistingData) {
+  _handleGeneratedData(generatedData) {
+    const newQuestions = Array.isArray(generatedData) ? generatedData : [generatedData];
+
+    if (jsonStateManager.hasQuestions()) {
       // Merge with existing data
-      const mergedData = jsonStateManager.mergeNewQuestions(Array.isArray(generatedData) ? generatedData : [generatedData]);
-      const mergedJsonString = JSON.stringify(mergedData, null, 2);
-      
-      // Update UI based on current mode
-      if (context.mode === 'builder') {
-        // Update builder mode - convert to array and render
-        loadQuestionsFromJson(mergedData);
-        if (ui.quizJsonInput) {
-          ui.quizJsonInput.value = mergedJsonString;
-        }
-      } else {
-        // Update editor mode - update textarea
-        if (ui.quizJsonInput) {
-          ui.quizJsonInput.value = mergedJsonString;
-        }
-      }
+      jsonStateManager.appendQuestions(newQuestions);
     } else {
-      // New quiz generation
-      const jsonString = JSON.stringify(generatedData, null, 2);
-      
-      // Update state manager and UI
-      jsonStateManager.setData(generatedData);
-      
-      if (ui.quizJsonInput) {
-        ui.quizJsonInput.value = jsonString;
-      }
+      // New quiz — set directly
+      jsonStateManager.setQuestions(newQuestions);
+    }
+
+    // Sync the editor textarea with the updated state
+    const jsonString = jsonStateManager.toJSONString();
+    if (DOM.quizJsonInput) {
+      DOM.quizJsonInput.value = jsonString;
     }
   }
 }
@@ -536,19 +633,20 @@ export class GeminiService {
 export const geminiService = new GeminiService();
 
 // Export main handler function for backward compatibility
+/**
+ * Handles the quiz generation request using the default Gemini service instance
+ * @async
+ * @function handleGenerateQuizRequest
+ * @returns {Promise<void>}
+ * @todo Add proper error handling wrapper
+ * @toimprove Implement centralized logging
+ * @tofix Ensure consistent return types across all handlers
+ */
 export async function handleGenerateQuizRequest() {
-  const ui = {
-    apiKeySettingInput: DOM.apiKeySettingInput,
-    quizJsonInput: DOM.quizJsonInput,
-    generateBtn: DOM.generateBtn,
-    quizImageInput: DOM.quizImageInput,
-    originalButtonText: DOM.generateBtn.innerHTML
-  };
-
-  await geminiService.handleGenerateQuizRequest(ui);
+  await geminiService.handleGenerateQuizRequest();
 }
 
-// Attach to window for global access
+// Attach to window for global access (used by builder's generate bridge)
 if (typeof window !== 'undefined') {
   window.handleGenerateQuizRequest = handleGenerateQuizRequest;
 }

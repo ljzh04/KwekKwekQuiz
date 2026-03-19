@@ -1,6 +1,23 @@
-// Export initialization function for docs section
+/**
+ * @fileoverview Documentation section module for KwekKwekQuiz
+ * Handles search functionality, FAQ toggling, progress tracking, and smooth scrolling for the documentation section.
+ * @module docs
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import { renderMarkdownWithLaTeX, attachCopyHandlers } from './renderUtils.js';
 
+/**
+ * Initializes the documentation section with all interactive features.
+ * Sets up search functionality, FAQ toggling, progress tracking, and smooth scrolling.
+ * @function initDocs
+ * @returns {void}
+ * @todo Add keyboard navigation support for better accessibility
+ * @todo Implement debouncing for search input to improve performance
+ * @toimprove Consider using Intersection Observer API for better scroll performance
+ * @tofix Ensure all DOM elements exist before attaching event listeners
+ */
 export function initDocs() {
   // Search functionality
   const docsSearch = document.getElementById("docs-search");
@@ -87,6 +104,15 @@ export function initDocs() {
   processDocsContent();
 }
 
+/**
+ * Processes documentation content to enhance code blocks and attach copy handlers.
+ * Finds all code blocks in the documentation and enhances them with markdown/LaTeX rendering and copy functionality.
+ * @function processDocsContent
+ * @returns {void}
+ * @todo Add syntax highlighting for more languages
+ * @toimprove Consider lazy loading for better performance with large documents
+ * @tofix Ensure code blocks are properly escaped to prevent XSS vulnerabilities
+ */
 function processDocsContent() {
   // Find all code blocks and enhance them
   const codeBlocks = document.querySelectorAll('pre code');

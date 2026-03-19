@@ -10,6 +10,7 @@ export async function initializeApp() {
   const { initDocs } = await import('./modules/docs.js');
   const { initializeQuizBuilder } = await import('./modules/quizBuilder.js');
   const { jsonStateManager } = await import('./modules/jsonStateManager.js');
+  const { initInputModeUI } = await import('./modules/uiController.js');
 
   initNavigation();             // Initialize sidebar and content switching first
   initSettings();               // Initialize theme, animations, API key
@@ -18,6 +19,7 @@ export async function initializeApp() {
   createQuizPlayerElements();   // Pre-create reusable elements for the quiz player
   attachAllEventHandlers();     // Attach event listeners for app functionalities
   initializeQuizBuilder();      // Initialize the visual quiz builder
+  initInputModeUI();            // Initialize input mode UI synchronization
 
   console.log("Quiz application initialized with sidebar navigation.");
 }

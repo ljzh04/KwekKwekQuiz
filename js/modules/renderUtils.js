@@ -1,4 +1,11 @@
-// js/modules/renderUtils.js
+/**
+ * @fileoverview Render utilities module for KwekKwekQuiz
+ * Provides functions for rendering markdown with LaTeX support and code highlighting.
+ * @module renderUtils
+ * @author KwekKwekQuiz Team
+ * @version 1.0.0
+ */
+
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
@@ -6,6 +13,15 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import DOMPurify from "dompurify";
 
+/**
+ * Renders markdown text with LaTeX support and syntax highlighting.
+ * @function renderMarkdownWithLaTeX
+ * @param {string} markdownText - The markdown text to render
+ * @returns {string} The rendered HTML string
+ * @todo Add support for more LaTeX environments
+ * @toimprove Optimize for large documents
+ * @tofix Ensure proper sanitization of all outputs
+ */
 export function renderMarkdownWithLaTeX(markdownText) {
     let html = marked.parse(markdownText);
 
@@ -52,6 +68,14 @@ export function renderMarkdownWithLaTeX(markdownText) {
     return DOMPurify.sanitize(html);
 }
 
+/**
+ * Attaches copy handlers to all code blocks on the page.
+ * @function attachCopyHandlers
+ * @returns {void}
+ * @todo Add support for custom copy success messages
+ * @toimprove Optimize for pages with many code blocks
+ * @tofix Ensure proper cleanup of event listeners
+ */
 export function attachCopyHandlers() {
     document.querySelectorAll('.copy-btn').forEach((btn) => {
         if (btn.dataset.copyHandlerAttached) return;
@@ -74,7 +98,7 @@ export function attachCopyHandlers() {
                 labelSpan.textContent = 'Copied';
                 const copiedIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 copiedIcon.setAttribute("height", "20");
-                copiedIcon.setAttribute("viewBox", "0 -960 960 960");
+                copiedIcon.setAttribute("viewBox", "0 -960 960");
                 copiedIcon.setAttribute("width", "20");
                 copiedIcon.setAttribute("fill", "currentColor");
                 copiedIcon.innerHTML = `<path d="M400-304 240-464l56-56 104 104 264-264 56 56-320 320Z"/>`;
@@ -101,6 +125,14 @@ export function attachCopyHandlers() {
     });
 }
 
+/**
+ * Highlights all code blocks on the page using highlight.js.
+ * @function highlightCode
+ * @returns {void}
+ * @todo Add support for lazy loading of code blocks
+ * @toimprove Optimize for pages with many code blocks
+ * @tofix Ensure proper highlighting after dynamic content updates
+ */
 export function highlightCode() {
     hljs.highlightAll();
 }

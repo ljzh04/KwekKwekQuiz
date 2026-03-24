@@ -118,8 +118,8 @@ export function sparkleBurstOnce(element) {
     if (host.__sparkleBurstRunning) return;
     host.__sparkleBurstRunning = true;
 
-    const particleAngles = [45, 90, 135];
-    const delays = [0, 50, 100];
+    // Loot Grab Configuration: More particles for a lush fountain effect
+    const particleCount = 12;
     const particles = [];
 
     // Ensure the parent is positioned so absolute children are anchored to its center
@@ -134,13 +134,13 @@ export function sparkleBurstOnce(element) {
     sparklesContainer.setAttribute('aria-hidden', 'true');
     host.appendChild(sparklesContainer);
 
-    const createSparkle = (angle, delay) => {
+    const createSparkle = (angle, delay, distance, duration) => {
         const sparkle = document.createElement('span');
         sparkle.className = 'sparkle-particle';
         sparkle.style.animationDelay = `${delay}ms`;
+        sparkle.style.animationDuration = `${duration}ms`;
 
-        // Calculate the final translation based on angle and distance.
-        const distance = 24; // pixels
+        // Calculate trajectory: angles 60-120 degrees create upward cone
         const radians = (angle * Math.PI) / 180;
         const dx = Math.round(Math.cos(radians) * distance);
         const dy = Math.round(-Math.sin(radians) * distance); // negative to go "up" for positive angles
@@ -175,14 +175,30 @@ export function sparkleBurstOnce(element) {
         }, { once: true });
     };
 
-    particleAngles.forEach((angle, idx) => createSparkle(angle, delays[idx]));
+    // Generate dynamic particles for fountain cone effect
+    // Center angle: 90 (Straight Up). Spread: 60 degrees (60 to 120)
+    for (let i = 0; i < particleCount; i++) {
+        // Randomize angle within a 60-degree cone pointing up (Center 90°)
+        const angle = 60 + Math.random() * 60;
+        
+        // Randomize distance for depth (close vs far particles)
+        const distance = 30 + Math.random() * 40; // 30px to 70px
+        
+        // Randomize delay for the "staggered" eruption look
+        const delay = Math.random() * 120;
+        
+        // Slight speed variation
+        const duration = 500 + Math.random() * 300; // 500ms to 800ms
+
+        createSparkle(angle, delay, distance, duration);
+    }
 
     // Restore the element's position state after the animation has had time to complete
     setTimeout(() => {
         if (shouldRestorePosition) {
             host.style.position = prevPosition;
         }
-    }, 700);
+    }, 1000); // Wait for all animations to finish
 }
 
 /**
@@ -303,7 +319,15 @@ export function renderCurrentQuestion() {
         if (icon) icon.remove();
         const correction = el.querySelector(".correction-label");
         if (correction) correction.remove();
+        // Clean up sparkle burst elements and reset running state
+        const sparkleBurst = el.querySelector(".sparkle-burst");
+        if (sparkleBurst) sparkleBurst.remove();
+        if (el.__sparkleBurstRunning) el.__sparkleBurstRunning = false;
     });
+    // Clean up sparkle burst from input wrapper
+    const inputSparkleBurst = inputWrapper.querySelector(".sparkle-burst");
+    if (inputSparkleBurst) inputSparkleBurst.remove();
+    if (inputWrapper.__sparkleBurstRunning) inputWrapper.__sparkleBurstRunning = false;
     inputField.classList.remove(
         "input-feedback-success", "input-feedback-error",
         "text-green-700", "dark:text-green-300",

@@ -138,17 +138,26 @@
     opacity: 0;
     transform: translate(-50%, -50%) scale(0) rotate(0deg);
   }
-  /* The "Burst" - Quick pop up to the peak */
-  30% {
-    opacity: 1;
-    /* Move to 70% of the total height (peak of the fountain) */
-    transform: translate(calc(-50% + var(--dx) * 0.5), calc(-50% + var(--dy) - 20px)) scale(1.2) rotate(45deg);
+  /* The "Pop": Quick scale up and visibility */
+  20% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%) scale(1.4) rotate(20deg);
   }
-  /* The "Fall" - Gravity takes over, scale shrinks */
+  /* The "Launch": Move outward and upward */
+  40% {
+    opacity: 1;
+    transform: translate(
+        calc(-50% + var(--dx) * 0.8), 
+        calc(-50% + var(--dy) * 1.1)
+      ) scale(1.1) rotate(90deg);
+  }
+  /* The "Fade": Continue drifting while fading out */
   100% {
     opacity: 0;
-    /* Fall to final destination and shrink to nothing */
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 10px)) scale(0) rotate(180deg);
+    transform: translate(
+        calc(-50% + var(--dx)), 
+        calc(-50% + var(--dy))
+      ) scale(0.5) rotate(180deg);
   }
 }
 

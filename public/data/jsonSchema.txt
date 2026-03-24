@@ -11,11 +11,35 @@
       "description": "Only required for multiple-choice questions. Each option should be a Markdown-formatted string.",
       "example": ["Subtracts", "Adds", "Divides", "Multiplies"]
     },
+    "items": {
+      "type": "array",
+      "description": "Required for enumeration questions. Array of items to be enumerated by the user.",
+      "example": ["Red", "Blue", "Yellow"]
+    },
+    "left": {
+      "type": "array",
+      "description": "Required for matching questions. Left column items to match.",
+      "example": ["France", "Japan", "Brazil"]
+    },
+    "right": {
+      "type": "array",
+      "description": "Required for matching questions. Right column options to match with.",
+      "example": ["Paris", "Tokyo", "Brasilia"]
+    },
     "correct": {
       "type": "any",
-      "description": "For multiple-choice: index (0-based). For true/false: boolean. For other types: string matching expected answer.",
+      "description": "For multiple-choice: index (0-based). For true/false: boolean. For enumeration: array of correct items. For matching: object mapping left index to right index. For other types: string matching expected answer.",
       "example": 1
     }
+  },
+  "questionTypes": {
+    "multiple-choice": "User selects one option from a list. correct = index of correct option.",
+    "true-false": "User selects True or False. correct = boolean value.",
+    "fill-in-the-blank": "User types answer to fill blank. correct = string answer.",
+    "identification": "User types answer to identify something. correct = string answer.",
+    "enumeration-any-order": "User lists items in any order. items = array of items to enumerate, correct = array of correct answers (order doesn't matter).",
+    "enumeration-ordered": "User lists items in specific order. items = array of items to enumerate, correct = array of correct answers (order matters).",
+    "matching": "User matches items from two columns. left = left column items, right = right column options, correct = object mapping left index to right index (e.g., {\"0\": 1, \"1\": 0})."
   },
   "requirements": [
     "Include at least 20 questions covering all key points in the topic",
@@ -40,6 +64,25 @@
       "type": "fill-in-the-blank",
       "question": "The chemical symbol for **water** is H<sub>2</sub>_.",
       "correct": "O"
+    },
+    {
+      "type": "enumeration-any-order",
+      "question": "List 3 primary colors.",
+      "items": ["Red", "Blue", "Yellow"],
+      "correct": ["Red", "Blue", "Yellow"]
+    },
+    {
+      "type": "enumeration-ordered",
+      "question": "List the first 3 planets from the Sun in order.",
+      "items": ["Mercury", "Venus", "Earth"],
+      "correct": ["Mercury", "Venus", "Earth"]
+    },
+    {
+      "type": "matching",
+      "question": "Match the country to its capital.",
+      "left": ["France", "Japan", "Brazil"],
+      "right": ["Tokyo", "Paris", "Brasilia"],
+      "correct": {"0": 1, "1": 0, "2": 2}
     }
   ]
 }

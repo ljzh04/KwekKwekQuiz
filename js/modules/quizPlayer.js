@@ -341,7 +341,11 @@ export function renderCurrentQuestion() {
 
     // Show/hide submit button based on question type
     if (DOM.submitBtn) {
-        const isTextEntry = currentQuestion.type === "fill-in-the-blank" || currentQuestion.type === "identification";
+        const isTextEntry = currentQuestion.type === "fill-in-the-blank" || 
+                           currentQuestion.type === "identification" ||
+                           currentQuestion.type === "enumeration-any-order" ||
+                           currentQuestion.type === "enumeration-ordered" ||
+                           currentQuestion.type === "matching";
         DOM.submitBtn.classList.toggle("hidden", !isTextEntry);
     }
 
@@ -423,6 +427,158 @@ export function renderCurrentQuestion() {
         if (!inputField.disabled) {
             inputField.focus();
         }
+    } else if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
+        // Render enumeration question with numbered input fields
+        const enumerationContainer = document.createElement("div");
+        enumerationContainer.className = "enumeration-container space-y-3";
+        
+        const itemsCount = currentQuestion.items ? currentQuestion.items.length : 3;
+        const userAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || [];
+        const isSubmitted = State.isSubmittedAtIndex(State.getCurrentQuestionIndex());
+        
+        for (let i = 0; i < itemsCount; i++) {
+            const itemRow = document.createElement("div");
+            itemRow.className = "enumeration-item flex items-center gap-3";
+            
+            const itemNumber = document.createElement("span");
+            itemNumber.className = "enumeration-number flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold text-sm";
+            itemNumber.textContent = (i + 1).toString();
+            
+            const itemInput = document.createElement("input");
+            itemInput.type = "text";
+            itemInput.className = "enumeration-input flex-grow border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-transparent text-gray-900 dark:text-gray-100";
+            itemInput.placeholder = `Item ${i + 1}`;
+            itemInput.value = userAnswer[i] || "";
+            itemInput.disabled = isSubmitted;
+            itemInput.dataset.index = i.toString();
+            
+            itemInput.addEventListener("input", (e) => {
+                if (isSubmitted) return;
+                const idx = parseInt(e.target.dataset.index);
+                const currentAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || [];
+                const newAnswer = [...currentAnswer];
+                newAnswer[idx] = e.target.value;
+                State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), newAnswer);
+            });
+            
+            itemRow.appendChild(itemNumber);
+            itemRow.appendChild(itemInput);
+            enumerationContainer.appendChild(itemRow);
+        }
+        
+        DOM.quizContainer.appendChild(enumerationContainer);
+        
+        if (!isSubmitted) {
+            const firstInput = enumerationContainer.querySelector("input");
+            if (firstInput) firstInput.focus();
+        }
+    } else if (currentQuestion.type === "matching") {
+        // Render matching question with two columns
+        const matchingContainer = document.createElement("div");
+        matchingContainer.className = "matching-container space-y-6";
+        
+        // Add instruction text
+        const instruction = document.createElement("div");
+        instruction.className = "text-sm text-gray-600 dark:text-gray-400 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800";
+        instruction.innerHTML = `<span class="material-symbols-outlined text-sm align-middle mr-1">info</span> Select the matching item from the dropdown for each option on the right.`;
+        matchingContainer.appendChild(instruction);
+        
+        const columnsContainer = document.createElement("div");
+        columnsContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
+        
+        const leftColumn = document.createElement("div");
+        leftColumn.className = "left-column space-y-3";
+        
+        const rightColumn = document.createElement("div");
+        rightColumn.className = "right-column space-y-3";
+        
+        const leftItems = currentQuestion.left || [];
+        const rightItems = currentQuestion.right || [];
+        const userAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || {};
+        const isSubmitted = State.isSubmittedAtIndex(State.getCurrentQuestionIndex());
+        
+        // Left column header
+        const leftHeader = document.createElement("div");
+        leftHeader.className = "font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm uppercase tracking-wide";
+        leftHeader.textContent = "Items to Match";
+        leftColumn.appendChild(leftHeader);
+        
+        // Left column (fixed items)
+        leftItems.forEach((item, index) => {
+            const leftItem = document.createElement("div");
+            leftItem.className = "matching-left-item p-3 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600";
+            leftItem.innerHTML = `<span class="font-medium text-gray-800 dark:text-gray-200">${index + 1}. ${item}</span>`;
+            leftColumn.appendChild(leftItem);
+        });
+        
+        // Right column header
+        const rightHeader = document.createElement("div");
+        rightHeader.className = "font-semibold text-gray-700 dark:text-gray-300 mb-2 text-sm uppercase tracking-wide";
+        rightHeader.textContent = "Options (Select Match)";
+        rightColumn.appendChild(rightHeader);
+        
+        // Right column (selectable options)
+        rightItems.forEach((item, index) => {
+            const rightItem = document.createElement("div");
+            rightItem.className = "matching-right-item flex items-center gap-3";
+            
+            const select = document.createElement("select");
+            select.className = "matching-select flex-grow border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100";
+            select.disabled = isSubmitted;
+            select.dataset.rightIndex = index.toString();
+            
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select match...";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
+            
+            leftItems.forEach((leftItem, leftIndex) => {
+                const option = document.createElement("option");
+                option.value = leftIndex.toString();
+                option.textContent = `${leftIndex + 1}. ${leftItem}`;
+                select.appendChild(option);
+            });
+            
+            // Set current selection only if user has actually selected something
+            const currentMatch = Object.entries(userAnswer).find(([k, v]) => v === index);
+            if (currentMatch && currentMatch[0] !== "") {
+                select.value = currentMatch[0];
+            }
+            
+            select.addEventListener("change", (e) => {
+                if (isSubmitted) return;
+                const rightIdx = parseInt(e.target.dataset.rightIndex);
+                const leftIdx = parseInt(e.target.value);
+                const currentAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || {};
+                const newAnswer = { ...currentAnswer };
+                
+                // Remove any existing match for this right item
+                Object.keys(newAnswer).forEach(key => {
+                    if (newAnswer[key] === rightIdx) {
+                        delete newAnswer[key];
+                    }
+                });
+                
+                // Set new match
+                newAnswer[leftIdx] = rightIdx;
+                State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), newAnswer);
+            });
+            
+            const rightLabel = document.createElement("span");
+            rightLabel.className = "text-gray-700 dark:text-gray-300";
+            rightLabel.textContent = item;
+            
+            rightItem.appendChild(select);
+            rightItem.appendChild(rightLabel);
+            rightColumn.appendChild(rightItem);
+        });
+        
+        columnsContainer.appendChild(leftColumn);
+        columnsContainer.appendChild(rightColumn);
+        matchingContainer.appendChild(columnsContainer);
+        DOM.quizContainer.appendChild(matchingContainer);
     }
 
     attachCopyHandlers();
@@ -524,6 +680,97 @@ export function renderFeedbackForQuestion(userAnswer) {
         }
         
         inputField.disabled = true;
+    }
+    
+    // Enumeration questions (any-order and ordered)
+    else if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
+        const enumerationInputs = DOM.quizContainer.querySelectorAll(".enumeration-input");
+        const isCorrect = checkIsCorrect(currentQuestion, userAnswer);
+        
+        enumerationInputs.forEach((input, idx) => {
+            input.disabled = true;
+            input.classList.remove("input-feedback-success", "input-feedback-error");
+            
+            const userVal = userAnswer && userAnswer[idx] ? userAnswer[idx].trim().toLowerCase() : "";
+            const correctVal = currentQuestion.correct[idx] ? currentQuestion.correct[idx].trim().toLowerCase() : "";
+            const itemIsCorrect = userVal === correctVal;
+            
+            if (userVal !== "") {
+                const status = itemIsCorrect ? 'success' : 'error';
+                input.classList.add(`input-feedback-${status}`);
+                
+                // Add sparkle effect for correct items
+                if (itemIsCorrect) {
+                    sparkleBurstOnce(input);
+                }
+            }
+        });
+        
+        // Add overall feedback indicator only if incorrect
+        const container = DOM.quizContainer.querySelector(".enumeration-container");
+        if (container) {
+            const oldIcon = container.querySelector(".feedback-icon");
+            if (oldIcon) oldIcon.remove();
+            
+            if (!isCorrect) {
+                const feedbackDiv = document.createElement("div");
+                feedbackDiv.className = "mt-4 p-3 rounded-lg bg-red-100 dark:bg-red-900/30";
+                feedbackDiv.innerHTML = `
+                    <div class="text-sm font-medium text-red-800 dark:text-red-200">
+                        Expected answers: ${currentQuestion.correct.join(", ")}
+                    </div>
+                `;
+                container.appendChild(feedbackDiv);
+            }
+        }
+    }
+    
+    // Matching questions
+    else if (currentQuestion.type === "matching") {
+        const selects = DOM.quizContainer.querySelectorAll(".matching-select");
+        const isCorrect = checkIsCorrect(currentQuestion, userAnswer);
+        
+        selects.forEach((select) => {
+            select.disabled = true;
+            select.classList.remove("input-feedback-success", "input-feedback-error");
+            
+            const rightIdx = parseInt(select.dataset.rightIndex);
+            const selectedLeftIdx = parseInt(select.value);
+            const correctLeftIdx = Object.keys(currentQuestion.correct).find(
+                key => currentQuestion.correct[key] === rightIdx
+            );
+            
+            const itemIsCorrect = selectedLeftIdx.toString() === correctLeftIdx;
+            
+            if (select.value !== "") {
+                const status = itemIsCorrect ? 'success' : 'error';
+                select.classList.add(`input-feedback-${status}`);
+            }
+        });
+        
+        // Add overall feedback indicator
+        const container = DOM.quizContainer.querySelector(".matching-container");
+        if (container) {
+            const oldFeedback = container.querySelector(".matching-feedback");
+            if (oldFeedback) oldFeedback.remove();
+            
+            const feedbackDiv = document.createElement("div");
+            feedbackDiv.className = `matching-feedback mt-4 p-3 rounded-lg ${isCorrect ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`;
+            
+            if (!isCorrect) {
+                const correctMatches = Object.entries(currentQuestion.correct).map(
+                    ([leftIdx, rightIdx]) => `${currentQuestion.left[leftIdx]} → ${currentQuestion.right[rightIdx]}`
+                ).join(", ");
+                
+                feedbackDiv.innerHTML = `
+                    <div class="text-sm font-medium ${isCorrect ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}">
+                        Correct matches: ${correctMatches}
+                    </div>
+                `;
+            }
+            
+            container.appendChild(feedbackDiv);
+        }
     }
 }
 
@@ -655,6 +902,24 @@ function formatAnswerDisplay(question, val) {
     if (val === undefined || val === "") return "<em>No answer provided</em>";
     if (question.type === "multiple-choice") return question.options[val] || val;
     if (question.type === "true-false") return val ? "True" : "False";
+    if (question.type === "enumeration-any-order" || question.type === "enumeration-ordered") {
+        if (Array.isArray(val)) {
+            return val.map((item, idx) => `${idx + 1}. ${item}`).join("<br>");
+        }
+        return String(val);
+    }
+    if (question.type === "matching") {
+        if (typeof val === "object" && val !== null) {
+            const leftItems = question.left || [];
+            const rightItems = question.right || [];
+            return Object.entries(val).map(([leftIdx, rightIdx]) => {
+                const leftItem = leftItems[parseInt(leftIdx)] || `Item ${parseInt(leftIdx) + 1}`;
+                const rightItem = rightItems[rightIdx] || `Option ${String.fromCharCode(65 + rightIdx)}`;
+                return `${leftItem} → ${rightItem}`;
+            }).join("<br>");
+        }
+        return String(val);
+    }
     return val;
 }
 
@@ -700,7 +965,37 @@ function createAnswerBox(label, value, type) {
 function checkIsCorrect(question, userAnswer) {
     if (question.type === "multiple-choice" || question.type === "true-false") {
         return userAnswer === question.correct;
+    } else if (question.type === "fill-in-the-blank" || question.type === "identification") {
+        return typeof userAnswer === "string" && 
+               userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
+    } else if (question.type === "enumeration-any-order") {
+        // For enumeration any-order: compare sorted arrays
+        if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
+            const sortedUser = [...userAnswer].map(s => s.trim().toLowerCase()).sort();
+            const sortedCorrect = [...question.correct].map(s => s.trim().toLowerCase()).sort();
+            return JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
+        }
+        return false;
+    } else if (question.type === "enumeration-ordered") {
+        // For enumeration ordered: compare arrays element-by-element
+        if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
+            return userAnswer.length === question.correct.length &&
+                userAnswer.every((ans, i) => 
+                    ans.trim().toLowerCase() === question.correct[i].trim().toLowerCase()
+                );
+        }
+        return false;
+    } else if (question.type === "matching") {
+        // For matching: compare userAnswer object against correct mapping
+        if (typeof userAnswer === "object" && typeof question.correct === "object") {
+            const userKeys = Object.keys(userAnswer);
+            const correctKeys = Object.keys(question.correct);
+            return userKeys.length === correctKeys.length &&
+                userKeys.every(key => 
+                    userAnswer[key] === question.correct[key]
+                );
+        }
+        return false;
     }
-    return typeof userAnswer === "string" && 
-           userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
+    return false;
 }

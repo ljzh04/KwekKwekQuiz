@@ -49,6 +49,36 @@ export function validateQuizData(data) {
         if (item.type === "multiple-choice" && (!Array.isArray(item.options) || item.options.length === 0)) {
             return false;
         }
+        // Enumeration any-order: items array and correct array required
+        if (item.type === "enumeration-any-order") {
+            if (!Array.isArray(item.items) || item.items.length === 0) {
+                return false;
+            }
+            if (!Array.isArray(item.correct) || item.correct.length === 0) {
+                return false;
+            }
+        }
+        // Enumeration ordered: items array and correct array required
+        if (item.type === "enumeration-ordered") {
+            if (!Array.isArray(item.items) || item.items.length === 0) {
+                return false;
+            }
+            if (!Array.isArray(item.correct) || item.correct.length === 0) {
+                return false;
+            }
+        }
+        // Matching: left array, right array, and correct mapping object required
+        if (item.type === "matching") {
+            if (!Array.isArray(item.left) || item.left.length === 0) {
+                return false;
+            }
+            if (!Array.isArray(item.right) || item.right.length === 0) {
+                return false;
+            }
+            if (typeof item.correct !== "object" || item.correct === null) {
+                return false;
+            }
+        }
         // Add more validation for other types if needed
     }
     return true;

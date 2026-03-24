@@ -142,11 +142,32 @@ function changeQuestionType(questionId, newType) {
     if (newType === 'multiple-choice') {
         q.options = ["", ""];
         q.correct = 0;
+        delete q.items;
+        delete q.left;
+        delete q.right;
     } else if (newType === 'true-false') {
         q.options = ["True", "False"];
         q.correct = true;
+        delete q.items;
+        delete q.left;
+        delete q.right;
+    } else if (newType === 'enumeration-any-order' || newType === 'enumeration-ordered') {
+        q.items = ["", "", ""];
+        q.correct = ["", "", ""];
+        delete q.options;
+        delete q.left;
+        delete q.right;
+    } else if (newType === 'matching') {
+        q.left = ["", ""];
+        q.right = ["", ""];
+        q.correct = { "0": 0, "1": 1 };
+        delete q.options;
+        delete q.items;
     } else {
         delete q.options;
+        delete q.items;
+        delete q.left;
+        delete q.right;
         q.correct = "";
     }
 
@@ -321,6 +342,83 @@ function createQuestionHTML(question, index) {
                 </label>
             </div>
         `;
+    } else if (question.type === 'enumeration-any-order' || question.type === 'enumeration-ordered') {
+        const items = question.items || [];
+        const correct = question.correct || [];
+        
+        optionsHTML = `
+            <div class="enumeration-items space-y-2">
+                <label class="block text-sm font-medium mb-1 text-md-on-surface dark:text-gray-300">Items to Enumerate</label>
+                ${items.map((item, itemIdx) => `
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold text-xs">${itemIdx + 1}</span>
+                        <input type="text" value="${escapeAttr(item || '')}" 
+                            class="enumeration-item-input flex-grow p-2 border border-md-outline rounded-md text-sm dark:bg-gray-800 dark:text-white" 
+                            placeholder="Item ${itemIdx + 1}"
+                            data-question-id="${question.id}" data-item-idx="${itemIdx}">
+                        <button type="button" class="remove-enumeration-item-btn text-red-500 hover:text-red-700 p-1" 
+                            data-question-id="${question.id}" data-item-idx="${itemIdx}">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </div>
+                `).join('')}
+                <button type="button" class="add-enumeration-item-btn text-sm text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1 mt-2" 
+                    data-question-id="${question.id}">
+                    <span class="material-symbols-outlined text-xs">add</span>
+                    <span>Add Item</span>
+                </button>
+            </div>
+        `;
+    } else if (question.type === 'matching') {
+        const leftItems = question.left || [];
+        const rightItems = question.right || [];
+        
+        optionsHTML = `
+            <div class="matching-items space-y-4">
+                <div class="left-column">
+                    <label class="block text-sm font-medium mb-1 text-md-on-surface dark:text-gray-300">Left Column (Items to Match)</label>
+                    ${leftItems.map((item, leftIdx) => `
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold text-xs">${leftIdx + 1}</span>
+                            <input type="text" value="${escapeAttr(item || '')}" 
+                                class="matching-left-input flex-grow p-2 border border-md-outline rounded-md text-sm dark:bg-gray-800 dark:text-white" 
+                                placeholder="Left item ${leftIdx + 1}"
+                                data-question-id="${question.id}" data-left-idx="${leftIdx}">
+                            <button type="button" class="remove-matching-left-btn text-red-500 hover:text-red-700 p-1" 
+                                data-question-id="${question.id}" data-left-idx="${leftIdx}">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                    `).join('')}
+                    <button type="button" class="add-matching-left-btn text-sm text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1 mt-2" 
+                        data-question-id="${question.id}">
+                        <span class="material-symbols-outlined text-xs">add</span>
+                        <span>Add Left Item</span>
+                    </button>
+                </div>
+                <div class="right-column">
+                    <label class="block text-sm font-medium mb-1 text-md-on-surface dark:text-gray-300">Right Column (Options)</label>
+                    ${rightItems.map((item, rightIdx) => `
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 font-semibold text-xs">${String.fromCharCode(65 + rightIdx)}</span>
+                            <input type="text" value="${escapeAttr(item || '')}" 
+                                class="matching-right-input flex-grow p-2 border border-md-outline rounded-md text-sm dark:bg-gray-800 dark:text-white" 
+                                placeholder="Right item ${String.fromCharCode(65 + rightIdx)}"
+                                data-question-id="${question.id}" data-right-idx="${rightIdx}">
+                            <button type="button" class="remove-matching-right-btn text-red-500 hover:text-red-700 p-1" 
+                                data-question-id="${question.id}" data-right-idx="${rightIdx}">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                    `).join('')}
+                    <button type="button" class="add-matching-right-btn text-sm text-green-500 hover:text-green-700 font-medium flex items-center gap-1 mt-2" 
+                        data-question-id="${question.id}">
+                        <span class="material-symbols-outlined text-xs">add</span>
+                        <span>Add Right Item</span>
+                    </button>
+                </div>
+            </div>
+        `;
     } else {
         optionsHTML = `
             <div class="mb-2">
@@ -342,7 +440,9 @@ function createQuestionHTML(question, index) {
                         <option value="true-false" ${question.type === 'true-false' ? 'selected' : ''}>True/False</option>
                         <option value="fill-in-the-blank" ${question.type === 'fill-in-the-blank' ? 'selected' : ''}>Fill-in-the-blank</option>
                         <option value="identification" ${question.type === 'identification' ? 'selected' : ''}>Identification</option>
-                        <option value="short-answer" ${question.type === 'short-answer' ? 'selected' : ''}>Short Answer</option>
+                        <option value="enumeration-any-order" ${question.type === 'enumeration-any-order' ? 'selected' : ''}>Enumeration (Any Order)</option>
+                        <option value="enumeration-ordered" ${question.type === 'enumeration-ordered' ? 'selected' : ''}>Enumeration (Ordered)</option>
+                        <option value="matching" ${question.type === 'matching' ? 'selected' : ''}>Matching</option>
                     </select>
                     <button type="button" class="remove-question-btn text-red-500 hover:text-red-700 p-1" data-question-id="${question.id}">
                         <span class="material-symbols-outlined text-sm">delete</span>
@@ -360,6 +460,8 @@ function createQuestionHTML(question, index) {
                 <label class="block text-sm font-medium mb-2 text-md-on-surface dark:text-gray-300">
                     ${question.type === 'multiple-choice' ? 'Options' : 
                       question.type === 'true-false' ? 'Options' : 
+                      question.type === 'enumeration-any-order' || question.type === 'enumeration-ordered' ? 'Items to Enumerate' :
+                      question.type === 'matching' ? 'Matching Items' :
                       'Answer'}
                 </label>
                 ${optionsHTML}
@@ -462,6 +564,13 @@ function convertQuestionsToCleanJson() {
             } else if (q.type === 'true-false') {
                 obj.options = ["True", "False"];
                 obj.correct = q.correct;
+            } else if (q.type === 'enumeration-any-order' || q.type === 'enumeration-ordered') {
+                obj.items = (q.items || []).filter(item => item && item.trim() !== '');
+                obj.correct = (q.correct || []).filter(item => item && item.trim() !== '');
+            } else if (q.type === 'matching') {
+                obj.left = (q.left || []).filter(item => item && item.trim() !== '');
+                obj.right = (q.right || []).filter(item => item && item.trim() !== '');
+                obj.correct = q.correct || {};
             } else {
                 obj.correct = q.correct;
             }
@@ -492,6 +601,13 @@ export function loadQuestionsFromJson(jsonData) {
         } : q.type === 'true-false' ? {
             options: ["True", "False"],
             correct: q.correct !== undefined ? q.correct : true,
+        } : q.type === 'enumeration-any-order' || q.type === 'enumeration-ordered' ? {
+            items: q.items || [""],
+            correct: q.correct || [""],
+        } : q.type === 'matching' ? {
+            left: q.left || [""],
+            right: q.right || [""],
+            correct: q.correct || {},
         } : {
             correct: q.correct || "",
         }),

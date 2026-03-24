@@ -19,5 +19,24 @@
     "type": "identification",
     "question": "Name the process by which plants convert light energy into chemical energy.",
     "correct": "Photosynthesis"
+  },
+  {
+    "type": "enumeration-any-order",
+    "question": "List 3 primary colors.",
+    "items": ["Red", "Blue", "Yellow"],
+    "correct": ["Red", "Blue", "Yellow"]
+  },
+  {
+    "type": "enumeration-ordered",
+    "question": "List the first 3 planets from the Sun in order.",
+    "items": ["Mercury", "Venus", "Earth"],
+    "correct": ["Mercury", "Venus", "Earth"]
+  },
+  {
+    "type": "matching",
+    "question": "Match the country to its capital.",
+    "left": ["France", "Japan", "Brazil"],
+    "right": ["Tokyo", "Paris", "Brasilia"],
+    "correct": {"0": 1, "1": 0, "2": 2}
   }
 ]

@@ -111,6 +111,31 @@ export function calculateScore() {
         } else if (question.type === "fill-in-the-blank" || question.type === "identification") {
             isCorrect = typeof userAnswer === "string" && 
                         userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
+        } else if (question.type === "enumeration-any-order") {
+            // For enumeration any-order: compare sorted arrays
+            if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
+                const sortedUser = [...userAnswer].map(s => s.trim().toLowerCase()).sort();
+                const sortedCorrect = [...question.correct].map(s => s.trim().toLowerCase()).sort();
+                isCorrect = JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
+            }
+        } else if (question.type === "enumeration-ordered") {
+            // For enumeration ordered: compare arrays element-by-element
+            if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
+                isCorrect = userAnswer.length === question.correct.length &&
+                    userAnswer.every((ans, i) => 
+                        ans.trim().toLowerCase() === question.correct[i].trim().toLowerCase()
+                    );
+            }
+        } else if (question.type === "matching") {
+            // For matching: compare userAnswer object against correct mapping
+            if (typeof userAnswer === "object" && typeof question.correct === "object") {
+                const userKeys = Object.keys(userAnswer);
+                const correctKeys = Object.keys(question.correct);
+                isCorrect = userKeys.length === correctKeys.length &&
+                    userKeys.every(key => 
+                        userAnswer[key] === question.correct[key]
+                    );
+            }
         }
         if (isCorrect) {
             State.incrementScore();
@@ -140,7 +165,23 @@ export function handleSubmitAnswer() {
     }
 
     const userAnswer = State.getUserAnswerAtIndex(currentIndex);
-    if (userAnswer === undefined || (typeof userAnswer === "string" && userAnswer.trim() === "")) {
+    
+    // Validate answer based on question type
+    let hasAnswer = false;
+    if (currentQuestion.type === "multiple-choice" || currentQuestion.type === "true-false") {
+        hasAnswer = userAnswer !== undefined;
+    } else if (currentQuestion.type === "fill-in-the-blank" || currentQuestion.type === "identification") {
+        hasAnswer = typeof userAnswer === "string" && userAnswer.trim() !== "";
+    } else if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
+        hasAnswer = Array.isArray(userAnswer) && userAnswer.some(item => item && item.trim() !== "");
+    } else if (currentQuestion.type === "matching") {
+        // For matching, check if user has made any selections
+        if (typeof userAnswer === "object" && userAnswer !== null) {
+            hasAnswer = Object.keys(userAnswer).length > 0;
+        }
+    }
+    
+    if (!hasAnswer) {
         showError("Please enter an answer before submitting.");
         return;
     }

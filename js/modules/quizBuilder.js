@@ -545,6 +545,53 @@ function attachQuestionListeners(questionId) {
 // ─── Data Conversion ──────────────────────────────────────────────────
 
 /**
+ * Remap a matching `correct` map after blank entries are filtered from
+ * `left`/`right`. Filtering each column independently without remapping
+ * shifts indices and silently corrupts the answer key (left 0 → right 1
+ * can become left 0 → right 0 after a blank row is dropped).
+ *
+ * Entries pointing at a blank/removed row are dropped. Surviving entries
+ * are re-indexed to the compacted arrays.
+ * @function remapMatchingCorrect
+ * @param {Array} left - Raw left column items (may contain blanks)
+ * @param {Array} right - Raw right column items (may contain blanks)
+ * @param {Object} correct - Raw map of leftIndex → rightIndex
+ * @returns {{left: Array, right: Array, correct: Object}} Compacted columns + remapped map
+ */
+export function remapMatchingCorrect(left, right, correct) {
+    const leftKept = [];
+    const leftIndexMap = new Map(); // old left idx -> new left idx
+    (left || []).forEach((item, oldIdx) => {
+        if (item && String(item).trim() !== '') {
+            leftIndexMap.set(oldIdx, leftKept.length);
+            leftKept.push(item);
+        }
+    });
+
+    const rightKept = [];
+    const rightIndexMap = new Map(); // old right idx -> new right idx
+    (right || []).forEach((item, oldIdx) => {
+        if (item && String(item).trim() !== '') {
+            rightIndexMap.set(oldIdx, rightKept.length);
+            rightKept.push(item);
+        }
+    });
+
+    const remapped = {};
+    if (correct && typeof correct === 'object') {
+        for (const [rawLeft, rawRight] of Object.entries(correct)) {
+            const oldLeft = Number(rawLeft);
+            const oldRight = Number(rawRight);
+            if (!Number.isInteger(oldLeft) || !Number.isInteger(oldRight)) continue;
+            if (!leftIndexMap.has(oldLeft) || !rightIndexMap.has(oldRight)) continue;
+            remapped[String(leftIndexMap.get(oldLeft))] = rightIndexMap.get(oldRight);
+        }
+    }
+
+    return { left: leftKept, right: rightKept, correct: remapped };
+}
+
+/**
  * Convert questions from state manager to clean quiz format (strips internal `id`).
  * @function convertQuestionsToCleanJson
  * @returns {Array<Object>} Clean questions array without internal IDs
@@ -568,9 +615,10 @@ function convertQuestionsToCleanJson() {
                 obj.items = (q.items || []).filter(item => item && item.trim() !== '');
                 obj.correct = (q.correct || []).filter(item => item && item.trim() !== '');
             } else if (q.type === 'matching') {
-                obj.left = (q.left || []).filter(item => item && item.trim() !== '');
-                obj.right = (q.right || []).filter(item => item && item.trim() !== '');
-                obj.correct = q.correct || {};
+                const remapped = remapMatchingCorrect(q.left || [], q.right || [], q.correct || {});
+                obj.left = remapped.left;
+                obj.right = remapped.right;
+                obj.correct = remapped.correct;
             } else {
                 obj.correct = q.correct;
             }

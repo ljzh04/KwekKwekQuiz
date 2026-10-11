@@ -10,6 +10,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as DOM from './dom.js';
 import { jsonStateManager } from './jsonStateManager.js';
 import { showError, showSuccess, clearError } from './utils.js';
+import { parseJsonLenient } from './lenientJsonParser.js';
 
 /**
  * Gemini Service for handling AI-powered quiz generation
@@ -463,7 +464,7 @@ export class GeminiService {
     }
 
     try {
-      return JSON.parse(cleanedText);
+      return parseJsonLenient(cleanedText);
     } catch (parseError) {
       console.error("JSON Parse Error from AI:", parseError.message, "\nRaw AI output:", cleanedText);
       throw new Error(`AI generated invalid JSON: ${parseError.message}`);

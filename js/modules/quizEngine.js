@@ -8,7 +8,7 @@
 
 import * as DOM from './dom.js';
 import * as State from './state.js';
-import { shuffleArray, validateQuizData, showError, clearError } from './utils.js';
+import { shuffleArray, validateQuizData, isAnswerCorrect, showError, clearError } from './utils.js';
 import { showQuizPlayerScreen, showResultsScreen, updateNavigationButtonsState, resetSummaryContainer } from './uiController.js';
 import { renderCurrentQuestion, renderFeedbackForQuestion, renderQuizResults, shakeElementOnce, sparkleBurstOnce } from './quizPlayer.js';
 
@@ -105,38 +105,9 @@ export function calculateScore() {
         const userAnswer = userAnswers[index];
         if (userAnswer === undefined) return; // Skip unanswered
 
-        let isCorrect = false;
-        if (question.type === "multiple-choice" || question.type === "true-false") {
-            isCorrect = userAnswer === question.correct;
-        } else if (question.type === "fill-in-the-blank" || question.type === "identification") {
-            isCorrect = typeof userAnswer === "string" && 
-                        userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
-        } else if (question.type === "enumeration-any-order") {
-            // For enumeration any-order: compare sorted arrays
-            if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
-                const sortedUser = [...userAnswer].map(s => s.trim().toLowerCase()).sort();
-                const sortedCorrect = [...question.correct].map(s => s.trim().toLowerCase()).sort();
-                isCorrect = JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
-            }
-        } else if (question.type === "enumeration-ordered") {
-            // For enumeration ordered: compare arrays element-by-element
-            if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
-                isCorrect = userAnswer.length === question.correct.length &&
-                    userAnswer.every((ans, i) => 
-                        ans.trim().toLowerCase() === question.correct[i].trim().toLowerCase()
-                    );
-            }
-        } else if (question.type === "matching") {
-            // For matching: compare userAnswer object against correct mapping
-            if (typeof userAnswer === "object" && typeof question.correct === "object") {
-                const userKeys = Object.keys(userAnswer);
-                const correctKeys = Object.keys(question.correct);
-                isCorrect = userKeys.length === correctKeys.length &&
-                    userKeys.every(key => 
-                        userAnswer[key] === question.correct[key]
-                    );
-            }
-        }
+        // Shared correctness logic (utils.isAnswerCorrect) — tolerates
+        // partial/blank enumeration & matching answers without throwing.
+        const isCorrect = isAnswerCorrect(question, userAnswer);
         if (isCorrect) {
             State.incrementScore();
         }

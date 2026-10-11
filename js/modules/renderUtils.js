@@ -23,7 +23,24 @@ import DOMPurify from "dompurify";
  * @tofix Ensure proper sanitization of all outputs
  */
 export function renderMarkdownWithLaTeX(markdownText) {
-    let html = marked.parse(markdownText);
+    // Extract math spans BEFORE marked.parse. marked HTML-escapes `<`, `>`, `&`,
+    // which would corrupt expressions like $\operatorname{Cov}(X,Y)>0$ and make
+    // KaTeX fail. Segments are held aside and re-inserted after markdown runs.
+    const mathSegments = [];
+    const source = String(markdownText ?? '').replace(
+        /\$\$((?:[^$\\]|\\.)+?)\$\$|\$((?:[^$\\]|\\.)+?)\$/g,
+        (match, displayMath, inlineMath) => {
+            const index = mathSegments.length;
+            mathSegments.push({
+                math: displayMath !== undefined ? displayMath.trim() : inlineMath,
+                displayMode: displayMath !== undefined,
+            });
+            // NUL-delimited placeholder survives markdown untouched.
+            return `\u0000MATH${index}\u0000`;
+        }
+    );
+
+    let html = marked.parse(source);
 
     html = html.replace(
         /<pre><code class="(.*?)">([\s\S]*?)<\/code><\/pre>/g,
@@ -56,16 +73,190 @@ export function renderMarkdownWithLaTeX(markdownText) {
         }
     );
 
-    // LaTeX rendering
-    html = html.replace(/\$\$\s*([\s\S]+?)\s*\$\$/g, (match, math) =>
-        katex.renderToString(math, { displayMode: true, throwOnError: false })
-    );
-
-    html = html.replace(/\$(.+?)\$/g, (match, math) =>
-        katex.renderToString(math, { displayMode: false, throwOnError: false })
-    );
+    // Restore math segments as KaTeX-rendered HTML.
+    html = html.replace(/\u0000MATH(\d+)\u0000/g, (match, index) => {
+        const segment = mathSegments[Number(index)];
+        if (!segment) return match;
+        return katex.renderToString(segment.math, {
+            displayMode: segment.displayMode,
+            throwOnError: false,
+        });
+    });
 
     return DOMPurify.sanitize(html);
+}
+
+// ─── Plain-text LaTeX conversion (for <option> labels) ─────────────────
+
+/**
+ * Symbol replacements applied to LaTeX commands without arguments.
+ * @type {Object<string, string>}
+ * @private
+ */
+const LATEX_SYMBOLS = {
+    leftrightarrow: '↔', longrightarrow: '⟹', Rightarrow: '⇒', rightarrow: '→', implies: '→',
+    iff: '↔', to: '→', oplus: '⊕', ominus: '⊖', otimes: '⊗', circ: '∘',
+    equiv: '≡', approx: '≈', ne: '≠', neq: '≠', sim: '∼', propto: '∝', cong: '≅',
+    le: '≤', leq: '≤', ge: '≥', geq: '≥',
+    land: '∧', wedge: '∧', lor: '∨', vee: '∨', lnot: '¬', neg: '¬',
+    forall: '∀', exists: '∃', nexists: '∄',
+    cap: '∩', cup: '∪', setminus: '∖', subset: '⊂', subseteq: '⊆', supset: '⊃',
+    in: '∈', notin: '∉', ni: '∋',
+    mid: '∣', nmid: '∤', perp: '⊥', parallel: '∥',
+    emptyset: '∅', varnothing: '∅',
+    sum: '∑', prod: '∏', coprod: '∐', integral: '∫',
+    cdot: '·', times: '×', pm: '±', ast: '∗', bullet: '•',
+    infty: '∞', partial: '∂', nabla: '∇',
+    therefore: '∴', because: '∵', angle: '∠',
+    ldots: '…', dots: '…', cdots: '⋯',
+    alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', varepsilon: 'ε',
+    zeta: 'ζ', eta: 'η', theta: 'θ', vartheta: 'ϑ', iota: 'ι', kappa: 'κ',
+    lambda: 'λ', mu: 'μ', nu: 'ν', xi: 'ξ', pi: 'π', rho: 'ρ', sigma: 'σ',
+    tau: 'τ', upsilon: 'υ', phi: 'φ', varphi: 'φ', chi: 'χ', psi: 'ψ', omega: 'ω',
+    Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Xi: 'Ξ', Pi: 'Π',
+    Sigma: 'Σ', Phi: 'Φ', Psi: 'Ψ', Omega: 'Ω'
+};
+
+/**
+ * Blackboard-bold letters used with `\mathbb{X}`.
+ * @type {Object<string, string>}
+ * @private
+ */
+const MATHBB_SYMBOLS = { C: 'ℂ', H: 'ℍ', N: 'ℕ', P: 'ℙ', Q: 'ℚ', R: 'ℝ', Z: 'ℤ', F: '𝔽' };
+
+/**
+ * Reads a balanced `{...}` group starting at (or after) `start`.
+ * @function readBraceGroup
+ * @param {string} text - Text to scan
+ * @param {number} start - Index where the group is expected to begin
+ * @returns {{content: string, end: number}|null} Group content and index after `}`, or null
+ * @private
+ */
+function readBraceGroup(text, start) {
+    let i = start;
+    while (i < text.length && text[i] === ' ') i += 1;
+    if (text[i] !== '{') return null;
+    let depth = 0;
+    for (let j = i; j < text.length; j += 1) {
+        if (text[j] === '{') depth += 1;
+        else if (text[j] === '}') {
+            depth -= 1;
+            if (depth === 0) return { content: text.slice(i + 1, j), end: j + 1 };
+        }
+    }
+    return null;
+}
+
+/**
+ * Repeatedly replaces `\command{A}{B}` occurrences using `mapper`.
+ * Handles nested occurrences because the scan restarts at the replacement.
+ * @function replaceTwoGroupCommand
+ * @param {string} text - Text to process
+ * @param {string} command - LaTeX command name (without backslash)
+ * @param {Function} mapper - (groupA, groupB) => replacement string
+ * @returns {string} Processed text
+ * @private
+ */
+function replaceTwoGroupCommand(text, command, mapper) {
+    const head = `\\${command}`;
+    let out = text;
+    let idx = out.indexOf(head);
+    while (idx !== -1) {
+        const first = readBraceGroup(out, idx + head.length);
+        const second = first ? readBraceGroup(out, first.end) : null;
+        if (!first || !second) {
+            // Malformed usage: drop the backslash so the loop cannot spin.
+            out = out.slice(0, idx) + out.slice(idx + 1);
+            idx = out.indexOf(head, idx);
+            continue;
+        }
+        out = out.slice(0, idx) + mapper(first.content, second.content) + out.slice(second.end);
+        idx = out.indexOf(head, idx);
+    }
+    return out;
+}
+
+/**
+ * Repeatedly replaces `\command{A}` occurrences using `mapper`.
+ * @function replaceOneGroupCommand
+ * @param {string} text - Text to process
+ * @param {string} command - LaTeX command name (without backslash)
+ * @param {Function} mapper - (group) => replacement string
+ * @returns {string} Processed text
+ * @private
+ */
+function replaceOneGroupCommand(text, command, mapper) {
+    const head = `\\${command}`;
+    let out = text;
+    let idx = out.indexOf(head);
+    while (idx !== -1) {
+        const group = readBraceGroup(out, idx + head.length);
+        if (!group) {
+            out = out.slice(0, idx) + out.slice(idx + 1);
+            idx = out.indexOf(head, idx);
+            continue;
+        }
+        out = out.slice(0, idx) + mapper(group.content) + out.slice(group.end);
+        idx = out.indexOf(head, idx);
+    }
+    return out;
+}
+
+/**
+ * Converts a LaTeX math snippet (without `$` delimiters) to readable plain text.
+ * Heuristic: known symbols become Unicode, `\frac`/`\binom`/`\sqrt` become
+ * ASCII-ish structures, and unknown commands degrade to their name (no backslash).
+ * @function mathToPlainText
+ * @param {string} tex - LaTeX source without delimiters
+ * @returns {string} Readable plain text
+ * @private
+ */
+function mathToPlainText(tex) {
+    let s = String(tex ?? '');
+
+    s = s.replace(/\\mathbb\s*\{([A-Za-z])\}/g, (m, c) => MATHBB_SYMBOLS[c] || c);
+    s = s.replace(/\\(?:operatorname|mathrm|mathbf|mathsf|textbf|textrm|text)\s*\{([^{}]*)\}/g, '$1');
+    s = replaceTwoGroupCommand(s, 'frac', (a, b) => `(${a})/(${b})`);
+    s = replaceTwoGroupCommand(s, 'binom', (a, b) => `(${a} choose ${b})`);
+    s = replaceOneGroupCommand(s, 'sqrt', (a) => `√(${a})`);
+    s = s.replace(/\\pmod\s*(?:\{([^{}]*)\}|(\S+))/g, (m, braced, plain) => `(mod ${braced ?? plain})`);
+    s = s.replace(/\\\\/g, ' ');
+    s = s.replace(/\\(?:qquad|quad|,|;|:|!| )/g, ' ');
+    s = s.replace(/\\([a-zA-Z]+)/g, (m, name) => LATEX_SYMBOLS[name] ?? name);
+    s = s.replace(/\\([^\w\s])/g, '$1');
+    s = s.replace(/([_^])\{([^{}]*)\}/g, '$1$2');
+    return s;
+}
+
+/**
+ * Converts a string that may contain `$...$` / `$$...$$` LaTeX into readable
+ * plain text for contexts that cannot render HTML (e.g. `<option>` labels).
+ * Non-math text is passed through unchanged.
+ * @function latexToPlainText
+ * @param {string} text - Text possibly containing LaTeX math spans
+ * @returns {string} Readable plain text
+ * @todo Extend symbol table as new content needs it
+ * @toimprove Handle unmatched currency dollars more gracefully
+ * @tofix None known
+ */
+export function latexToPlainText(text) {
+    const source = String(text ?? '');
+    // Mask dollars produced inside math (from `\$`) so the leftover-dollars
+    // cleanup below cannot strip them.
+    const DOLLAR_MASK = '\uE000';
+    const withMath = source.replace(
+        /\$\$((?:[^$\\]|\\.)+?)\$\$|\$((?:[^$\\]|\\.)+?)\$/g,
+        (match, displayMath, inlineMath) =>
+            mathToPlainText(displayMath !== undefined ? displayMath : inlineMath)
+                .replace(/\$/g, DOLLAR_MASK)
+    );
+    // Drop leftover unmatched dollar delimiters, then restore masked dollars.
+    return withMath
+        .replace(/\$\$?/g, ' ')
+        .replace(/\s+/g, ' ')
+        .split(DOLLAR_MASK)
+        .join('$')
+        .trim();
 }
 
 /**

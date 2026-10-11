@@ -14,7 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**/*.spec.js'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.kilo/**', '**/tests/**/*.spec.js'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -9,6 +9,7 @@
 import * as DOM from './dom.js';
 import { showError, clearError, showSuccess, showInfo } from './utils.js';
 import { validateQuizData } from './utils.js';
+import { parseJsonLenient } from './lenientJsonParser.js';
 
 /**
  * @type {Peer | null}
@@ -133,7 +134,7 @@ function handleIncomingConnection(conn) {
         console.log('Received message:', data);
 
         if (data.type === 'request') {
-            const quizData = JSON.parse(DOM.quizJsonInput.value || "{}");
+            const quizData = parseJsonLenient(DOM.quizJsonInput.value || "{}");
 
             if (validateQuizData(quizData)) {
                 updateStatus('Sending quiz to peer...', 'info');

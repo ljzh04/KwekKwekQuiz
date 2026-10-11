@@ -7,6 +7,7 @@
  */
 
 import { validateQuizData, showError } from './utils.js';
+import { parseJsonLenient } from './lenientJsonParser.js';
 
 /**
  * Centralized Input Mode State Manager
@@ -217,7 +218,7 @@ class JSONStateManager {
             return true;
         }
         try {
-            const parsed = JSON.parse(this._rawEditorText);
+            const parsed = parseJsonLenient(this._rawEditorText);
             this._questions = Array.isArray(parsed) ? parsed : [parsed];
             return true;
         } catch (e) {

@@ -43,7 +43,7 @@ vi.mock('../js/modules/toastNotification.js', () => ({
 }));
 
 // Import the modules after mocking
-import { validateQuizData } from '../js/modules/utils.js';
+import { validateQuizData, isAnswerCorrect } from '../js/modules/utils.js';
 import { calculateScore } from '../js/modules/quizEngine.js';
 import * as State from '../js/modules/state.js';
 
@@ -283,5 +283,80 @@ describe('New Quiz Types Scoring Tests', () => {
       
       expect(State.getScore()).toBe(0);
     });
+  });
+});
+
+describe('isAnswerCorrect Regression Tests (Enumeration & Matching)', () => {
+  const enumAny = {
+    type: 'enumeration-any-order',
+    question: 'List the 3 primary colors',
+    items: ['Red', 'Blue', 'Yellow'],
+    correct: ['Red', 'Blue', 'Yellow']
+  };
+  const enumOrdered = {
+    type: 'enumeration-ordered',
+    question: 'List planets in order',
+    items: ['Mercury', 'Venus', 'Earth'],
+    correct: ['Mercury', 'Venus', 'Earth']
+  };
+  const matchingQ = {
+    type: 'matching',
+    question: 'Match the country to its capital',
+    left: ['France', 'Japan', 'Brazil'],
+    right: ['Tokyo', 'Paris', 'Brasilia'],
+    correct: { '0': 1, '1': 0, '2': 2 }
+  };
+
+  test('enumeration-any-order with skipped (undefined) slots does not throw and is incorrect', () => {
+    expect(() => isAnswerCorrect(enumAny, ['Red', undefined, 'Yellow'])).not.toThrow();
+    expect(isAnswerCorrect(enumAny, ['Red', undefined, 'Yellow'])).toBe(false);
+  });
+
+  test('enumeration-any-order ignores case, padding and trailing blank inputs', () => {
+    expect(isAnswerCorrect(enumAny, [' yellow ', 'RED', 'Blue', ''])).toBe(true);
+  });
+
+  test('enumeration-any-order rejects duplicates that mask a missing item', () => {
+    expect(isAnswerCorrect(enumAny, ['Red', 'Red', 'Blue'])).toBe(false);
+  });
+
+  test('enumeration-ordered with a skipped middle slot does not throw and is incorrect', () => {
+    expect(() => isAnswerCorrect(enumOrdered, ['Mercury', undefined, 'Earth'])).not.toThrow();
+    expect(isAnswerCorrect(enumOrdered, ['Mercury', undefined, 'Earth'])).toBe(false);
+  });
+
+  test('enumeration-ordered requires the exact sequence', () => {
+    expect(isAnswerCorrect(enumOrdered, ['Mercury', 'Venus', 'Earth'])).toBe(true);
+    expect(isAnswerCorrect(enumOrdered, ['Venus', 'Mercury', 'Earth'])).toBe(false);
+  });
+
+  test('matching with only partial selections is incorrect', () => {
+    expect(isAnswerCorrect(matchingQ, { '0': 1 })).toBe(false);
+  });
+
+  test('matching accepts numeric-string values from loaded JSON answers', () => {
+    expect(isAnswerCorrect(matchingQ, { '0': '1', '1': '0', '2': '2' })).toBe(true);
+  });
+
+  test('undefined answers never count as correct for the new types', () => {
+    expect(isAnswerCorrect(enumAny, undefined)).toBe(false);
+    expect(isAnswerCorrect(enumOrdered, undefined)).toBe(false);
+    expect(isAnswerCorrect(matchingQ, undefined)).toBe(false);
+  });
+
+  test('calculateScore survives partially answered enumeration without throwing', () => {
+    State.setQuizData([enumAny]);
+    State.resetQuizState(1);
+    State.setUserAnswerAtIndex(0, [undefined, 'Blue']);
+    expect(() => calculateScore()).not.toThrow();
+    expect(State.getScore()).toBe(0);
+  });
+
+  test('calculateScore scores a correctly reordered enumeration answer', () => {
+    State.setQuizData([enumAny]);
+    State.resetQuizState(1);
+    State.setUserAnswerAtIndex(0, ['YELLOW', ' red ', 'Blue', '']);
+    calculateScore();
+    expect(State.getScore()).toBe(1);
   });
 });

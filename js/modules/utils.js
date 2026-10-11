@@ -75,8 +75,32 @@ export function validateQuizData(data) {
             if (!Array.isArray(item.right) || item.right.length === 0) {
                 return false;
             }
-            if (typeof item.correct !== "object" || item.correct === null) {
+            if (typeof item.correct !== "object" || item.correct === null || Array.isArray(item.correct)) {
                 return false;
+            }
+            const correctEntries = Object.entries(item.correct);
+            // Every left item must have exactly one mapping, no extras.
+            if (correctEntries.length !== item.left.length) {
+                return false;
+            }
+            const seenRight = new Set();
+            for (const [rawLeft, rawRight] of correctEntries) {
+                const leftIdx = Number(rawLeft);
+                const rightIdx = Number(rawRight);
+                if (!Number.isInteger(leftIdx) || !Number.isInteger(rightIdx)) {
+                    return false;
+                }
+                if (leftIdx < 0 || leftIdx >= item.left.length) {
+                    return false;
+                }
+                if (rightIdx < 0 || rightIdx >= item.right.length) {
+                    return false;
+                }
+                // Right options must be uniquely assigned (no two lefts → same right).
+                if (seenRight.has(rightIdx)) {
+                    return false;
+                }
+                seenRight.add(rightIdx);
             }
         }
         // Add more validation for other types if needed
@@ -133,6 +157,74 @@ export function getFeedbackClasses(isCorrect) {
     return isCorrect 
         ? ["bg-green-100", "border-green-600", "text-green-800", "dark:bg-green-900", "dark:border-green-500", "dark:text-green-200"]
         : ["bg-red-100", "border-red-600", "text-red-800", "dark:bg-red-900", "dark:border-red-500", "dark:text-red-200"];
+}
+
+/**
+ * Single source of truth for answer correctness (scoring, feedback, results).
+ * Tolerates partial/blank answers without throwing.
+ * @function isAnswerCorrect
+ * @param {Object} question - The question object
+ * @param {any} userAnswer - The user's answer
+ * @returns {boolean} Whether the answer is correct
+ */
+export function isAnswerCorrect(question, userAnswer) {
+    if (!question || userAnswer === undefined) return false;
+
+    if (question.type === "multiple-choice" || question.type === "true-false") {
+        return userAnswer === question.correct;
+    }
+
+    if (question.type === "fill-in-the-blank" || question.type === "identification") {
+        return typeof userAnswer === "string" &&
+               normalizeAnswerText(userAnswer) === normalizeAnswerText(question.correct);
+    }
+
+    if (question.type === "enumeration-any-order" || question.type === "enumeration-ordered") {
+        if (!Array.isArray(userAnswer) || !Array.isArray(question.correct)) return false;
+
+        // Blank/skipped entries normalize to "" so sparse answer arrays
+        // never crash the comparison (previously threw on undefined holes).
+        const expected = question.correct.map(normalizeAnswerText);
+        const given = userAnswer.map(normalizeAnswerText);
+
+        if (question.type === "enumeration-ordered") {
+            return expected.length > 0 &&
+                   expected.every((value, i) => value === (given[i] ?? ""));
+        }
+
+        // Any order: compare multisets of the non-blank entries.
+        const userValues = given.filter(value => value !== "").sort();
+        const correctValues = expected.filter(value => value !== "").sort();
+        return correctValues.length > 0 &&
+               userValues.length === correctValues.length &&
+               userValues.every((value, i) => value === correctValues[i]);
+    }
+
+    if (question.type === "matching") {
+        if (typeof userAnswer !== "object" || userAnswer === null ||
+            typeof question.correct !== "object" || question.correct === null) {
+            return false;
+        }
+        const userKeys = Object.keys(userAnswer);
+        const correctKeys = Object.keys(question.correct);
+        return correctKeys.length > 0 &&
+               userKeys.length === correctKeys.length &&
+               correctKeys.every(key => Number(userAnswer[key]) === Number(question.correct[key]));
+    }
+
+    return false;
+}
+
+/**
+ * Normalizes an answer value for case/whitespace-insensitive comparison.
+ * @function normalizeAnswerText
+ * @param {any} value - The value to normalize
+ * @returns {string} Normalized string ("" for missing values)
+ * @private
+ */
+function normalizeAnswerText(value) {
+    if (value === undefined || value === null) return "";
+    return String(value).trim().toLowerCase();
 }
 
 /**

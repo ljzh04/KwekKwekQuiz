@@ -1,0 +1,485 @@
+[
+{
+"type": "multiple-choice",
+"question": "### 1. Which statement is a **proposition**?",
+"options": [
+"Close the door.",
+"What time is it?",
+"7 is a prime number.",
+"This movie is beautiful."
+],
+"correct": 2
+},
+{
+"type": "multiple-choice",
+"question": "### 2. What is a **tautology**?",
+"options": [
+"A proposition that is always false.",
+"A proposition that is always true.",
+"A proposition that is sometimes true and sometimes false.",
+"A proposition with no truth value."
+],
+"correct": 1
+},
+{
+"type": "true-false",
+"question": "### 3. A contradiction is a compound proposition that is always false.",
+"correct": true
+},
+{
+"type": "true-false",
+"question": "### 4. A contingency is always true regardless of the values of its variables.",
+"correct": false
+},
+{
+"type": "multiple-choice",
+"question": "### 5. When is the conjunction $P \land Q$ true?",
+"options": [
+"When at least one of P or Q is true.",
+"Only when P is true.",
+"Only when both P and Q are true.",
+"When P and Q have different truth values."
+],
+"correct": 2
+},
+{
+"type": "multiple-choice",
+"question": "### 6. When is the exclusive OR $P \oplus Q$ true?",
+"options": [
+"When both P and Q are true.",
+"When exactly one of P and Q is true.",
+"When both P and Q are false.",
+"When P and Q have the same truth value."
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 7. Under what condition is the implication $P \to Q$ false?",
+"options": [
+"$P=T, Q=T$",
+"$P=T, Q=F$",
+"$P=F, Q=T$",
+"$P=F, Q=F$"
+],
+"correct": 1
+},
+{
+"type": "fill-in-the-blank",
+"question": "### 8. The biconditional $P \leftrightarrow Q$ is true when P and Q have the ______ truth value.",
+"correct": "same"
+},
+{
+"type": "enumeration-ordered",
+"question": "### 9. List the logical operators in the correct order of precedence, from highest to lowest.",
+"items": [
+"Parentheses",
+"Negation",
+"Conjunction",
+"Disjunction",
+"Implication",
+"Biconditional"
+],
+"correct": [
+"Parentheses",
+"Negation",
+"Conjunction",
+"Disjunction",
+"Implication",
+"Biconditional"
+]
+},
+{
+"type": "multiple-choice",
+"question": "### 10. Which expression is logically equivalent to $P \to Q$?",
+"options": [
+"$P \land Q$",
+"$\neg P \lor Q$",
+"$P \lor \neg Q$",
+"$\neg P \land Q$"
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 11. Which is the correct negation of an implication?",
+"options": [
+"$\neg(P \to Q) \equiv \neg P \lor Q$",
+"$\neg(P \to Q) \equiv P \land \neg Q$",
+"$\neg(P \to Q) \equiv P \lor Q$",
+"$\neg(P \to Q) \equiv \neg P \land Q$"
+],
+"correct": 1
+},
+{
+"type": "matching",
+"question": "### 12. Match each law with its correct equivalent.",
+"left": [
+"De Morgan's Law for conjunction",
+"De Morgan's Law for disjunction",
+"Double negation",
+"Domination law: $P \lor T$",
+"Identity law: $P \land T$"
+],
+"right": [
+"$P$",
+"$\neg P \lor \neg Q$",
+"$T$",
+"$\neg P \land \neg Q$",
+"$\neg(\neg P) \equiv P$"
+],
+"correct": {
+"0": 1,
+"1": 3,
+"2": 4,
+"3": 2,
+"4": 0
+}
+},
+{
+"type": "multiple-choice",
+"question": "### 13. What does $\forall x\,P(x)$ mean?",
+"options": [
+"There exists at least one x for which P(x) is true.",
+"For every x, P(x) is true.",
+"P(x) is false for every x.",
+"Exactly one x satisfies P(x)."
+],
+"correct": 1
+},
+{
+"type": "true-false",
+"question": "### 14. A single counterexample is sufficient to show that a universal statement $\forall x\,P(x)$ is false.",
+"correct": true
+},
+{
+"type": "multiple-choice",
+"question": "### 15. Which is equivalent to $\neg(\forall x\,P(x))$?",
+"options": [
+"$\forall x\,\neg P(x)$",
+"$\exists x\,\neg P(x)$",
+"$\exists x\,P(x)$",
+"$\forall x\,P(x)$"
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 16. What is the correct first step in a proof by contradiction?",
+"options": [
+"Assume the statement being proved is true.",
+"Assume the negation of the statement is true.",
+"Use mathematical induction immediately.",
+"Find a counterexample."
+],
+"correct": 1
+},
+{
+"type": "enumeration-ordered",
+"question": "### 17. List the three essential steps of mathematical induction in order.",
+"items": [
+"Base Case",
+"Inductive Hypothesis",
+"Inductive Step"
+],
+"correct": [
+"Base Case",
+"Inductive Hypothesis",
+"Inductive Step"
+]
+},
+{
+"type": "multiple-choice",
+"question": "### 18. If sets A and B are disjoint, which counting rule applies to $|A \cup B|$?",
+"options": [
+"$|A \cup B|=|A||B|$",
+"$|A \cup B|=|A|+|B|$",
+"$|A \cup B|=|A|+|B|-|A\cap B|$",
+"$|A \cup B|=|A|-|B|$"
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 19. Which formula correctly handles two overlapping sets?",
+"options": [
+"$|A\cup B|=|A|+|B|$",
+"$|A\cup B|=|A||B|$",
+"$|A\cup B|=|A|+|B|-|A\cap B|$",
+"$|A\cup B|=|A\cap B|$"
+],
+"correct": 2
+},
+{
+"type": "multiple-choice",
+"question": "### 20. Which counting principle is most appropriate when a task consists of several sequential choices?",
+"options": [
+"Sum Rule",
+"Product Rule",
+"Pigeonhole Principle",
+"Bijection Principle"
+],
+"correct": 1
+},
+{
+"type": "fill-in-the-blank",
+"question": "### 21. If a bijection exists between sets A and B, then $|A|$ = ______.",
+"correct": "|B|"
+},
+{
+"type": "multiple-choice",
+"question": "### 22. If 11 items are placed into 10 boxes, what does the basic Pigeonhole Principle guarantee?",
+"options": [
+"Every box contains exactly one item.",
+"At least one box contains at least 2 items.",
+"At least one box contains 11 items.",
+"Every box contains at least 2 items."
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 23. If 25 items are distributed among 6 boxes, at least one box contains at least how many items?",
+"options": [
+"3",
+"4",
+"5",
+"6"
+],
+"correct": 2
+},
+{
+"type": "multiple-choice",
+"question": "### 24. How many items are needed to **guarantee** that some box contains at least 4 items when there are 5 boxes?",
+"options": [
+"15",
+"16",
+"20",
+"21"
+],
+"correct": 1
+},
+{
+"type": "matching",
+"question": "### 25. Match each counting situation with its formula.",
+"left": [
+"r-permutation, no repetition",
+"r-permutation, repetition allowed",
+"r-combination, no repetition",
+"r-combination, repetition allowed"
+],
+"right": [
+"$n^r$",
+"$\frac{n!}{(n-r)!}$",
+"$\frac{n!}{r!(n-r)!}$",
+"$\frac{(n+r-1)!}{r!(n-1)!}$"
+],
+"correct": {
+"0": 1,
+"1": 0,
+"2": 2,
+"3": 3
+}
+},
+{
+"type": "multiple-choice",
+"question": "### 26. Which counting method should be used when order matters and repetition is not allowed?",
+"options": [
+"$n^r$",
+"$\binom{n}{r}$",
+"$P(n,r)=\frac{n!}{(n-r)!}$",
+"$\binom{n+r-1}{r}$"
+],
+"correct": 2
+},
+{
+"type": "multiple-choice",
+"question": "### 27. Which counting method should be used when order does not matter and repetition is allowed?",
+"options": [
+"$n^r$",
+"$\frac{n!}{(n-r)!}$",
+"$\binom{n}{r}$",
+"$\binom{n+r-1}{r}$"
+],
+"correct": 3
+},
+{
+"type": "multiple-choice",
+"question": "### 28. In the Division Algorithm $A=BQ+R$, which condition must the remainder satisfy?",
+"options": [
+"$R<0$",
+"$0\le R<B$",
+"$R>B$",
+"$R=B$"
+],
+"correct": 1
+},
+{
+"type": "fill-in-the-blank",
+"question": "### 29. Using the standard nonnegative remainder convention, $-83 \equiv$ ______ $\pmod 9$.",
+"correct": "7"
+},
+{
+"type": "multiple-choice",
+"question": "### 30. Which statement is equivalent to $a\equiv b\pmod m$?",
+"options": [
+"$m\nmid(a-b)$",
+"$m\mid(a-b)$",
+"$a+b=km$",
+"$a=b$ only"
+],
+"correct": 1
+},
+{
+"type": "true-false",
+"question": "### 31. Modular arithmetic allows addition and multiplication to be performed using the remainders modulo $m$.",
+"correct": true
+},
+{
+"type": "multiple-choice",
+"question": "### 32. Which is a valid probability axiom?",
+"options": [
+"$P(A)>1$ is possible.",
+"$P(S)=0$.",
+"$0\le P(A)\le1$.",
+"$P(\emptyset)=1$."
+],
+"correct": 2
+},
+{
+"type": "fill-in-the-blank",
+"question": "### 33. If $P(A)=0.35$, then $P(A^c)=$ ______.",
+"correct": "0.65"
+},
+{
+"type": "multiple-choice",
+"question": "### 34. Which conditions must a probability mass function satisfy?",
+"options": [
+"$p(x)<0$ for some x and the probabilities sum to 1.",
+"$0\le p(x)\le1$ for all x and the probabilities sum to 1.",
+"Every $p(x)$ must equal 1.",
+"The probabilities must sum to 0."
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 35. For a discrete random variable, what does $F(a)$ represent?",
+"options": [
+"$P(X=a)$",
+"$P(X<a)$",
+"$P(X\le a)$",
+"$P(X>a)$"
+],
+"correct": 2
+},
+{
+"type": "multiple-choice",
+"question": "### 36. Which formula gives the expected value of a discrete random variable?",
+"options": [
+"$E(X)=\sum p(x_i)$",
+"$E(X)=\sum x_i p(x_i)$",
+"$E(X)=\sum x_i^2p(x_i)$",
+"$E(X)=\sqrt{\sum x_i p(x_i)}$"
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 37. A game has an expected gross payout of $\$12$ and costs $\$5$ to play. What is the expected net profit?",
+"options": [
+"$\$5$",
+"$\$7$",
+"$\$12$",
+"$\$17$"
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 38. Which is the shortcut formula for variance?",
+"options": [
+"$\operatorname{Var}(X)=E(X)^2-E(X^2)$",
+"$\operatorname{Var}(X)=E(X^2)-[E(X)]^2$",
+"$\operatorname{Var}(X)=E(X)+E(X^2)$",
+"$\operatorname{Var}(X)=\sqrt{E(X^2)}$"
+],
+"correct": 1
+},
+{
+"type": "fill-in-the-blank",
+"question": "### 39. If $\operatorname{Var}(X)=25$, then the standard deviation is ______.",
+"correct": "5"
+},
+{
+"type": "matching",
+"question": "### 40. Match each covariance value with its interpretation.",
+"left": [
+"$\operatorname{Cov}(X,Y)>0$",
+"$\operatorname{Cov}(X,Y)<0$",
+"$\operatorname{Cov}(X,Y)=0$"
+],
+"right": [
+"Inversely correlated",
+"No covariance / uncorrelated",
+"Positively correlated"
+],
+"correct": {
+"0": 2,
+"1": 0,
+"2": 1
+}
+},
+{
+"type": "multiple-choice",
+"question": "### 41. Which formula defines conditional probability?",
+"options": [
+"$P(A\mid B)=\frac{P(A\cap B)}{P(B)}$",
+"$P(A\mid B)=P(A)P(B)$",
+"$P(A\mid B)=\frac{P(A)}{P(B)}$",
+"$P(A\mid B)=P(A\cup B)$"
+],
+"correct": 0
+},
+{
+"type": "multiple-choice",
+"question": "### 42. Which formula is Bayes' Theorem?",
+"options": [
+"$P(A\mid B)=P(A)P(B\mid A)$",
+"$P(A\mid B)=\frac{P(A)P(B\mid A)}{P(B)}$",
+"$P(A\mid B)=\frac{P(B)}{P(A)}$",
+"$P(A\mid B)=P(A)+P(B\mid A)$"
+],
+"correct": 1
+},
+{
+"type": "multiple-choice",
+"question": "### 43. Suppose $P(A)=0.4$, $P(B\mid A)=0.5$, and $P(B\mid A^c)=0.2$. What is $P(B)$?",
+"options": [
+"0.20",
+"0.28",
+"0.32",
+"0.50"
+],
+"correct": 2
+},
+{
+"type": "fill-in-the-blank",
+"question": "### 44. The Law of Total Probability expands $P(B)$ as $P(A)P(B\mid A)+P(A^c)P(B\mid A^c)$. This expansion is commonly used as the ______ in Bayes' Theorem.",
+"correct": "denominator"
+},
+{
+"type": "enumeration-any-order",
+"question": "### 45. List the three fundamental probability axioms/properties given in the notes.",
+"items": [
+"$0\le P(A)\le1$",
+"$P(S)=1$",
+"$P(\emptyset)=0$"
+],
+"correct": [
+"$0\le P(A)\le1$",
+"$P(S)=1$",
+"$P(\emptyset)=0$"
+]
+}
+]

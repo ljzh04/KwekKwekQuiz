@@ -10,6 +10,7 @@ import jsyaml from 'js-yaml';
 import * as DOM from './dom.js';
 import * as State from './state.js';
 import { showError, clearError, validateQuizData, sanitizeInput, showSuccess } from './utils.js';
+import { parseJsonLenient } from './lenientJsonParser.js';
 import { jsonStateManager } from './jsonStateManager.js';
 import { handleGenerateInBuilderMode } from './quizBuilder.js';
 import {
@@ -55,7 +56,7 @@ function handleLoadQuizBtn() {
 
     let data;
     try {
-        data = JSON.parse(text);
+        data = parseJsonLenient(text);
     } catch (e) {
         showError("Invalid JSON format. Please correct and try again.");
         return;
@@ -86,7 +87,7 @@ function handleFormatJsonBtn() {
         return;
     }
     try {
-        const parsedJson = JSON.parse(input);
+        const parsedJson = parseJsonLenient(input);
         const formatted = JSON.stringify(parsedJson, null, 2);
         DOM.quizJsonInput.value = formatted;
         jsonStateManager.setRawEditorText(formatted);

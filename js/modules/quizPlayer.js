@@ -9,8 +9,8 @@
 //import *_ from 'lodash'; // If you decide to use it for deep cloning or other utilities
 import * as DOM from './dom.js';
 import * as State from './state.js';
-import { renderMarkdownWithLaTeX, attachCopyHandlers} from './renderUtils.js';
-import { getFeedbackClasses, showError, clearError } from './utils.js';
+import { renderMarkdownWithLaTeX, attachCopyHandlers, latexToPlainText } from './renderUtils.js';
+import { getFeedbackClasses, isAnswerCorrect, showError, clearError, shuffleArray } from './utils.js';
 import { updateProgressBar, updateNavigationButtonsState } from './uiController.js';
 import { calculateScore, goToNextQuestion } from './quizEngine.js'; // For auto-submit behavior
 
@@ -428,13 +428,43 @@ export function renderCurrentQuestion() {
             inputField.focus();
         }
     } else if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
-        // Render enumeration question with numbered input fields
+        // One dropdown per answer slot, populated from items[] so the choices
+        // are actually visible (plain text inputs left them hidden). A live
+        // KaTeX preview below each select shows the selection fully rendered.
         const enumerationContainer = document.createElement("div");
         enumerationContainer.className = "enumeration-container space-y-3";
         
-        const itemsCount = currentQuestion.items ? currentQuestion.items.length : 3;
+        // Prefer items[]; fall back to the answer key length so a question
+        // without items[] can still be fully answered.
+        const itemsCount = currentQuestion.items?.length ?? currentQuestion.correct?.length ?? 3;
         const userAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || [];
         const isSubmitted = State.isSubmittedAtIndex(State.getCurrentQuestionIndex());
+        
+        // Choice pool. validateQuizData requires items[] for enumeration, but
+        // fall back to correct[] defensively.
+        const choicePool = Array.isArray(currentQuestion.items) && currentQuestion.items.length > 0
+            ? currentQuestion.items
+            : (currentQuestion.correct || []);
+        
+        // Presentation order of options inside each dropdown. Shuffle only when
+        // choice randomization is on — stored values stay the raw item strings,
+        // so scoring is unaffected.
+        let optionOrder = choicePool.map((_, idx) => idx);
+        if (localStorage.getItem("randomizeChoices") === "true") {
+            optionOrder = shuffleArray(optionOrder);
+        }
+        
+        // Prevent duplicates: disable options already chosen in another slot.
+        const refreshDuplicateStates = () => {
+            const selects = Array.from(enumerationContainer.querySelectorAll("select.enumeration-input"));
+            const values = selects.map(s => s.value);
+            selects.forEach((s, slotIdx) => {
+                Array.from(s.options).forEach(opt => {
+                    if (opt.value === "") return; // placeholder stays selectable
+                    opt.disabled = values.some((v, j) => j !== slotIdx && v === opt.value);
+                });
+            });
+        };
         
         for (let i = 0; i < itemsCount; i++) {
             const itemRow = document.createElement("div");
@@ -444,33 +474,66 @@ export function renderCurrentQuestion() {
             itemNumber.className = "enumeration-number flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold text-sm";
             itemNumber.textContent = (i + 1).toString();
             
-            const itemInput = document.createElement("input");
-            itemInput.type = "text";
-            itemInput.className = "enumeration-input flex-grow border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-transparent text-gray-900 dark:text-gray-100";
-            itemInput.placeholder = `Item ${i + 1}`;
-            itemInput.value = userAnswer[i] || "";
-            itemInput.disabled = isSubmitted;
-            itemInput.dataset.index = i.toString();
+            const slotWrapper = document.createElement("div");
+            slotWrapper.className = "flex-grow min-w-0";
             
-            itemInput.addEventListener("input", (e) => {
+            const slotSelect = document.createElement("select");
+            slotSelect.className = "enumeration-input w-full border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100";
+            slotSelect.dataset.index = i.toString();
+            slotSelect.disabled = isSubmitted;
+            
+            const placeholderOption = document.createElement("option");
+            placeholderOption.value = "";
+            placeholderOption.textContent = `Select item ${i + 1}...`;
+            slotSelect.appendChild(placeholderOption);
+            
+            optionOrder.forEach(poolIdx => {
+                const option = document.createElement("option");
+                option.value = choicePool[poolIdx]; // exact raw item string
+                option.textContent = latexToPlainText(String(choicePool[poolIdx]));
+                slotSelect.appendChild(option);
+            });
+            
+            // Restore any saved answer (raw item string).
+            const savedValue = userAnswer[i];
+            if (typeof savedValue === "string" && savedValue !== "") {
+                slotSelect.value = savedValue;
+            }
+            
+            // Live KaTeX preview of the current selection.
+            const slotPreview = document.createElement("div");
+            slotPreview.className = "enumeration-preview mt-1 text-sm text-gray-600 dark:text-gray-300";
+            const syncPreview = () => {
+                slotPreview.innerHTML = slotSelect.value ? renderMarkdownWithLaTeX(slotSelect.value) : "";
+            };
+            syncPreview();
+            
+            slotSelect.addEventListener("change", (e) => {
                 if (isSubmitted) return;
                 const idx = parseInt(e.target.dataset.index);
                 const currentAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || [];
                 const newAnswer = [...currentAnswer];
                 newAnswer[idx] = e.target.value;
                 State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), newAnswer);
+                syncPreview();
+                refreshDuplicateStates();
             });
             
+            slotWrapper.appendChild(slotSelect);
+            slotWrapper.appendChild(slotPreview);
+            
             itemRow.appendChild(itemNumber);
-            itemRow.appendChild(itemInput);
+            itemRow.appendChild(slotWrapper);
             enumerationContainer.appendChild(itemRow);
         }
+        
+        refreshDuplicateStates();
         
         DOM.quizContainer.appendChild(enumerationContainer);
         
         if (!isSubmitted) {
-            const firstInput = enumerationContainer.querySelector("input");
-            if (firstInput) firstInput.focus();
+            const firstSelect = enumerationContainer.querySelector("select");
+            if (firstSelect) firstSelect.focus();
         }
     } else if (currentQuestion.type === "matching") {
         // Render matching question with two columns
@@ -480,11 +543,11 @@ export function renderCurrentQuestion() {
         // Add instruction text
         const instruction = document.createElement("div");
         instruction.className = "text-sm text-gray-600 dark:text-gray-400 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800";
-        instruction.innerHTML = `<span class="material-symbols-outlined text-sm align-middle mr-1">info</span> Select the matching item from the dropdown for each option on the right.`;
+        instruction.innerHTML = `<span class="material-symbols-outlined text-sm align-middle mr-1">info</span> For each option, select the matching item from its dropdown.`;
         matchingContainer.appendChild(instruction);
         
         const columnsContainer = document.createElement("div");
-        columnsContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
+        columnsContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8";
         
         const leftColumn = document.createElement("div");
         leftColumn.className = "left-column space-y-3";
@@ -506,8 +569,8 @@ export function renderCurrentQuestion() {
         // Left column (fixed items)
         leftItems.forEach((item, index) => {
             const leftItem = document.createElement("div");
-            leftItem.className = "matching-left-item p-3 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600";
-            leftItem.innerHTML = `<span class="font-medium text-gray-800 dark:text-gray-200">${index + 1}. ${item}</span>`;
+            leftItem.className = "matching-left-item p-3 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 break-words";
+            leftItem.innerHTML = `<span class="font-medium text-gray-800 dark:text-gray-200">${index + 1}. ${renderMarkdownWithLaTeX(String(item))}</span>`;
             leftColumn.appendChild(leftItem);
         });
         
@@ -520,10 +583,17 @@ export function renderCurrentQuestion() {
         // Right column (selectable options)
         rightItems.forEach((item, index) => {
             const rightItem = document.createElement("div");
-            rightItem.className = "matching-right-item flex items-center gap-3";
+            // Adaptive: option text stacks above the dropdown on phones,
+            // sits beside it from sm upwards; both children shrink/wrap safely.
+            rightItem.className = "matching-right-item flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3";
+            
+            const rightLabel = document.createElement("span");
+            rightLabel.className = "matching-right-label min-w-0 flex-1 break-words text-gray-700 dark:text-gray-300";
+            // Render markdown/LaTeX (sanitized inside renderMarkdownWithLaTeX).
+            rightLabel.innerHTML = renderMarkdownWithLaTeX(String(item));
             
             const select = document.createElement("select");
-            select.className = "matching-select flex-grow border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100";
+            select.className = "matching-select w-full min-w-0 sm:w-auto sm:flex-1 border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100";
             select.disabled = isSubmitted;
             select.dataset.rightIndex = index.toString();
             
@@ -537,12 +607,15 @@ export function renderCurrentQuestion() {
             leftItems.forEach((leftItem, leftIndex) => {
                 const option = document.createElement("option");
                 option.value = leftIndex.toString();
-                option.textContent = `${leftIndex + 1}. ${leftItem}`;
+                // <option> elements cannot render HTML; show a readable
+                // plain-text version of any LaTeX instead of raw source.
+                option.textContent = `${leftIndex + 1}. ${latexToPlainText(String(leftItem))}`;
                 select.appendChild(option);
             });
             
             // Set current selection only if user has actually selected something
-            const currentMatch = Object.entries(userAnswer).find(([k, v]) => v === index);
+            // Number() guards against string-valued answers from loaded JSON
+            const currentMatch = Object.entries(userAnswer).find(([k, v]) => Number(v) === index);
             if (currentMatch && currentMatch[0] !== "") {
                 select.value = currentMatch[0];
             }
@@ -556,7 +629,7 @@ export function renderCurrentQuestion() {
                 
                 // Remove any existing match for this right item
                 Object.keys(newAnswer).forEach(key => {
-                    if (newAnswer[key] === rightIdx) {
+                    if (Number(newAnswer[key]) === rightIdx) {
                         delete newAnswer[key];
                     }
                 });
@@ -566,12 +639,8 @@ export function renderCurrentQuestion() {
                 State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), newAnswer);
             });
             
-            const rightLabel = document.createElement("span");
-            rightLabel.className = "text-gray-700 dark:text-gray-300";
-            rightLabel.textContent = item;
-            
-            rightItem.appendChild(select);
             rightItem.appendChild(rightLabel);
+            rightItem.appendChild(select);
             rightColumn.appendChild(rightItem);
         });
         
@@ -585,6 +654,18 @@ export function renderCurrentQuestion() {
     addKeyboardNavigationToOptions();
 }
 
+
+/**
+ * Renders markdown/LaTeX and strips the block-level `<p>` wrappers marked adds,
+ * so results can be embedded inline and joined with separators.
+ * @function renderInlineMath
+ * @param {string} text - Text to render
+ * @returns {string} Inline-safe sanitized HTML
+ * @private
+ */
+function renderInlineMath(text) {
+    return renderMarkdownWithLaTeX(String(text ?? "")).replace(/<\/?p>/g, "");
+}
 
 /**
  * Renders feedback for a specific question based on the user's answer.
@@ -686,41 +767,64 @@ export function renderFeedbackForQuestion(userAnswer) {
     else if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
         const enumerationInputs = DOM.quizContainer.querySelectorAll(".enumeration-input");
         const isCorrect = checkIsCorrect(currentQuestion, userAnswer);
-        
+        const isOrdered = currentQuestion.type === "enumeration-ordered";
+        // Answers may contain holes (skipped inputs); normalize without .trim()
+        // on undefined, which previously threw a TypeError mid-feedback.
+        const userVals = Array.isArray(userAnswer)
+            ? userAnswer.map(v => (v ?? "").toString().trim().toLowerCase())
+            : [];
+        // Any-order answers may legally be shuffled, so per-item correctness
+        // uses multiset membership instead of position.
+        const remainingCounts = {};
+        if (!isOrdered) {
+            (currentQuestion.correct || []).forEach(value => {
+                const key = (value ?? "").toString().trim().toLowerCase();
+                if (key) remainingCounts[key] = (remainingCounts[key] || 0) + 1;
+            });
+        }
+
         enumerationInputs.forEach((input, idx) => {
             input.disabled = true;
-            input.classList.remove("input-feedback-success", "input-feedback-error");
-            
-            const userVal = userAnswer && userAnswer[idx] ? userAnswer[idx].trim().toLowerCase() : "";
-            const correctVal = currentQuestion.correct[idx] ? currentQuestion.correct[idx].trim().toLowerCase() : "";
-            const itemIsCorrect = userVal === correctVal;
-            
+            input.classList.remove("input-feedback-success", "input-feedback-error", "border-amber-500", "dark:border-amber-400");
+            const userVal = userVals[idx] || "";
+            let itemIsCorrect = false;
             if (userVal !== "") {
-                const status = itemIsCorrect ? 'success' : 'error';
-                input.classList.add(`input-feedback-${status}`);
-                
-                // Add sparkle effect for correct items
-                if (itemIsCorrect) {
-                    sparkleBurstOnce(input);
+                if (isOrdered) {
+                    const correctVal = (currentQuestion.correct[idx] ?? "").toString().trim().toLowerCase();
+                    itemIsCorrect = userVal === correctVal;
+                } else {
+                    itemIsCorrect = (remainingCounts[userVal] || 0) > 0;
+                    if (itemIsCorrect) remainingCounts[userVal] -= 1;
                 }
+                input.classList.add(`input-feedback-${itemIsCorrect ? 'success' : 'error'}`);
+            } else if (!isCorrect) {
+                // Blank slot in an incorrect answer: highlight what was missed.
+                input.classList.add("border-amber-500", "dark:border-amber-400");
             }
         });
         
-        // Add overall feedback indicator only if incorrect
+        // Overall feedback indicator
         const container = DOM.quizContainer.querySelector(".enumeration-container");
         if (container) {
             const oldIcon = container.querySelector(".feedback-icon");
             if (oldIcon) oldIcon.remove();
-            
+            const oldFeedback = container.querySelector(".enumeration-feedback");
+            if (oldFeedback) oldFeedback.remove();
+
             if (!isCorrect) {
+                const orderHint = isOrdered ? "" : " (any order)";
                 const feedbackDiv = document.createElement("div");
-                feedbackDiv.className = "mt-4 p-3 rounded-lg bg-red-100 dark:bg-red-900/30";
+                feedbackDiv.className = "enumeration-feedback mt-4 p-3 rounded-lg bg-red-100 dark:bg-red-900/30";
                 feedbackDiv.innerHTML = `
                     <div class="text-sm font-medium text-red-800 dark:text-red-200">
-                        Expected answers: ${currentQuestion.correct.join(", ")}
+                        Expected answers${orderHint}: ${(currentQuestion.correct || []).map(v => renderInlineMath(String(v))).join(", ")}
                     </div>
                 `;
                 container.appendChild(feedbackDiv);
+            } else if (!State.wasSparkleBurstShownAtIndex(currentIndex)) {
+                // Celebrate once per question; re-render on navigation must not re-fire.
+                sparkleBurstOnce(container);
+                State.setSparkleBurstShownAtIndex(currentIndex, true);
             }
         }
     }
@@ -732,20 +836,21 @@ export function renderFeedbackForQuestion(userAnswer) {
         
         selects.forEach((select) => {
             select.disabled = true;
-            select.classList.remove("input-feedback-success", "input-feedback-error");
-            
-            const rightIdx = parseInt(select.dataset.rightIndex);
-            const selectedLeftIdx = parseInt(select.value);
-            const correctLeftIdx = Object.keys(currentQuestion.correct).find(
-                key => currentQuestion.correct[key] === rightIdx
-            );
-            
-            const itemIsCorrect = selectedLeftIdx.toString() === correctLeftIdx;
-            
-            if (select.value !== "") {
-                const status = itemIsCorrect ? 'success' : 'error';
-                select.classList.add(`input-feedback-${status}`);
+            select.classList.remove("input-feedback-success", "input-feedback-error", "border-amber-500", "dark:border-amber-400");
+            const rightIdx = parseInt(select.dataset.rightIndex, 10);
+
+            // Unanswered pair: neutral warning instead of a silent red border.
+            if (select.value === "" || isNaN(parseInt(select.value, 10))) {
+                select.classList.add("border-amber-500", "dark:border-amber-400");
+                return;
             }
+            const selectedLeftIdx = parseInt(select.value, 10);
+            const correctLeftIdx = Object.keys(currentQuestion.correct).find(
+                key => Number(currentQuestion.correct[key]) === rightIdx
+            );
+            const itemIsCorrect = correctLeftIdx !== undefined &&
+                selectedLeftIdx.toString() === correctLeftIdx;
+            select.classList.add(`input-feedback-${itemIsCorrect ? 'success' : 'error'}`);
         });
         
         // Add overall feedback indicator
@@ -757,13 +862,25 @@ export function renderFeedbackForQuestion(userAnswer) {
             const feedbackDiv = document.createElement("div");
             feedbackDiv.className = `matching-feedback mt-4 p-3 rounded-lg ${isCorrect ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`;
             
-            if (!isCorrect) {
+            if (isCorrect) {
+                feedbackDiv.innerHTML = `
+                    <div class="text-sm font-medium text-green-800 dark:text-green-200">
+                        All matches correct!
+                    </div>
+                `;
+                // Celebrate once per question; re-render on navigation must not re-fire.
+                if (!State.wasSparkleBurstShownAtIndex(currentIndex)) {
+                    sparkleBurstOnce(container);
+                    State.setSparkleBurstShownAtIndex(currentIndex, true);
+                }
+            } else {
                 const correctMatches = Object.entries(currentQuestion.correct).map(
-                    ([leftIdx, rightIdx]) => `${currentQuestion.left[leftIdx]} → ${currentQuestion.right[rightIdx]}`
+                    ([leftIdx, rightIdx]) =>
+                        `${renderInlineMath(currentQuestion.left[leftIdx])} → ${renderInlineMath(currentQuestion.right[rightIdx])}`
                 ).join(", ");
                 
                 feedbackDiv.innerHTML = `
-                    <div class="text-sm font-medium ${isCorrect ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}">
+                    <div class="text-sm font-medium text-red-800 dark:text-red-200">
                         Correct matches: ${correctMatches}
                     </div>
                 `;
@@ -904,12 +1021,16 @@ function formatAnswerDisplay(question, val) {
     if (question.type === "true-false") return val ? "True" : "False";
     if (question.type === "enumeration-any-order" || question.type === "enumeration-ordered") {
         if (Array.isArray(val)) {
-            return val.map((item, idx) => `${idx + 1}. ${item}`).join("<br>");
+            // Blank/skipped slots used to render as "undefined" in the summary.
+            return val.map((item, idx) =>
+                `${idx + 1}. ${String(item ?? "").trim() !== "" ? item : "<em>(blank)</em>"}`
+            ).join("<br>");
         }
         return String(val);
     }
     if (question.type === "matching") {
         if (typeof val === "object" && val !== null) {
+            if (Object.keys(val).length === 0) return "<em>No answer provided</em>";
             const leftItems = question.left || [];
             const rightItems = question.right || [];
             return Object.entries(val).map(([leftIdx, rightIdx]) => {
@@ -963,39 +1084,7 @@ function createAnswerBox(label, value, type) {
  * @tofix Ensure accurate comparison for all data types
  */
 function checkIsCorrect(question, userAnswer) {
-    if (question.type === "multiple-choice" || question.type === "true-false") {
-        return userAnswer === question.correct;
-    } else if (question.type === "fill-in-the-blank" || question.type === "identification") {
-        return typeof userAnswer === "string" && 
-               userAnswer.trim().toLowerCase() === String(question.correct).trim().toLowerCase();
-    } else if (question.type === "enumeration-any-order") {
-        // For enumeration any-order: compare sorted arrays
-        if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
-            const sortedUser = [...userAnswer].map(s => s.trim().toLowerCase()).sort();
-            const sortedCorrect = [...question.correct].map(s => s.trim().toLowerCase()).sort();
-            return JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
-        }
-        return false;
-    } else if (question.type === "enumeration-ordered") {
-        // For enumeration ordered: compare arrays element-by-element
-        if (Array.isArray(userAnswer) && Array.isArray(question.correct)) {
-            return userAnswer.length === question.correct.length &&
-                userAnswer.every((ans, i) => 
-                    ans.trim().toLowerCase() === question.correct[i].trim().toLowerCase()
-                );
-        }
-        return false;
-    } else if (question.type === "matching") {
-        // For matching: compare userAnswer object against correct mapping
-        if (typeof userAnswer === "object" && typeof question.correct === "object") {
-            const userKeys = Object.keys(userAnswer);
-            const correctKeys = Object.keys(question.correct);
-            return userKeys.length === correctKeys.length &&
-                userKeys.every(key => 
-                    userAnswer[key] === question.correct[key]
-                );
-        }
-        return false;
-    }
-    return false;
+    // Delegate to the shared implementation (utils.isAnswerCorrect) so the live
+    // feedback, engine scoring, and results summary can never drift apart.
+    return isAnswerCorrect(question, userAnswer);
 }

@@ -220,52 +220,35 @@ describe('jsdom rendering: enumeration dropdowns and matching labels', () => {
         return document.getElementById('quiz-container');
     }
 
-    test('Q9 renders 6 dropdowns with items, live preview, and state updates', () => {
+    test("Q9 renders free-recall inputs with live preview and state updates", () => {
         const container = renderQuestion(8);
-
-        const selects = container.querySelectorAll('select.enumeration-input');
-        expect(selects.length).toBe(6);
-
-        // Placeholder + 6 item options in canonical order
-        expect(selects[0].options.length).toBe(7);
-        expect(selects[0].options[0].value).toBe('');
-        expect(selects[0].options[1].textContent).toBe('Parentheses');
-
-        // Selection writes state and fills the preview
-        selects[1].value = 'Negation';
-        selects[1].dispatchEvent(new Event('change'));
-        expect(State.getUserAnswerAtIndex(0)[1]).toBe('Negation');
-        const preview = selects[1].parentElement.querySelector('.enumeration-preview');
-        expect(preview.textContent).toContain('Negation');
-
-        // Duplicate prevention: option chosen in slot 0 is disabled in slot 1
-        selects[0].value = 'Parentheses';
-        selects[0].dispatchEvent(new Event('change'));
-        const dupOption = Array.from(selects[1].options).find(o => o.value === 'Parentheses');
-        expect(dupOption.disabled).toBe(true);
-        // ...but not within slot 0 itself
-        const ownOption = Array.from(selects[0].options).find(o => o.value === 'Parentheses');
-        expect(ownOption.disabled).toBe(false);
+        // No dropdowns: the answer key must not leak through visible options.
+        expect(container.querySelectorAll("select.enumeration-input").length).toBe(0);
+        const inputs = container.querySelectorAll("input.enumeration-input");
+        expect(inputs.length).toBe(quiz[8].correct.length);
+        expect(inputs[0].placeholder).toBe("Type item 1...");
+        // Typing writes state and fills the live preview.
+        inputs[1].value = "Negation";
+        inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+        expect(State.getUserAnswerAtIndex(0)[1]).toBe("Negation");
+        const preview = inputs[1].parentElement.querySelector(".enumeration-preview");
+        expect(preview.textContent).toContain("Negation");
+        inputs[0].value = "Parentheses";
+        inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+        expect(State.getUserAnswerAtIndex(0)[0]).toBe("Parentheses");
     });
-
-    test('Q45 math items get readable labels and a KaTeX preview', () => {
+    test("Q45 math answers typed into inputs get a KaTeX preview", () => {
         const container = renderQuestion(44);
-
-        const selects = container.querySelectorAll('select.enumeration-input');
-        expect(selects.length).toBe(3);
-
-        const mathLabel = Array.from(selects[0].options).find(o => o.value === '$0\\le P(A)\\le1$');
-        expect(mathLabel).toBeDefined();
-        expect(mathLabel.textContent).toBe('0≤ P(A)≤1');
-        expect(mathLabel.textContent).not.toContain('\\');
-
-        selects[0].value = '$0\\le P(A)\\le1$';
-        selects[0].dispatchEvent(new Event('change'));
-        const preview = selects[0].parentElement.querySelector('.enumeration-preview');
-        expect(preview.innerHTML).toContain('katex');
-        expect(preview.innerHTML).not.toContain('katex-error');
+        const inputs = container.querySelectorAll("input.enumeration-input");
+        expect(inputs.length).toBe(quiz[44].correct.length);
+        const expected = quiz[44].correct[0];
+        inputs[0].value = expected;
+        inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+        const preview = inputs[0].parentElement.querySelector(".enumeration-preview");
+        expect(preview.innerHTML).toContain("katex");
+        expect(preview.innerHTML).not.toContain("katex-error");
+        expect(State.getUserAnswerAtIndex(0)[0]).toBe(expected);
     });
-
     test('Q40 matching renders math in left items and readable select labels', () => {
         const container = renderQuestion(39);
 

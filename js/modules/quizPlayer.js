@@ -10,7 +10,7 @@
 import * as DOM from './dom.js';
 import * as State from './state.js';
 import { renderMarkdownWithLaTeX, attachCopyHandlers, latexToPlainText } from './renderUtils.js';
-import { getFeedbackClasses, isAnswerCorrect, showError, clearError, shuffleArray } from './utils.js';
+import { getFeedbackClasses, isAnswerCorrect, showError, clearError } from './utils.js';
 import { updateProgressBar, updateNavigationButtonsState } from './uiController.js';
 import { calculateScore, goToNextQuestion } from './quizEngine.js'; // For auto-submit behavior
 
@@ -428,112 +428,66 @@ export function renderCurrentQuestion() {
             inputField.focus();
         }
     } else if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
-        // One dropdown per answer slot, populated from items[] so the choices
-        // are actually visible (plain text inputs left them hidden). A live
-        // KaTeX preview below each select shows the selection fully rendered.
+        // Free-recall text inputs, one per expected answer. Dropdowns defeated
+        // the purpose of enumeration because any permutation of visible items
+        // passed. Slot count comes from the answer key; items is legacy only.
         const enumerationContainer = document.createElement("div");
         enumerationContainer.className = "enumeration-container space-y-3";
-        
-        // Prefer items[]; fall back to the answer key length so a question
-        // without items[] can still be fully answered.
-        const itemsCount = currentQuestion.items?.length ?? currentQuestion.correct?.length ?? 3;
+        const correctAnswers = Array.isArray(currentQuestion.correct) ? currentQuestion.correct : [];
+        const legacyItems = Array.isArray(currentQuestion.items) ? currentQuestion.items : [];
+        const slotCount = correctAnswers.length > 0 ? correctAnswers.length : (legacyItems.length > 0 ? legacyItems.length : 3);
         const userAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || [];
         const isSubmitted = State.isSubmittedAtIndex(State.getCurrentQuestionIndex());
-        
-        // Choice pool. validateQuizData requires items[] for enumeration, but
-        // fall back to correct[] defensively.
-        const choicePool = Array.isArray(currentQuestion.items) && currentQuestion.items.length > 0
-            ? currentQuestion.items
-            : (currentQuestion.correct || []);
-        
-        // Presentation order of options inside each dropdown. Shuffle only when
-        // choice randomization is on — stored values stay the raw item strings,
-        // so scoring is unaffected.
-        let optionOrder = choicePool.map((_, idx) => idx);
-        if (localStorage.getItem("randomizeChoices") === "true") {
-            optionOrder = shuffleArray(optionOrder);
-        }
-        
-        // Prevent duplicates: disable options already chosen in another slot.
-        const refreshDuplicateStates = () => {
-            const selects = Array.from(enumerationContainer.querySelectorAll("select.enumeration-input"));
-            const values = selects.map(s => s.value);
-            selects.forEach((s, slotIdx) => {
-                Array.from(s.options).forEach(opt => {
-                    if (opt.value === "") return; // placeholder stays selectable
-                    opt.disabled = values.some((v, j) => j !== slotIdx && v === opt.value);
-                });
-            });
+        const syncAnswerFromInputs = () => {
+            const inputs = Array.from(enumerationContainer.querySelectorAll("input.enumeration-input"));
+            const next = inputs.map((el) => el.value);
+            State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), next);
+            return next;
         };
-        
-        for (let i = 0; i < itemsCount; i++) {
+        for (let i = 0; i < slotCount; i++) {
             const itemRow = document.createElement("div");
-            itemRow.className = "enumeration-item flex items-center gap-3";
-            
+            itemRow.className = "enumeration-item flex items-start gap-3";
             const itemNumber = document.createElement("span");
             itemNumber.className = "enumeration-number flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold text-sm";
             itemNumber.textContent = (i + 1).toString();
-            
             const slotWrapper = document.createElement("div");
             slotWrapper.className = "flex-grow min-w-0";
-            
-            const slotSelect = document.createElement("select");
-            slotSelect.className = "enumeration-input w-full border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100";
-            slotSelect.dataset.index = i.toString();
-            slotSelect.disabled = isSubmitted;
-            
-            const placeholderOption = document.createElement("option");
-            placeholderOption.value = "";
-            placeholderOption.textContent = `Select item ${i + 1}...`;
-            slotSelect.appendChild(placeholderOption);
-            
-            optionOrder.forEach(poolIdx => {
-                const option = document.createElement("option");
-                option.value = choicePool[poolIdx]; // exact raw item string
-                option.textContent = latexToPlainText(String(choicePool[poolIdx]));
-                slotSelect.appendChild(option);
-            });
-            
-            // Restore any saved answer (raw item string).
+            const slotInput = document.createElement("input");
+            slotInput.type = "text";
+            slotInput.className = "enumeration-input w-full border border-gray-400 dark:border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 transition bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100";
+            slotInput.dataset.index = i.toString();
+            slotInput.placeholder = "Type item " + (i + 1).toString() + "...";
+            slotInput.disabled = isSubmitted;
+            slotInput.setAttribute("aria-label", "Enumeration item " + (i + 1).toString());
+            slotInput.autocomplete = "off";
             const savedValue = userAnswer[i];
             if (typeof savedValue === "string" && savedValue !== "") {
-                slotSelect.value = savedValue;
+                slotInput.value = savedValue;
             }
-            
-            // Live KaTeX preview of the current selection.
             const slotPreview = document.createElement("div");
             slotPreview.className = "enumeration-preview mt-1 text-sm text-gray-600 dark:text-gray-300";
             const syncPreview = () => {
-                slotPreview.innerHTML = slotSelect.value ? renderMarkdownWithLaTeX(slotSelect.value) : "";
+                slotPreview.innerHTML = slotInput.value ? renderMarkdownWithLaTeX(slotInput.value) : "";
             };
             syncPreview();
-            
-            slotSelect.addEventListener("change", (e) => {
+            slotInput.addEventListener("input", () => {
                 if (isSubmitted) return;
-                const idx = parseInt(e.target.dataset.index);
-                const currentAnswer = State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()) || [];
-                const newAnswer = [...currentAnswer];
-                newAnswer[idx] = e.target.value;
-                State.setUserAnswerAtIndex(State.getCurrentQuestionIndex(), newAnswer);
+                syncAnswerFromInputs();
                 syncPreview();
-                refreshDuplicateStates();
             });
-            
-            slotWrapper.appendChild(slotSelect);
+            slotWrapper.appendChild(slotInput);
             slotWrapper.appendChild(slotPreview);
-            
             itemRow.appendChild(itemNumber);
             itemRow.appendChild(slotWrapper);
             enumerationContainer.appendChild(itemRow);
         }
-        
-        refreshDuplicateStates();
-        
         DOM.quizContainer.appendChild(enumerationContainer);
-        
+        if (State.isSubmittedAtIndex(State.getCurrentQuestionIndex())) {
+            renderFeedbackForQuestion(State.getUserAnswerAtIndex(State.getCurrentQuestionIndex()));
+        }
         if (!isSubmitted) {
-            const firstSelect = enumerationContainer.querySelector("select");
-            if (firstSelect) firstSelect.focus();
+            const firstInput = enumerationContainer.querySelector("input");
+            if (firstInput) firstInput.focus();
         }
     } else if (currentQuestion.type === "matching") {
         // Render matching question with two columns

@@ -135,6 +135,14 @@ export function handleSubmitAnswer() {
         }
     }
 
+    // For enumeration, sync answers from the free-recall text inputs in the DOM.
+    if (currentQuestion.type === "enumeration-any-order" || currentQuestion.type === "enumeration-ordered") {
+        const enumInputs = DOM.quizContainer.querySelectorAll(".enumeration-input");
+        if (enumInputs && enumInputs.length > 0) {
+            const synced = Array.from(enumInputs).map((el) => el.value);
+            State.setUserAnswerAtIndex(currentIndex, synced);
+        }
+    }
     const userAnswer = State.getUserAnswerAtIndex(currentIndex);
     
     // Validate answer based on question type

@@ -14,6 +14,25 @@ import 'katex/dist/katex.min.css';
 import DOMPurify from "dompurify";
 
 /**
+ * Decodes HTML character references (e.g. `&#39;`, `&#x27;`, `&amp;`, `&lt;`)
+ * to their actual characters. Only `&...;` entity patterns are touched, so raw
+ * `<`, `>`, `&` and NUL math placeholders are left intact — safe to run on
+ * arbitrary markdown text (no `textarea.innerHTML` tag parsing).
+ * @function decodeHTMLEntities
+ * @param {string} text - Text possibly containing HTML entities
+ * @returns {string} Text with entities decoded
+ * @private
+ */
+const ENTITY_PATTERN = /&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]*);/g;
+function decodeHTMLEntities(text) {
+    return text.replace(ENTITY_PATTERN, (entity) => {
+        const ta = document.createElement('textarea');
+        ta.innerHTML = entity;
+        return ta.value;
+    });
+}
+
+/**
  * Renders markdown text with LaTeX support and syntax highlighting.
  * @function renderMarkdownWithLaTeX
  * @param {string} markdownText - The markdown text to render
@@ -23,11 +42,16 @@ import DOMPurify from "dompurify";
  * @tofix Ensure proper sanitization of all outputs
  */
 export function renderMarkdownWithLaTeX(markdownText) {
+    // Decode HTML entities (e.g. &#39;) on the raw input so code blocks and text
+    // display the real character instead of the raw entity code. Done before math
+    // extraction so NUL placeholders are never present in the decode input.
+    const source = decodeHTMLEntities(String(markdownText ?? ''));
+
     // Extract math spans BEFORE marked.parse. marked HTML-escapes `<`, `>`, `&`,
     // which would corrupt expressions like $\operatorname{Cov}(X,Y)>0$ and make
     // KaTeX fail. Segments are held aside and re-inserted after markdown runs.
     const mathSegments = [];
-    const source = String(markdownText ?? '').replace(
+    const maskedSource = source.replace(
         /\$\$((?:[^$\\]|\\.)+?)\$\$|\$((?:[^$\\]|\\.)+?)\$/g,
         (match, displayMath, inlineMath) => {
             const index = mathSegments.length;
@@ -40,14 +64,20 @@ export function renderMarkdownWithLaTeX(markdownText) {
         }
     );
 
-    let html = marked.parse(source);
+    let html = marked.parse(maskedSource);
 
     html = html.replace(
         /<pre><code class="(.*?)">([\s\S]*?)<\/code><\/pre>/g,
         (match, lang, code) => {
             const baseLang = lang.replace(/^language-/, '').split(' ')[0] || 'plaintext';
             const displayLang = baseLang.toUpperCase();
-            
+
+            // marked re-escapes decoded entities back to entity code (e.g. `'` ->
+            // `&#39;`), and highlight.js then re-escapes the `&`, so the browser
+            // ends up showing the literal entity text. Decode here so highlight.js
+            // receives the real characters and emits them unescaped.
+            code = decodeHTMLEntities(code);
+
             let highlightedCode;
             try {
                 highlightedCode = hljs.highlight(code, { language: baseLang }).value;
